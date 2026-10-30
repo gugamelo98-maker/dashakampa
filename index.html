@@ -249,25 +249,15 @@ tr:hover td{background:rgba(0,0,0,.02)}
     <div class="view active" id="view-painel">
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-header"><span class="stat-label">No camping agora</span><span class="stat-icon green">🏕</span></div><div class="stat-value" id="stat-guests">9</div><div class="stat-sub" id="stat-guests-sub">em 3 acomodações</div></div>
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Chegadas hoje</span><span class="stat-icon blue">↗</span></div><div class="stat-value">2</div><div class="stat-sub"><span class="up">▲</span> 1 pendente check-in</div></div>
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Saídas hoje</span><span class="stat-icon amber">↙</span></div><div class="stat-value">1</div><div class="stat-sub">Previsão até 11h</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Chegadas hoje</span><span class="stat-icon blue">↗</span></div><div class="stat-value" id="stat-chegadas">0</div><div class="stat-sub" id="stat-chegadas-sub"></div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Saídas hoje</span><span class="stat-icon amber">↙</span></div><div class="stat-value" id="stat-saidas">0</div><div class="stat-sub" id="stat-saidas-sub"></div></div>
         <div class="stat-card"><div class="stat-header"><span class="stat-label">Ocupação</span><span class="stat-icon teal">📈</span></div><div class="stat-value" id="stat-occ">38<span style="font-size:18px;font-weight:500;color:var(--fg-muted)">%</span></div><div class="occ-bar-wrap"><div class="occ-bar-fill" id="occ-bar" style="width:38%"></div></div><div class="stat-sub" id="stat-occ-sub">5 de 13 spots</div></div>
       </div>
 
       <div class="mid-grid">
         <div class="card">
-          <div class="card-header"><span class="card-title">Movimento de hoje</span><span class="card-badge" style="background:var(--accent-lt);color:var(--accent)">Qua 29/10</span></div>
-          <div class="card-body">
-            <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-muted);margin-bottom:8px">Chegadas</div>
-            <div class="event-list">
-              <div class="event-item"><span class="event-pill pill-in">CHECK-IN</span><div class="event-info"><div class="event-name">Família Costa</div><div class="event-meta">3 adultos · 4 noites</div></div><span class="event-spot">BAR 03</span></div>
-              <div class="event-item"><span class="event-pill pill-in">CHECK-IN</span><div class="event-info"><div class="event-name">Juliana Pereira</div><div class="event-meta">2 adultos · 2 crianças · 3 noites</div></div><span class="event-spot">GLM 03</span></div>
-            </div>
-            <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-muted);margin:14px 0 8px">Saídas</div>
-            <div class="event-list">
-              <div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">Rafael Santos</div><div class="event-meta">4 adultos · 2 noites</div></div><span class="event-spot">BAR 04</span></div>
-            </div>
-          </div>
+          <div class="card-header"><span class="card-title">Movimento de hoje</span><span class="card-badge" id="movimento-badge" style="background:var(--accent-lt);color:var(--accent)"></span></div>
+          <div class="card-body" id="movimento-hoje-content"></div>
         </div>
 
         <div class="card">
@@ -306,10 +296,10 @@ tr:hover td{background:rgba(0,0,0,.02)}
     <div class="view" id="view-ocupacao">
       <div class="section-hd"><h2>Ocupação</h2><p>Situação atual de todos os spots</p></div>
       <div class="stats-grid" style="margin-bottom:20px">
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Glamping</span><span class="stat-icon teal">⛺</span></div><div class="stat-value" id="occ-glm">3 <span style="font-size:16px;color:var(--fg-muted);font-weight:500">/ 6</span></div><div class="stat-sub">50% ocupado</div></div>
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Barracas</span><span class="stat-icon green">🏕</span></div><div class="stat-value" id="occ-bar-card">2 <span style="font-size:16px;color:var(--fg-muted);font-weight:500">/ 5</span></div><div class="stat-sub">40% ocupado</div></div>
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Motorhome</span><span class="stat-icon amber">🚐</span></div><div class="stat-value" id="occ-mh">1 <span style="font-size:16px;color:var(--fg-muted);font-weight:500">/ 2</span></div><div class="stat-sub">50% ocupado</div></div>
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Total</span><span class="stat-icon blue">📍</span></div><div class="stat-value" id="occ-total">38<span style="font-size:18px;font-weight:500;color:var(--fg-muted)">%</span></div><div class="occ-bar-wrap"><div class="occ-bar-fill" style="width:38%"></div></div><div class="stat-sub">5 de 13 spots</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Glamping</span><span class="stat-icon teal">⛺</span></div><div class="stat-value" id="occ-glm">0 <span style="font-size:16px;color:var(--fg-muted);font-weight:500">/ 6</span></div><div class="stat-sub" id="occ-glm-sub">0% ocupado</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Barracas</span><span class="stat-icon green">🏕</span></div><div class="stat-value" id="occ-bar-card">0 <span style="font-size:16px;color:var(--fg-muted);font-weight:500">/ 5</span></div><div class="stat-sub" id="occ-bar-sub">0% ocupado</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Motorhome</span><span class="stat-icon amber">🚐</span></div><div class="stat-value" id="occ-mh">0 <span style="font-size:16px;color:var(--fg-muted);font-weight:500">/ 2</span></div><div class="stat-sub" id="occ-mh-sub">0% ocupado</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Total</span><span class="stat-icon blue">📍</span></div><div class="stat-value" id="occ-total">0<span style="font-size:18px;font-weight:500;color:var(--fg-muted)">%</span></div><div class="occ-bar-wrap"><div class="occ-bar-fill" id="occ-bar-total" style="width:0%"></div></div><div class="stat-sub" id="occ-total-sub">0 de 13 spots</div></div>
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">Mapa completo</span></div>
@@ -327,21 +317,12 @@ tr:hover td{background:rgba(0,0,0,.02)}
     <div class="view" id="view-chegadas">
       <div class="section-hd"><h2>Chegadas</h2><p>Check-ins de hoje e próximos dias</p></div>
       <div class="card" style="margin-bottom:16px">
-        <div class="card-header"><span class="card-title">Hoje — 29/10</span><span class="card-badge" style="background:var(--ok-lt);color:var(--ok)">2 chegadas</span></div>
-        <div class="card-body">
-          <div class="event-list">
-            <div class="event-item"><span class="event-pill pill-in">PENDENTE</span><div class="event-info"><div class="event-name">Juliana Pereira</div><div class="event-meta">GLM 03 · 2 adultos, 2 crianças · 3 noites · saída 01/11</div></div><button class="btn btn-primary btn-sm">Fazer check-in</button></div>
-            <div class="event-item"><span class="event-pill pill-in">PENDENTE</span><div class="event-info"><div class="event-name">Família Costa</div><div class="event-meta">BAR 03 · 3 adultos · 4 noites · saída 02/11</div></div><button class="btn btn-primary btn-sm">Fazer check-in</button></div>
-          </div>
-        </div>
+        <div class="card-header"><span class="card-title">Hoje</span><span class="card-badge" id="chegadas-badge" style="background:var(--ok-lt);color:var(--ok)">0 chegadas</span></div>
+        <div class="card-body" id="chegadas-hoje-list"><div class="td-muted" style="text-align:center;padding:8px 0">Sem chegadas hoje</div></div>
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">Próximos dias</span></div>
-        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Data</th><th>Hóspede</th><th>Tipo</th><th>Spot</th><th>Pessoas</th></tr></thead><tbody>
-          <tr><td class="td-muted">02/11 (dom)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#b45309">RL</div><span class="td-name">Roberto Lima</span></div></td><td><span class="type-chip">Barraca</span></td><td class="td-muted">BAR 05</td><td class="td-muted">4 adultos</td></tr>
-          <tr><td class="td-muted">03/11 (seg)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#0e7490">AO</div><span class="td-name">Ana Oliveira</span></div></td><td><span class="type-chip">Glamping</span></td><td class="td-muted">GLM 04</td><td class="td-muted">2 adultos</td></tr>
-          <tr><td class="td-muted">04/11 (ter)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#be185d">MN</div><span class="td-name">Marcos Nunes</span></div></td><td><span class="type-chip">Motorhome</span></td><td class="td-muted">MH 02</td><td class="td-muted">2 ad · 1 cr</td></tr>
-        </tbody></table></div></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Data</th><th>Hóspede</th><th>Tipo</th><th>Spot</th><th>Pessoas</th></tr></thead><tbody id="table-chegadas-prox"></tbody></table></div></div>
       </div>
     </div>
 
@@ -349,22 +330,12 @@ tr:hover td{background:rgba(0,0,0,.02)}
     <div class="view" id="view-saidas">
       <div class="section-hd"><h2>Saídas</h2><p>Checkouts de hoje e próximos dias</p></div>
       <div class="card" style="margin-bottom:16px">
-        <div class="card-header"><span class="card-title">Hoje — 29/10</span><span class="card-badge" style="background:var(--warn-lt);color:var(--warn)">1 saída</span></div>
-        <div class="card-body">
-          <div class="event-list">
-            <div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">Rafael Santos</div><div class="event-meta">BAR 04 · 4 adultos · 2 noites</div></div><button class="btn btn-ghost btn-sm">Confirmar saída</button></div>
-          </div>
-        </div>
+        <div class="card-header"><span class="card-title">Hoje</span><span class="card-badge" id="saidas-badge" style="background:var(--warn-lt);color:var(--warn)">0 saídas</span></div>
+        <div class="card-body" id="saidas-hoje-list"><div class="td-muted" style="text-align:center;padding:8px 0">Sem saídas hoje</div></div>
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">Próximas saídas</span></div>
-        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Data</th><th>Hóspede</th><th>Spot</th><th>Noites</th><th>Pessoas</th></tr></thead><tbody>
-          <tr><td class="td-muted">31/10 (sáb)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#1d4ed8">FS</div><span class="td-name">Família Silva</span></div></td><td class="td-muted">GLM 01</td><td class="td-muted">4</td><td class="td-muted">2 ad · 1 cr</td></tr>
-          <tr><td class="td-muted">01/11 (dom)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#059669">JP</div><span class="td-name">Juliana Pereira</span></div></td><td class="td-muted">GLM 03</td><td class="td-muted">3</td><td class="td-muted">2 ad · 2 cr</td></tr>
-          <tr><td class="td-muted">01/11 (dom)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#6d28d9">CR</div><span class="td-name">Casal Rodrigues</span></div></td><td class="td-muted">GLM 02</td><td class="td-muted">4</td><td class="td-muted">2 adultos</td></tr>
-          <tr><td class="td-muted">02/11 (seg)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#7c3aed">FC</div><span class="td-name">Família Costa</span></div></td><td class="td-muted">BAR 03</td><td class="td-muted">4</td><td class="td-muted">3 adultos</td></tr>
-          <tr><td class="td-muted">03/11 (ter)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#0f766e">FF</div><span class="td-name">Família Ferreira</span></div></td><td class="td-muted">MH 01</td><td class="td-muted">9</td><td class="td-muted">2 ad · 2 cr</td></tr>
-        </tbody></table></div></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Data</th><th>Hóspede</th><th>Spot</th><th>Noites</th><th>Pessoas</th></tr></thead><tbody id="table-saidas-prox"></tbody></table></div></div>
       </div>
     </div>
 
@@ -372,11 +343,7 @@ tr:hover td{background:rgba(0,0,0,.02)}
     <div class="view" id="view-hospedes">
       <div class="section-hd"><h2>Hóspedes</h2><p>Atualmente no camping</p></div>
       <div class="card">
-        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Spot</th><th>Entrada</th><th>Saída</th><th>Pessoas</th><th>Contato</th></tr></thead><tbody>
-          <tr><td><div class="td-guest"><div class="avatar-initials" style="background:#1d4ed8">FS</div><div><div class="td-name">Família Silva</div></div></div></td><td class="td-muted">GLM 01</td><td class="td-muted">27/10</td><td class="td-muted">31/10</td><td class="td-muted">2 ad · 1 cr</td><td class="td-muted">contato@silva.com</td></tr>
-          <tr><td><div class="td-guest"><div class="avatar-initials" style="background:#6d28d9">CR</div><div><div class="td-name">Casal Rodrigues</div></div></div></td><td class="td-muted">GLM 02</td><td class="td-muted">28/10</td><td class="td-muted">01/11</td><td class="td-muted">2 adultos</td><td class="td-muted">rodrigues@email.com</td></tr>
-          <tr><td><div class="td-guest"><div class="avatar-initials" style="background:#0f766e">FF</div><div><div class="td-name">Família Ferreira</div></div></div></td><td class="td-muted">MH 01</td><td class="td-muted">25/10</td><td class="td-muted">03/11</td><td class="td-muted">2 ad · 2 cr</td><td class="td-muted">ferreira@gmail.com</td></tr>
-        </tbody></table></div></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Spot</th><th>Entrada</th><th>Saída</th><th>Pessoas</th><th>Contato</th></tr></thead><tbody id="table-hospedes"></tbody></table></div></div>
       </div>
     </div>
 
@@ -404,24 +371,24 @@ tr:hover td{background:rgba(0,0,0,.02)}
           <div style="padding:14px 20px 18px"><table style="width:100%"><thead><tr><th style="padding:0 0 10px">Temporada</th><th style="padding:0 0 10px;text-align:right">1 pessoa</th><th style="padding:0 0 10px;text-align:right">2 pessoas</th></tr></thead><tbody>
             <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 1 diária</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 140</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 180</td></tr>
             <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 280</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 360</td></tr>
-            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">☀️ Alta — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 340</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 440</td></tr>
-          </tbody></table></div>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">☀️ Alta — 2 diárias <small style="color:var(--fg-muted)">(mín.)</small></td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 340</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 440</td></tr>
+          </tbody></table><div style="font-size:11px;color:var(--fg-muted);margin-top:8px">Alta temporada: R$170/noite (1p) · R$220/noite (2p)</div></div>
         </div>
         <div class="card">
-          <div class="card-header"><span class="card-title">🏕 Barracas</span><span class="card-badge" style="background:var(--ok-lt);color:var(--ok)">por pessoa</span></div>
-          <div style="padding:14px 20px 18px"><table style="width:100%"><thead><tr><th style="padding:0 0 10px">Temporada</th><th style="padding:0 0 10px;text-align:right">Valor</th></tr></thead><tbody>
-            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 1 diária</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 90 / pessoa</td></tr>
-            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 120 / pessoa</td></tr>
-            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">☀️ Alta — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 160 / pessoa</td></tr>
-          </tbody></table></div>
+          <div class="card-header"><span class="card-title">🏕 Barracas</span><span class="card-badge" style="background:var(--ok-lt);color:var(--ok)">por pessoa / noite</span></div>
+          <div style="padding:14px 20px 18px"><table style="width:100%"><thead><tr><th style="padding:0 0 10px">Temporada</th><th style="padding:0 0 10px;text-align:right">Total</th><th style="padding:0 0 10px;text-align:right">Por noite</th></tr></thead><tbody>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 1 diária</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 90/p</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;color:var(--fg-muted)">R$ 90/p</td></tr>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 120/p</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;color:var(--fg-muted)">R$ 60/p</td></tr>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">☀️ Alta — 2 diárias <small style="color:var(--fg-muted)">(mín.)</small></td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 160/p</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;color:var(--accent)">R$ 80/p</td></tr>
+          </tbody></table><div style="font-size:11px;color:var(--fg-muted);margin-top:8px">Baixa 3+ noites: R$60/p/noite · Alta 3+ noites: R$80/p/noite</div></div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">🚐 Motorhome / Trailer</span><span class="card-badge" style="background:var(--warn-lt);color:var(--warn)">por hospedagem</span></div>
           <div style="padding:14px 20px 18px"><table style="width:100%"><thead><tr><th style="padding:0 0 10px">Temporada</th><th style="padding:0 0 10px;text-align:right">1 pessoa</th><th style="padding:0 0 10px;text-align:right">2 pessoas</th></tr></thead><tbody>
             <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 1 diária</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 170</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 210</td></tr>
             <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 310</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 390</td></tr>
-            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">☀️ Alta — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 370</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 470</td></tr>
-          </tbody></table></div>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">☀️ Alta — 2 diárias <small style="color:var(--fg-muted)">(mín.)</small></td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 370</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 470</td></tr>
+          </tbody></table><div style="font-size:11px;color:var(--fg-muted);margin-top:8px">Alta temporada: R$185/noite (1p) · R$235/noite (2p)</div></div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">🌊 Day Use</span><span class="card-badge" style="background:#dbeafe;color:#1d4ed8">todas temporadas</span></div>
@@ -576,12 +543,13 @@ tr:hover td{background:rgba(0,0,0,.02)}
 
 <script>
 // ── Date
-const TODAY = new Date('2026-10-29');
+const TODAY = new Date();
+function todayStr(){ return TODAY.toISOString().slice(0,10); }
 document.getElementById('today-date').textContent =
   TODAY.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase());
 
 // Set min dates on form
-document.getElementById('f-checkin').min = '2026-10-29';
+document.getElementById('f-checkin').min = todayStr();
 document.getElementById('f-checkout').min = '2026-10-30';
 
 // ── Navigation
@@ -688,43 +656,41 @@ function statusBadge(s){
   return `<span class="status-badge ${cls}">${label}</span>`;
 }
 
-// ── Pricing engine
-const PRICE_TABLE = {
-  glamping:{baixa:{1:[140,180],2:[280,360]},alta:{2:[340,440]}},
-  barraca:{baixa:{1:90,2:120},alta:{2:160}},
-  motorhome:{baixa:{1:[170,210],2:[310,390]},alta:{2:[370,470]}}
-};
+// ── Pricing engine (espelha exatamente a lógica do n8n)
+// Glamping:  Baixa 1p=R$140/nt, 2p=R$180/nt | Alta 1p=R$170/nt, 2p=R$220/nt
+// Barraca:   Baixa 1nt=R$90/p, 2+nt=R$60/p/nt | Alta mín 2nt=R$80/p/nt
+// Motorhome: Baixa 1nt: 1p=R$170, 2p=R$210 | Baixa 2+nt: 1p=R$155/nt, 2p=R$195/nt | Alta: 1p=R$185/nt, 2p=R$235/nt
+// Alta temporada: mínimo 2 noites (Glamping, Barraca e Motorhome)
 function calcReservationPrice(tipo,temporada,nights,adults,criancas){
+  if(!tipo) return {base:0,extras:0,total:0,noites:0};
+  // Alta mín 2 noites para todos os tipos
+  const noitesEf=(temporada==='alta'&&nights<2)?2:nights;
+  const pFaixa=adults>=2?2:1;
   let base=0;
-  const t=PRICE_TABLE[tipo];
-  if(!t) return {base:0,extras:0,total:0};
-  const season=t[temporada]||t.baixa;
-  if(tipo==='barraca'){
-    if(nights===1){
-      base=(season[1]??90)*adults;
-    } else {
-      // preço por pessoa/noite = pacote 2-diárias ÷ 2
-      const perPersonNight=(season[2]??120)/2;
-      base=perPersonNight*adults*nights;
-    }
-  } else {
-    const pIdx=adults>=2?1:0;
-    if(nights===1){
-      const r=season[1]||t.baixa[1];
-      base=r[pIdx];
-    } else {
-      // preço/noite = pacote 2-diárias ÷ 2 (ex: alta 340÷2=170/noite)
-      const twoNight=(season[2]||t.baixa[2])[pIdx];
-      base=(twoNight/2)*nights;
-    }
+  if(tipo==='glamping'){
+    const tab={baixa:{1:140,2:180},alta:{1:170,2:220}};
+    base=(tab[temporada]?.[pFaixa]??tab.baixa[pFaixa])*noitesEf;
+  } else if(tipo==='barraca'){
+    const tx=temporada==='alta'?80:(noitesEf===1?90:60);
+    base=tx*adults*noitesEf;
+  } else if(tipo==='motorhome'){
+    let tx;
+    if(temporada==='alta')     tx=pFaixa===1?185:235;
+    else if(noitesEf===1)      tx=pFaixa===1?170:210;
+    else                       tx=pFaixa===1?155:195;
+    base=tx*noitesEf;
   }
-  const extras=criancas.reduce((s,c)=>s+(c.age==='under10'?30:50)*nights,0);
-  return {base,extras,total:base+extras};
+  // Criança: c.age='under10'|'over10' (local) ou c.idade numérico (API)
+  const extras=criancas.reduce((s,c)=>{
+    const over=c.age==='over10'||(c.idade!==undefined&&parseInt(c.idade)>10);
+    return s+(over?50:30)*noitesEf;
+  },0);
+  return {base,extras,total:base+extras,noites:noitesEf};
 }
 
 // ── Spot status map
 function getSpotStatus(spotId){
-  const today='2026-10-29';
+  const today=todayStr();
   for(const r of reservations){
     if(r.spot!==spotId) continue;
     if(r.checkin<=today && r.checkout>today){
@@ -798,7 +764,7 @@ function renderPainelTable(){
     const ini=initials(r.nome);
     const typeLabel={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'}[r.tipo]||r.tipo;
     const childStr=r.criancas?.length?` · ${r.criancas.length} cr`:'';
-    const isToday=r.checkin==='2026-10-29';
+    const isToday=r.checkin===todayStr();
     return `<tr>
       <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><div><div class="td-name">${r.nome}</div></div></div></td>
       <td><span class="type-chip">${typeLabel}</span></td>
@@ -852,11 +818,144 @@ function updateBadge(){
 }
 
 // ── Full render
+// ── Dynamic stat tiles & movimento de hoje
+function renderPainelStats(){
+  const today=todayStr();
+  const active=reservations.filter(r=>r.checkin<=today&&r.checkout>today&&!['cancelled','no_show'].includes(r.status));
+  const chegadas=reservations.filter(r=>r.checkin===today&&!['cancelled','no_show'].includes(r.status));
+  const saidas=reservations.filter(r=>r.checkout===today&&!['cancelled','no_show'].includes(r.status));
+  const pct=Math.round(active.length/13*100);
+  const $ =id=>document.getElementById(id);
+  const set=(id,v)=>{ const el=$(id); if(el) el.innerHTML=v; };
+
+  set('stat-guests', active.length);
+  set('stat-guests-sub', active.length?`${active.length} spot${active.length!==1?'s':''} ocupado${active.length!==1?'s':''}`:'Sem hóspedes');
+  set('stat-chegadas', chegadas.length);
+  set('stat-chegadas-sub', chegadas.length?`<span class="up">▲</span> ${chegadas.length} pendente${chegadas.length!==1?'s':''} check-in`:'Sem chegadas');
+  set('stat-saidas', saidas.length);
+  set('stat-saidas-sub', saidas.length?'Previsão até 11h':'Sem saídas');
+  set('stat-occ', `${pct}<span style="font-size:18px;font-weight:500;color:var(--fg-muted)">%</span>`);
+  set('stat-occ-sub', `${active.length} de 13 spots`);
+  const ob=$('occ-bar'); if(ob) ob.style.width=pct+'%';
+
+  // Movimento de hoje
+  const mv=$('movimento-hoje-content');
+  const mb=$('movimento-badge');
+  if(mb){ const tot=chegadas.length+saidas.length; mb.textContent=tot?`${tot} evento${tot!==1?'s':''}`:'Sem movimento'; }
+  if(mv){
+    const chHtml=chegadas.length
+      ?chegadas.map(r=>`<div class="event-item"><span class="event-pill pill-in">CHECK-IN</span><div class="event-info"><div class="event-name">${r.nome}</div><div class="event-meta">${r.adultos} adultos${r.criancas?.length?`, ${r.criancas.length} cr`:''} · ${nightsBetween(r.checkin,r.checkout)} noites</div></div><span class="event-spot">${r.spot}</span></div>`).join('')
+      :`<div class="td-muted" style="font-size:12px;padding:4px 0">Sem chegadas hoje</div>`;
+    const saHtml=saidas.length
+      ?saidas.map(r=>`<div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">${r.nome}</div><div class="event-meta">${r.adultos} adultos${r.criancas?.length?`, ${r.criancas.length} cr`:''}</div></div><span class="event-spot">${r.spot}</span></div>`).join('')
+      :`<div class="td-muted" style="font-size:12px;padding:4px 0">Sem saídas hoje</div>`;
+    mv.innerHTML=`<div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-muted);margin-bottom:8px">Chegadas</div><div class="event-list">${chHtml}</div><div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-muted);margin:14px 0 8px">Saídas</div><div class="event-list">${saHtml}</div>`;
+  }
+}
+
+// ── Ocupação view stats
+function renderOcupacao(){
+  const today=todayStr();
+  const active=reservations.filter(r=>r.checkin<=today&&r.checkout>today&&!['cancelled','no_show'].includes(r.status));
+  const glm=active.filter(r=>r.tipo==='glamping').length;
+  const bar=active.filter(r=>r.tipo==='barraca').length;
+  const mh=active.filter(r=>r.tipo==='motorhome').length;
+  const pct=Math.round(active.length/13*100);
+  const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.innerHTML=v; };
+  set('occ-glm',`${glm} <span style="font-size:16px;color:var(--fg-muted);font-weight:500">/ 6</span>`);
+  set('occ-glm-sub',`${Math.round(glm/6*100)}% ocupado`);
+  set('occ-bar-card',`${bar} <span style="font-size:16px;color:var(--fg-muted);font-weight:500">/ 5</span>`);
+  set('occ-bar-sub',`${Math.round(bar/5*100)}% ocupado`);
+  set('occ-mh',`${mh} <span style="font-size:16px;color:var(--fg-muted);font-weight:500">/ 2</span>`);
+  set('occ-mh-sub',`${Math.round(mh/2*100)}% ocupado`);
+  set('occ-total',`${pct}<span style="font-size:18px;font-weight:500;color:var(--fg-muted)">%</span>`);
+  set('occ-total-sub',`${active.length} de 13 spots`);
+  const obt=document.getElementById('occ-bar-total'); if(obt) obt.style.width=pct+'%';
+}
+
+// ── Chegadas view
+function renderChegadas(){
+  const today=todayStr();
+  const chegadas=reservations.filter(r=>r.checkin===today&&!['cancelled','no_show'].includes(r.status));
+  const proximas=reservations.filter(r=>r.checkin>today&&!['cancelled','no_show'].includes(r.status)).sort((a,b)=>a.checkin.localeCompare(b.checkin)).slice(0,10);
+  const badge=document.getElementById('chegadas-badge');
+  const lista=document.getElementById('chegadas-hoje-list');
+  const tbody=document.getElementById('table-chegadas-prox');
+  if(badge) badge.textContent=`${chegadas.length} chegada${chegadas.length!==1?'s':''}`;
+  if(lista){
+    if(!chegadas.length) lista.innerHTML=`<div class="td-muted" style="text-align:center;padding:8px 0">Sem chegadas hoje</div>`;
+    else lista.innerHTML=`<div class="event-list">${chegadas.map(r=>{
+      const cr=r.criancas?.length?`, ${r.criancas.length} cr`:'';
+      const n=nightsBetween(r.checkin,r.checkout);
+      return `<div class="event-item"><span class="event-pill pill-in">PENDENTE</span><div class="event-info"><div class="event-name">${r.nome}</div><div class="event-meta">${r.spot} · ${r.adultos} adultos${cr} · ${n} noite${n!==1?'s':''} · saída ${fmtDate(r.checkout)}</div></div><button class="btn btn-primary btn-sm" onclick="doCheckin('${r.id}')">Fazer check-in</button></div>`;
+    }).join('')}</div>`;
+  }
+  if(tbody) tbody.innerHTML=proximas.length?proximas.map(r=>{
+    const cr=r.criancas?.length?` · ${r.criancas.length} cr`:''; const col=avatarColor(r.nome); const ini=initials(r.nome);
+    const tl={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'}[r.tipo]||r.tipo;
+    return `<tr><td class="td-muted">${fmtDate(r.checkin)}</td><td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><span class="td-name">${r.nome}</span></div></td><td><span class="type-chip">${tl}</span></td><td class="td-muted">${r.spot}</td><td class="td-muted">${r.adultos} ad${cr}</td></tr>`;
+  }).join(''):`<tr><td colspan="5" class="td-muted" style="text-align:center;padding:16px">Sem chegadas nos próximos dias</td></tr>`;
+}
+
+// ── Saídas view
+function renderSaidas(){
+  const today=todayStr();
+  const saidas=reservations.filter(r=>r.checkout===today&&!['cancelled','no_show'].includes(r.status));
+  const proximas=reservations.filter(r=>r.checkout>today&&r.checkin<=today&&!['cancelled','no_show'].includes(r.status)).sort((a,b)=>a.checkout.localeCompare(b.checkout)).slice(0,10);
+  const badge=document.getElementById('saidas-badge');
+  const lista=document.getElementById('saidas-hoje-list');
+  const tbody=document.getElementById('table-saidas-prox');
+  if(badge) badge.textContent=`${saidas.length} saída${saidas.length!==1?'s':''}`;
+  if(lista){
+    if(!saidas.length) lista.innerHTML=`<div class="td-muted" style="text-align:center;padding:8px 0">Sem saídas hoje</div>`;
+    else lista.innerHTML=`<div class="event-list">${saidas.map(r=>{
+      const cr=r.criancas?.length?`, ${r.criancas.length} cr`:'';
+      return `<div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">${r.nome}</div><div class="event-meta">${r.spot} · ${r.adultos} adultos${cr}</div></div><button class="btn btn-ghost btn-sm" onclick="doCheckout('${r.id}')">Confirmar saída</button></div>`;
+    }).join('')}</div>`;
+  }
+  if(tbody) tbody.innerHTML=proximas.length?proximas.map(r=>{
+    const cr=r.criancas?.length?` · ${r.criancas.length} cr`:''; const col=avatarColor(r.nome); const ini=initials(r.nome);
+    const n=nightsBetween(r.checkin,r.checkout);
+    return `<tr><td class="td-muted">${fmtDate(r.checkout)}</td><td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><span class="td-name">${r.nome}</span></div></td><td class="td-muted">${r.spot}</td><td class="td-muted">${n}</td><td class="td-muted">${r.adultos} ad${cr}</td></tr>`;
+  }).join(''):`<tr><td colspan="5" class="td-muted" style="text-align:center;padding:16px">Sem saídas nos próximos dias</td></tr>`;
+}
+
+// ── Hóspedes view
+function renderHospedes(){
+  const today=todayStr();
+  const ativos=reservations.filter(r=>r.checkin<=today&&r.checkout>today&&!['cancelled','no_show'].includes(r.status));
+  const tbody=document.getElementById('table-hospedes');
+  if(!tbody) return;
+  tbody.innerHTML=ativos.length?ativos.map(r=>{
+    const cr=r.criancas?.length?` · ${r.criancas.length} cr`:''; const col=avatarColor(r.nome); const ini=initials(r.nome);
+    return `<tr><td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><div><div class="td-name">${r.nome}</div></div></div></td><td class="td-muted">${r.spot}</td><td class="td-muted">${fmtDate(r.checkin)}</td><td class="td-muted">${fmtDate(r.checkout)}</td><td class="td-muted">${r.adultos} ad${cr}</td><td class="td-muted">${r.contato||'—'}</td></tr>`;
+  }).join(''):`<tr><td colspan="6" class="td-muted" style="text-align:center;padding:16px">Nenhum hóspede no momento</td></tr>`;
+}
+
+// ── Check-in / Checkout buttons
+async function doCheckin(id){
+  const numId=parseInt(id);
+  if(numId){ try{ await fetch(`${API_BASE}/akampa/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:numId,status:'checkin'}),signal:AbortSignal.timeout(6000)}); }catch(e){ console.warn('check-in API:',e.message); } }
+  const r=reservations.find(x=>x.id===id); if(r) r.status='checkin';
+  saveReservations(); renderAll(); showToast('Check-in realizado!','✅');
+}
+async function doCheckout(id){
+  const numId=parseInt(id);
+  if(numId){ try{ await fetch(`${API_BASE}/akampa/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:numId,status:'checkout'}),signal:AbortSignal.timeout(6000)}); }catch(e){ console.warn('checkout API:',e.message); } }
+  const r=reservations.find(x=>x.id===id); if(r) r.status='checkout';
+  saveReservations(); renderAll(); showToast('Checkout confirmado!','👋');
+}
+
 function renderAll(){
   renderSpotMap('spot-map-painel',false);
   renderSpotMap('spot-map-full',true);
   renderReservas();
   renderPainelTable();
+  renderPainelStats();
+  renderOcupacao();
+  renderChegadas();
+  renderSaidas();
+  renderHospedes();
   renderFinanceiro();
   updateBadge();
 }
@@ -879,8 +978,9 @@ async function deleteReservation(id){
 // ── Modal
 function openModal(){
   document.getElementById('modal-overlay').classList.remove('hidden');
-  document.getElementById('f-checkin').value='2026-10-29';
-  document.getElementById('f-checkout').value='2026-10-30';
+  const t=todayStr(), t1=new Date(TODAY); t1.setDate(t1.getDate()+1);
+  document.getElementById('f-checkin').value=t;
+  document.getElementById('f-checkout').value=t1.toISOString().slice(0,10);
   calcPrice();
 }
 function closeModal(){ document.getElementById('modal-overlay').classList.add('hidden'); }
@@ -957,15 +1057,21 @@ async function submitReservation(){
   const temporada=document.getElementById('f-temporada').value;
   const adultos=parseInt(document.getElementById('f-adultos').value)||2;
   const criancasSels=[...document.querySelectorAll('#children-rows select')];
-  const criancas=criancasSels.map(s=>({age:s.value}));
+  // Formato para API: {idade: 8} para under10, {idade: 12} para over10
+  const criancas=criancasSels.map(s=>({age:s.value,idade:s.value==='over10'?12:8}));
 
   if(!nome){ alert('Por favor informe o nome do hóspede.'); return; }
   if(!tipo||!spot){ alert('Por favor selecione o tipo de acomodação e o spot.'); return; }
   if(!checkin||!checkout||nightsBetween(checkin,checkout)<=0){ alert('Por favor selecione datas válidas.'); return; }
 
   const nights=nightsBetween(checkin,checkout);
-  const {base,extras,total}=calcReservationPrice(tipo,temporada,nights,adultos,criancas);
+  const {base,extras,total,noites}=calcReservationPrice(tipo,temporada,nights,adultos,criancas);
   const isToday=new Date().toISOString().slice(0,10)===checkin;
+
+  // Detectar se contato é whatsapp (tem dígitos suficientes) ou email
+  const isWpp=contato.replace(/\D/g,'').length>=8;
+  const whatsapp=isWpp?contato:'';
+  const email=(!isWpp&&contato.includes('@'))?contato:'';
 
   const btn=document.querySelector('.modal-footer .btn-primary');
   btn.textContent='Salvando…'; btn.disabled=true;
@@ -976,12 +1082,11 @@ async function submitReservation(){
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        spot_id:spot, nome, email:'',
-        whatsapp:contato.match(/\d/)?contato:'',
+        spot_id:spot, nome, email, whatsapp,
         checkin, checkout, temporada,
         adultos, criancas,
-        preco_base:base, preco_extras:extras, preco_total:total,
         source:'dashboard', notas:''
+        // preços calculados pelo n8n — não enviados
       }),
       signal:AbortSignal.timeout(10000)
     });
