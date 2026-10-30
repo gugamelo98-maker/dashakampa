@@ -1195,7 +1195,12 @@ function renderFinanceiro(){
     const typeLabel={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'}[r.tipo]||r.tipo;
     const nights=nightsBetween(r.checkin,r.checkout);
     const childStr=r.criancas?.length?` · ${r.criancas.length} cr`:'';
-    if(r.status==='pending') pending+=r.total; else confirmed+=r.total;
+    const desc=parseFloat(r.desconto||0);
+    const totalLiq=Math.max(0,r.total-desc);
+    const sinal=parseFloat(r.sinal_pago||0);
+    const saldo=Math.max(0,totalLiq-sinal);
+    confirmed+=sinal;
+    pending+=saldo;
     return `<tr>
       <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><span class="td-name">${r.nome}</span></div></td>
       <td><span class="type-chip">${typeLabel}</span></td>
@@ -1212,7 +1217,7 @@ function renderFinanceiro(){
   // Update tiles
   document.getElementById('fin-confirmed').textContent='R$ '+confirmed.toLocaleString('pt-BR');
   document.getElementById('fin-pending').textContent='R$ '+pending.toLocaleString('pt-BR');
-  updateFinResultado(confirmed+pending);
+  updateFinResultado(confirmed);
 }
 
 function updateFinResultado(receita){
