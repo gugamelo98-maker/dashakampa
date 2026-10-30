@@ -199,10 +199,77 @@ tr:hover td{background:rgba(0,0,0,.02)}
 .placeholder-view h3{font-size:16px;font-weight:600;color:var(--fg);opacity:.6}
 .placeholder-view p{font-size:13px;text-align:center;max-width:260px}
 
+/* ── Login overlay */
+.auth-overlay{position:fixed;inset:0;background:var(--bg-sidebar);z-index:500;display:flex;align-items:center;justify-content:center;padding:24px}
+.auth-overlay.hidden{display:none}
+.auth-box{background:var(--bg-card);border-radius:16px;width:100%;max-width:400px;box-shadow:0 24px 80px rgba(0,0,0,.5);border:1px solid var(--border);overflow:hidden}
+.auth-header{padding:32px 32px 24px;text-align:center;border-bottom:1px solid var(--border)}
+.auth-logo{font-family:var(--font-disp);font-size:22px;font-weight:600;color:var(--fg);margin-bottom:4px}
+.auth-sub{font-size:13px;color:var(--fg-muted)}
+.auth-body{padding:28px 32px}
+.auth-tabs{display:flex;gap:0;margin-bottom:24px;border:1.5px solid var(--border);border-radius:8px;overflow:hidden}
+.auth-tab{flex:1;padding:9px 0;font-size:13px;font-weight:600;text-align:center;cursor:pointer;background:transparent;border:none;color:var(--fg-muted);font-family:var(--font-ui);transition:background .15s,color .15s}
+.auth-tab.active{background:var(--accent);color:#fff}
+.auth-form-section{display:none}.auth-form-section.active{display:block}
+.auth-group{margin-bottom:16px}
+.auth-label{display:block;font-size:11.5px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.auth-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:14px;outline:none;transition:border-color .15s}
+.auth-input:focus{border-color:var(--accent)}
+.auth-btn{width:100%;padding:11px;border-radius:8px;background:var(--accent);color:#fff;border:none;font-family:var(--font-ui);font-size:14px;font-weight:700;cursor:pointer;transition:filter .15s;margin-top:4px}
+.auth-btn:hover{filter:brightness(1.1)}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed}
+.auth-error{font-size:12.5px;color:var(--danger);text-align:center;margin-top:12px;min-height:18px;font-weight:500}
+
 /* ── Responsive */
 @media(max-width:900px){.sidebar{display:none}.stats-grid{grid-template-columns:repeat(2,1fr)}.mid-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.content{padding:16px}.topbar{padding:12px 16px}.stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}.form-row,.form-row-3{grid-template-columns:1fr}}
 </style>
+
+<!-- Auth overlay -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-header">
+      <div class="auth-logo">🌿 Akampa Siriú</div>
+      <div class="auth-sub">Eco Glamping · Garopaba SC</div>
+    </div>
+    <div class="auth-body">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Entrar</button>
+        <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Criar conta</button>
+      </div>
+      <!-- Login -->
+      <div class="auth-form-section active" id="auth-login">
+        <div class="auth-group">
+          <label class="auth-label">Usuário</label>
+          <input class="auth-input" id="login-username" type="text" placeholder="seu.usuario" autocomplete="username">
+        </div>
+        <div class="auth-group">
+          <label class="auth-label">Senha</label>
+          <input class="auth-input" id="login-password" type="password" placeholder="••••••" autocomplete="current-password">
+        </div>
+        <button class="auth-btn" id="btn-login" onclick="doLogin()">Entrar</button>
+        <div class="auth-error" id="login-error"></div>
+      </div>
+      <!-- Register -->
+      <div class="auth-form-section" id="auth-register">
+        <div class="auth-group">
+          <label class="auth-label">Nome de exibição</label>
+          <input class="auth-input" id="reg-nome" type="text" placeholder="Seu nome">
+        </div>
+        <div class="auth-group">
+          <label class="auth-label">Usuário</label>
+          <input class="auth-input" id="reg-username" type="text" placeholder="seu.usuario" autocomplete="username">
+        </div>
+        <div class="auth-group">
+          <label class="auth-label">Senha <span style="font-weight:400;text-transform:none;letter-spacing:0">(mín. 6 caracteres)</span></label>
+          <input class="auth-input" id="reg-password" type="password" placeholder="••••••" autocomplete="new-password">
+        </div>
+        <button class="auth-btn" id="btn-register" onclick="doRegister()">Criar conta</button>
+        <div class="auth-error" id="register-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Sidebar -->
 <nav class="sidebar">
@@ -218,14 +285,19 @@ tr:hover td{background:rgba(0,0,0,.02)}
   <a class="nav-item" href="#saidas"       data-view="saidas"><span class="icon">↙</span> Saídas</a>
   <div class="nav-section">Gestão</div>
   <a class="nav-item" href="#hospedes"     data-view="hospedes"><span class="icon">👥</span> Hóspedes</a>
+  <a class="nav-item" href="#clientes"     data-view="clientes"><span class="icon">🗂</span> Clientes</a>
   <a class="nav-item" href="#financeiro"   data-view="financeiro"><span class="icon">💰</span> Financeiro</a>
   <a class="nav-item" href="#precos"       data-view="precos"><span class="icon">🏷</span> Preços</a>
   <a class="nav-item" href="#relatorios"   data-view="relatorios"><span class="icon">📊</span> Relatórios</a>
   <a class="nav-item" href="#configuracoes" data-view="configuracoes"><span class="icon">⚙️</span> Configurações</a>
   <div class="sidebar-footer">
     <div class="staff-pill">
-      <div class="staff-avatar">GM</div>
-      <div><div class="staff-name">Gustavo M.</div><div class="staff-role">Recepção</div></div>
+      <div class="staff-avatar" id="user-avatar">??</div>
+      <div style="flex:1;min-width:0">
+        <div class="staff-name" id="user-name">—</div>
+        <div class="staff-role" id="user-role">—</div>
+      </div>
+      <button onclick="doLogout()" title="Sair" style="background:none;border:none;cursor:pointer;color:var(--fg-sidebar);font-size:16px;opacity:.6;padding:4px;line-height:1;transition:opacity .15s" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=.6">⏻</button>
     </div>
   </div>
 </nav>
@@ -344,6 +416,30 @@ tr:hover td{background:rgba(0,0,0,.02)}
       <div class="section-hd"><h2>Hóspedes</h2><p>Atualmente no camping</p></div>
       <div class="card">
         <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Spot</th><th>Entrada</th><th>Saída</th><th>Pessoas</th><th>Telefone</th><th>E-mail</th><th>Nascimento</th></tr></thead><tbody id="table-hospedes"></tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- ══ CLIENTES ══ -->
+    <div class="view" id="view-clientes">
+      <div class="section-hd" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div><h2>Clientes</h2><p>Todos os hóspedes cadastrados via reservas</p></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div style="position:relative">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--fg-muted);font-size:14px">🔍</span>
+            <input id="clientes-search" class="form-input" type="text" placeholder="Nome, telefone ou e-mail…" style="padding-left:34px;width:240px" oninput="renderClientes()">
+          </div>
+          <div id="clientes-count" style="font-size:12px;color:var(--fg-muted);white-space:nowrap"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="padding-top:14px">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Hóspede</th><th>Telefone</th><th>E-mail</th><th>Nascimento</th><th>Estadias</th><th>Última visita</th><th>Próxima visita</th></tr></thead>
+              <tbody id="table-clientes"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -712,7 +808,7 @@ document.getElementById('f-checkin').min = todayStr();
 document.getElementById('f-checkout').min = '2026-10-30';
 
 // ── Navigation
-const TITLES = {painel:'Visão Geral',reservas:'Reservas',ocupacao:'Ocupação',chegadas:'Chegadas',saidas:'Saídas',hospedes:'Hóspedes',financeiro:'Financeiro',precos:'Tabela de Preços',relatorios:'Relatórios',configuracoes:'Configurações'};
+const TITLES = {painel:'Visão Geral',reservas:'Reservas',ocupacao:'Ocupação',chegadas:'Chegadas',saidas:'Saídas',hospedes:'Hóspedes',clientes:'Clientes',financeiro:'Financeiro',precos:'Tabela de Preços',relatorios:'Relatórios',configuracoes:'Configurações'};
 
 function navigate(id){
   if(!id||!document.getElementById('view-'+id)) id='painel';
@@ -756,6 +852,130 @@ const ALL_SPOTS = {
     {id:'MH 02',emoji:'🚐',label:'MH 02'},
   ]
 };
+
+// ── Auth
+const AUTH_BASE = 'https://rarelookingorca-n8n.cloudfy.live/webhook/akampa/auth';
+const SESSION_KEY = 'akampa_session';
+
+function getSession(){
+  try{ return JSON.parse(localStorage.getItem(SESSION_KEY)||'null'); }catch(e){ return null; }
+}
+function saveSession(s){
+  try{ localStorage.setItem(SESSION_KEY,JSON.stringify(s)); }catch(e){}
+}
+function clearSession(){
+  try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+}
+
+function setUserUI(s){
+  const initials=(s.nome||s.username||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('user-avatar').textContent=initials;
+  document.getElementById('user-name').textContent=s.nome||s.username;
+  document.getElementById('user-role').textContent=s.role==='admin'?'Administrador':'Recepção';
+}
+
+function showDashboard(s){
+  document.getElementById('auth-overlay').classList.add('hidden');
+  setUserUI(s);
+}
+
+async function checkAuth(){
+  const s=getSession();
+  if(!s||!s.token){ document.getElementById('auth-overlay').classList.remove('hidden'); return; }
+  try{
+    const r=await fetch(AUTH_BASE+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:s.token})});
+    const d=await r.json();
+    if(d.ok){
+      saveSession({...s,...d});
+      showDashboard({...s,...d});
+    } else {
+      clearSession();
+      document.getElementById('auth-overlay').classList.remove('hidden');
+    }
+  } catch(e){
+    // offline — se tem sessão local, deixa entrar
+    if(s.token) showDashboard(s);
+    else document.getElementById('auth-overlay').classList.remove('hidden');
+  }
+}
+
+function switchAuthTab(tab){
+  document.getElementById('auth-login').classList.toggle('active',tab==='login');
+  document.getElementById('auth-register').classList.toggle('active',tab==='register');
+  document.getElementById('tab-login').classList.toggle('active',tab==='login');
+  document.getElementById('tab-register').classList.toggle('active',tab==='register');
+  document.getElementById('login-error').textContent='';
+  document.getElementById('register-error').textContent='';
+}
+
+async function doLogin(){
+  const btn=document.getElementById('btn-login');
+  const errEl=document.getElementById('login-error');
+  const username=document.getElementById('login-username').value.trim();
+  const password=document.getElementById('login-password').value;
+  errEl.textContent='';
+  if(!username||!password){ errEl.textContent='Preencha usuário e senha.'; return; }
+  btn.disabled=true; btn.textContent='Entrando…';
+  try{
+    const r=await fetch(AUTH_BASE+'/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+    const d=await r.json();
+    if(d.ok){
+      const s={token:d.token,username:d.username,nome:d.nome,role:d.role};
+      saveSession(s);
+      showDashboard(s);
+      showToast('Bem-vindo, '+d.nome+'! 👋');
+    } else {
+      errEl.textContent=d.message||'Usuário ou senha incorretos.';
+    }
+  } catch(e){
+    errEl.textContent='Erro de conexão. Tente novamente.';
+  }
+  btn.disabled=false; btn.textContent='Entrar';
+}
+
+async function doRegister(){
+  const btn=document.getElementById('btn-register');
+  const errEl=document.getElementById('register-error');
+  const nome=document.getElementById('reg-nome').value.trim();
+  const username=document.getElementById('reg-username').value.trim();
+  const password=document.getElementById('reg-password').value;
+  errEl.textContent='';
+  if(!username||!password){ errEl.textContent='Preencha usuário e senha.'; return; }
+  if(password.length<6){ errEl.textContent='Senha deve ter pelo menos 6 caracteres.'; return; }
+  btn.disabled=true; btn.textContent='Criando conta…';
+  try{
+    const r=await fetch(AUTH_BASE+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password,nome:nome||username})});
+    const d=await r.json();
+    if(d.ok){
+      errEl.style.color='var(--ok)';
+      errEl.textContent='Conta criada! Faça login.';
+      setTimeout(()=>{ errEl.textContent=''; errEl.style.color=''; switchAuthTab('login'); document.getElementById('login-username').value=username; },1500);
+    } else {
+      errEl.textContent=d.message||'Erro ao criar conta.';
+    }
+  } catch(e){
+    errEl.textContent='Erro de conexão. Tente novamente.';
+  }
+  btn.disabled=false; btn.textContent='Criar conta';
+}
+
+function doLogout(){
+  clearSession();
+  document.getElementById('auth-overlay').classList.remove('hidden');
+  document.getElementById('login-username').value='';
+  document.getElementById('login-password').value='';
+  document.getElementById('login-error').textContent='';
+  switchAuthTab('login');
+  showToast('Sessão encerrada.','👋');
+}
+
+// Enter key no login
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!document.getElementById('auth-overlay').classList.contains('hidden')){
+    const tab=document.getElementById('auth-login').classList.contains('active');
+    if(tab) doLogin(); else doRegister();
+  }
+});
 
 // ── API config
 const API_BASE = 'https://rarelookingorca-n8n.cloudfy.live/webhook';
@@ -804,6 +1024,7 @@ async function loadReservationsFromAPI(){
   }catch(e){ console.warn('API indisponível, usando dados de demonstração:', e.message); }
 }
 loadReservationsFromAPI();
+checkAuth();
 
 // ── Avatar color
 const COLORS=['#1d4ed8','#7c3aed','#0f766e','#b45309','#be185d','#059669','#0e7490','#6d28d9','#dc2626','#d97706'];
@@ -1240,6 +1461,70 @@ function renderHospedes(){
   }).join(''):`<tr><td colspan="8" class="td-muted" style="text-align:center;padding:16px">Nenhum hóspede no momento</td></tr>`;
 }
 
+// ── Clientes (base completa de hóspedes)
+function renderClientes(){
+  const q=(document.getElementById('clientes-search')?.value||'').toLowerCase().trim();
+  const today=todayStr();
+
+  // Agrupa por chave única: normaliza nome + contato
+  const map=new Map();
+  for(const r of reservations){
+    if(r.status==='cancelled'||r.status==='no_show') continue;
+    const key=(r.nome+'|'+(r.whatsapp||r.email||'')).toLowerCase();
+    if(!map.has(key)){
+      map.set(key,{
+        nome:r.nome, whatsapp:r.whatsapp||'', email:r.email||'',
+        data_nascimento:r.data_nascimento||null,
+        estadias:[], futuras:[]
+      });
+    }
+    const g=map.get(key);
+    if(r.checkout<=today) g.estadias.push(r.checkout);
+    else g.futuras.push(r.checkin);
+  }
+
+  let lista=[...map.values()];
+
+  // Filtro de busca
+  if(q) lista=lista.filter(g=>
+    g.nome.toLowerCase().includes(q)||
+    g.whatsapp.includes(q)||
+    g.email.toLowerCase().includes(q)
+  );
+
+  // Ordena: mais estadias primeiro
+  lista.sort((a,b)=>b.estadias.length-a.estadias.length||a.nome.localeCompare(b.nome));
+
+  const tbody=document.getElementById('table-clientes');
+  const countEl=document.getElementById('clientes-count');
+  if(!tbody) return;
+
+  countEl.textContent=lista.length+' cliente'+(lista.length!==1?'s':'');
+
+  if(!lista.length){
+    tbody.innerHTML=`<tr><td colspan="7" class="td-muted" style="text-align:center;padding:20px">${q?'Nenhum cliente encontrado para "'+q+'"':'Nenhum hóspede cadastrado ainda'}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML=lista.map(g=>{
+    const col=avatarColor(g.nome); const ini=initials(g.nome);
+    const nasc=g.data_nascimento?fmtDate(g.data_nascimento):'—';
+    const lastVisit=g.estadias.length?fmtDate(g.estadias.sort().at(-1)):'—';
+    const nextVisit=g.futuras.length?fmtDate(g.futuras.sort()[0]):'—';
+    const totalEstadias=g.estadias.length;
+    const temFutura=g.futuras.length>0;
+    return `<tr>
+      <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><div class="td-name">${g.nome}</div></div></td>
+      <td class="td-muted">${g.whatsapp||'—'}</td>
+      <td class="td-muted">${g.email||'—'}</td>
+      <td class="td-muted">${nasc}</td>
+      <td><span style="font-weight:700;color:var(--fg)">${totalEstadias}</span><span class="td-muted"> estadia${totalEstadias!==1?'s':''}</span></td>
+      <td class="td-muted">${lastVisit}</td>
+      <td>${temFutura?`<span class="status-badge status-confirmed">${nextVisit}</span>`:'<span class="td-muted">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
 // ── Check-in / Checkout buttons
 async function doCheckin(id){
   const numId=parseInt(id);
@@ -1264,6 +1549,7 @@ function renderAll(){
   renderChegadas();
   renderSaidas();
   renderHospedes();
+  renderClientes();
   renderFinanceiro();
   loadGastos();
   updateBadge();
