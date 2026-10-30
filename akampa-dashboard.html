@@ -1,0 +1,1052 @@
+<title>Akampa Siriú — Painel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Lora:wght@500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+:root {
+  --bg:#f5f3ef;--bg-card:#fff;--bg-sidebar:#1b3328;
+  --fg:#1c2a23;--fg-muted:#6b7c73;--fg-sidebar:#c8ddd4;
+  --accent:#2a7d5e;--accent-lt:#e6f4ef;
+  --warn:#d97706;--warn-lt:#fef3c7;
+  --danger:#dc2626;--danger-lt:#fee2e2;
+  --ok:#16a34a;--ok-lt:#dcfce7;
+  --border:#e2ddd6;--shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
+  --radius:10px;--font-ui:'Plus Jakarta Sans',system-ui,sans-serif;--font-disp:'Lora',Georgia,serif;
+  color-scheme:light;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111c16;--bg-card:#1c2d24;--bg-sidebar:#0d1a11;
+  --fg:#e8f0eb;--fg-muted:#8da898;--fg-sidebar:#adc8bc;
+  --accent:#3aaa7a;--accent-lt:#1a3d2e;
+  --warn:#fbbf24;--warn-lt:#2d2000;--danger:#f87171;--danger-lt:#2d0a0a;
+  --ok:#4ade80;--ok-lt:#0a2d1a;--border:#273d2f;--shadow:0 1px 4px rgba(0,0,0,.3);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#111c16;--bg-card:#1c2d24;--bg-sidebar:#0d1a11;
+  --fg:#e8f0eb;--fg-muted:#8da898;--fg-sidebar:#adc8bc;
+  --accent:#3aaa7a;--accent-lt:#1a3d2e;
+  --warn:#fbbf24;--warn-lt:#2d2000;--danger:#f87171;--danger-lt:#2d0a0a;
+  --ok:#4ade80;--ok-lt:#0a2d1a;--border:#273d2f;--shadow:0 1px 4px rgba(0,0,0,.3);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-ui);font-size:14px;background:var(--bg);color:var(--fg);display:flex;height:100%;min-height:100vh;overflow-x:hidden;}
+html,body{height:100%}
+
+/* ── Sidebar */
+.sidebar{width:220px;flex-shrink:0;background:var(--bg-sidebar);display:flex;flex-direction:column;padding-block:0 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:0;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sidebar-logo{padding:22px 20px 20px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:8px}
+.brand{font-family:var(--font-disp);font-size:15px;font-weight:600;color:#fff;line-height:1.2}
+.sub{font-size:11px;color:var(--fg-sidebar);margin-top:2px;opacity:.7}
+.nav-section{padding:8px 12px 4px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(200,221,212,.4)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;margin:1px 8px;border-radius:7px;color:var(--fg-sidebar);font-size:13.5px;font-weight:500;cursor:pointer;transition:background .15s,color .15s;text-decoration:none;}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:rgba(58,170,122,.2);color:#5dd4a6}
+.nav-item .icon{width:17px;text-align:center;opacity:.75;flex-shrink:0}
+.nav-item.active .icon{opacity:1}
+.nav-badge{margin-left:auto;background:var(--warn);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;line-height:16px}
+.sidebar-footer{margin-top:auto;padding:16px 16px 0;border-top:1px solid rgba(255,255,255,.07)}
+.staff-pill{display:flex;align-items:center;gap:9px}
+.staff-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#2a7d5e,#1b5941);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.staff-name{font-size:12px;font-weight:600;color:#fff}
+.staff-role{font-size:10.5px;color:var(--fg-sidebar);opacity:.6}
+
+/* ── Main */
+.main{flex:1;min-width:0;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:5;}
+.topbar-title{font-family:var(--font-disp);font-size:19px;font-weight:600;color:var(--fg)}
+.topbar-date{font-size:13px;color:var(--fg-muted)}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;font-family:var(--font-ui);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:filter .15s;}
+.btn:hover{filter:brightness(1.08)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-ghost{background:transparent;color:var(--fg-muted);border:1px solid var(--border)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-sm{padding:5px 11px;font-size:12px}
+.content{padding:24px 28px;flex:1}
+.view{display:none}.view.active{display:block}
+
+/* ── Cards */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.card-header{padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title{font-size:13.5px;font-weight:700;color:var(--fg)}
+.card-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
+.card-body{padding:14px 20px 18px}
+.section-hd{margin-bottom:20px}
+.section-hd h2{font-family:var(--font-disp);font-size:20px;font-weight:600;color:var(--fg)}
+.section-hd p{font-size:13px;color:var(--fg-muted);margin-top:4px}
+
+/* ── Stat tiles */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.stat-header{display:flex;align-items:center;justify-content:space-between}
+.stat-label{font-size:12px;font-weight:600;letter-spacing:.03em;color:var(--fg-muted);text-transform:uppercase}
+.stat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.stat-icon.green{background:var(--ok-lt);color:var(--ok)}
+.stat-icon.amber{background:var(--warn-lt);color:var(--warn)}
+.stat-icon.blue{background:#dbeafe;color:#2563eb}
+.stat-icon.teal{background:var(--accent-lt);color:var(--accent)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .stat-icon.blue{background:#1e3a5f;color:#60a5fa}}
+:root[data-theme="dark"] .stat-icon.blue{background:#1e3a5f;color:#60a5fa}
+.stat-value{font-size:30px;font-weight:700;color:var(--fg);font-variant-numeric:tabular-nums;line-height:1}
+.stat-sub{font-size:12px;color:var(--fg-muted);display:flex;align-items:center;gap:4px}
+.stat-sub .up{color:var(--ok)} .stat-sub .down{color:var(--danger)}
+.occ-bar-wrap{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px}
+.occ-bar-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .6s ease}
+
+/* ── Mid grid */
+.mid-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:16px;margin-bottom:20px}
+
+/* ── Spot grid */
+.spot-legend{display:flex;gap:14px;flex-wrap:wrap;padding:0 20px 12px;font-size:11.5px;color:var(--fg-muted)}
+.legend-dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.spot-sections{padding:0 20px 18px;display:flex;flex-direction:column;gap:16px}
+.spot-section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--fg-muted);margin-bottom:8px}
+.spot-row{display:flex;gap:8px;flex-wrap:wrap}
+.spot{width:64px;border-radius:7px;padding:8px 6px 7px;display:flex;flex-direction:column;align-items:center;gap:3px;border:1.5px solid transparent;cursor:default;transition:transform .1s;}
+.spot:hover{transform:scale(1.04)}
+.spot-num{font-size:10px;font-weight:700;letter-spacing:.03em}
+.spot-icon{font-size:18px;line-height:1}
+.spot-name{font-size:9.5px;font-weight:500;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62px}
+.spot.occupied {background:#fee2e2;border-color:#fca5a5;color:#7f1d1d}
+.spot.arriving {background:#dbeafe;border-color:#93c5fd;color:#1e3a8a}
+.spot.available{background:var(--ok-lt);border-color:#86efac;color:#14532d}
+.spot.checkout {background:var(--warn-lt);border-color:#fde68a;color:#78350f}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .spot.occupied{background:#2d0a0a;border-color:#7f1d1d;color:#fca5a5}
+  :root:not([data-theme="light"]) .spot.arriving{background:#1e3a5f;border-color:#2563eb;color:#93c5fd}
+  :root:not([data-theme="light"]) .spot.available{background:#0a2d1a;border-color:#166534;color:#4ade80}
+  :root:not([data-theme="light"]) .spot.checkout{background:#2d2000;border-color:#92400e;color:#fbbf24}
+}
+:root[data-theme="dark"] .spot.occupied{background:#2d0a0a;border-color:#7f1d1d;color:#fca5a5}
+:root[data-theme="dark"] .spot.arriving{background:#1e3a5f;border-color:#2563eb;color:#93c5fd}
+:root[data-theme="dark"] .spot.available{background:#0a2d1a;border-color:#166534;color:#4ade80}
+:root[data-theme="dark"] .spot.checkout{background:#2d2000;border-color:#92400e;color:#fbbf24}
+
+/* ── Events */
+.event-list{display:flex;flex-direction:column}
+.event-item{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)}
+.event-item:last-child{border-bottom:none}
+.event-pill{padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:700;white-space:nowrap;flex-shrink:0;margin-top:1px}
+.pill-in{background:var(--ok-lt);color:var(--ok)}
+.pill-out{background:var(--warn-lt);color:var(--warn)}
+.event-info{min-width:0}
+.event-name{font-size:13px;font-weight:600;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.event-meta{font-size:11.5px;color:var(--fg-muted);margin-top:2px}
+.event-spot{margin-left:auto;flex-shrink:0;font-size:11px;font-weight:600;background:var(--accent-lt);color:var(--accent);padding:3px 8px;border-radius:5px}
+
+/* ── Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-muted);padding:0 16px 10px;white-space:nowrap}
+th:first-child{padding-left:20px} th:last-child{padding-right:20px}
+td{padding:11px 16px;border-top:1px solid var(--border);vertical-align:middle}
+td:first-child{padding-left:20px} td:last-child{padding-right:20px}
+tr:hover td{background:rgba(0,0,0,.02)}
+.td-name{font-weight:600;color:var(--fg)} .td-muted{color:var(--fg-muted)}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap}
+.status-confirmed{background:var(--ok-lt);color:var(--ok)}
+.status-checkin{background:#dbeafe;color:#1d4ed8}
+.status-pending{background:var(--warn-lt);color:var(--warn)}
+.status-occupied{background:#fee2e2;color:#7f1d1d}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .status-checkin{background:#1e3a5f;color:#60a5fa}
+  :root:not([data-theme="light"]) .status-occupied{background:#2d0a0a;color:#fca5a5}
+}
+:root[data-theme="dark"] .status-checkin{background:#1e3a5f;color:#60a5fa}
+:root[data-theme="dark"] .status-occupied{background:#2d0a0a;color:#fca5a5}
+.type-chip{font-size:11px;font-weight:500;padding:2px 8px;border-radius:5px;background:var(--bg);border:1px solid var(--border);color:var(--fg-muted)}
+.avatar-initials{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#fff;flex-shrink:0;margin-right:8px}
+.td-guest{display:flex;align-items:center}
+
+/* ── Chart */
+.chart-wrap{padding:4px 20px 18px;height:160px}
+
+/* ── Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--bg-card);border-radius:14px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.35);border:1px solid var(--border)}
+.modal-header{padding:22px 24px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.modal-title{font-family:var(--font-disp);font-size:18px;font-weight:600;color:var(--fg)}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--fg-muted);padding:0;line-height:1;transition:color .15s;}
+.modal-close:hover{color:var(--fg)}
+.modal-body{padding:20px 24px}
+.modal-footer{padding:16px 24px 22px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border)}
+.form-group{margin-bottom:16px}
+.form-label{font-size:11.5px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px}
+.form-input,.form-select{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:13.5px;outline:none;transition:border-color .15s;}
+.form-input:focus,.form-select:focus{border-color:var(--accent)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.price-box{background:var(--accent-lt);border:1.5px solid rgba(42,125,94,.25);border-radius:9px;padding:16px 18px;margin-top:4px}
+.price-box-label{font-size:10.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.price-box-total{font-size:26px;font-weight:700;color:var(--accent)}
+.price-box-breakdown{font-size:11.5px;color:var(--fg-muted);margin-top:6px;line-height:1.6}
+.children-rows{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.child-row{display:flex;align-items:center;gap:8px}
+.child-row .form-select{flex:1}
+.child-remove{background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:0 4px;line-height:1}
+
+/* ── Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg-sidebar);color:#fff;padding:12px 20px;border-radius:9px;font-size:13.5px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,.3);z-index:300;transform:translateY(0);transition:opacity .3s,transform .3s;display:flex;align-items:center;gap:10px}
+.toast.hidden{opacity:0;transform:translateY(10px);pointer-events:none}
+
+/* ── Placeholder */
+.placeholder-view{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:12px;color:var(--fg-muted)}
+.ph-icon{font-size:48px;opacity:.4}
+.placeholder-view h3{font-size:16px;font-weight:600;color:var(--fg);opacity:.6}
+.placeholder-view p{font-size:13px;text-align:center;max-width:260px}
+
+/* ── Responsive */
+@media(max-width:900px){.sidebar{display:none}.stats-grid{grid-template-columns:repeat(2,1fr)}.mid-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.content{padding:16px}.topbar{padding:12px 16px}.stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}.form-row,.form-row-3{grid-template-columns:1fr}}
+</style>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">Akampa Siriú</div>
+    <div class="sub">Eco Glamping · Garopaba SC</div>
+  </div>
+  <div class="nav-section">Geral</div>
+  <a class="nav-item" href="#painel"       data-view="painel"><span class="icon">⊞</span> Painel</a>
+  <a class="nav-item" href="#reservas"     data-view="reservas"><span class="icon">📅</span> Reservas<span class="nav-badge" id="badge-reservas">8</span></a>
+  <a class="nav-item" href="#ocupacao"     data-view="ocupacao"><span class="icon">🏕</span> Ocupação</a>
+  <a class="nav-item" href="#chegadas"     data-view="chegadas"><span class="icon">↗</span> Chegadas</a>
+  <a class="nav-item" href="#saidas"       data-view="saidas"><span class="icon">↙</span> Saídas</a>
+  <div class="nav-section">Gestão</div>
+  <a class="nav-item" href="#hospedes"     data-view="hospedes"><span class="icon">👥</span> Hóspedes</a>
+  <a class="nav-item" href="#financeiro"   data-view="financeiro"><span class="icon">💰</span> Financeiro</a>
+  <a class="nav-item" href="#precos"       data-view="precos"><span class="icon">🏷</span> Preços</a>
+  <a class="nav-item" href="#relatorios"   data-view="relatorios"><span class="icon">📊</span> Relatórios</a>
+  <a class="nav-item" href="#configuracoes" data-view="configuracoes"><span class="icon">⚙️</span> Configurações</a>
+  <div class="sidebar-footer">
+    <div class="staff-pill">
+      <div class="staff-avatar">GM</div>
+      <div><div class="staff-name">Gustavo M.</div><div class="staff-role">Recepção</div></div>
+    </div>
+  </div>
+</nav>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="page-title">Visão Geral</div>
+      <div class="topbar-date" id="today-date"></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost">⬇ Exportar</button>
+      <button class="btn btn-primary" onclick="openModal()">+ Nova reserva</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ PAINEL ══ -->
+    <div class="view active" id="view-painel">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">No camping agora</span><span class="stat-icon green">🏕</span></div><div class="stat-value" id="stat-guests">9</div><div class="stat-sub" id="stat-guests-sub">em 3 acomodações</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Chegadas hoje</span><span class="stat-icon blue">↗</span></div><div class="stat-value">2</div><div class="stat-sub"><span class="up">▲</span> 1 pendente check-in</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Saídas hoje</span><span class="stat-icon amber">↙</span></div><div class="stat-value">1</div><div class="stat-sub">Previsão até 11h</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Ocupação</span><span class="stat-icon teal">📈</span></div><div class="stat-value" id="stat-occ">38<span style="font-size:18px;font-weight:500;color:var(--fg-muted)">%</span></div><div class="occ-bar-wrap"><div class="occ-bar-fill" id="occ-bar" style="width:38%"></div></div><div class="stat-sub" id="stat-occ-sub">5 de 13 spots</div></div>
+      </div>
+
+      <div class="mid-grid">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Movimento de hoje</span><span class="card-badge" style="background:var(--accent-lt);color:var(--accent)">Qua 29/10</span></div>
+          <div class="card-body">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-muted);margin-bottom:8px">Chegadas</div>
+            <div class="event-list">
+              <div class="event-item"><span class="event-pill pill-in">CHECK-IN</span><div class="event-info"><div class="event-name">Família Costa</div><div class="event-meta">3 adultos · 4 noites</div></div><span class="event-spot">BAR 03</span></div>
+              <div class="event-item"><span class="event-pill pill-in">CHECK-IN</span><div class="event-info"><div class="event-name">Juliana Pereira</div><div class="event-meta">2 adultos · 2 crianças · 3 noites</div></div><span class="event-spot">GLM 03</span></div>
+            </div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-muted);margin:14px 0 8px">Saídas</div>
+            <div class="event-list">
+              <div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">Rafael Santos</div><div class="event-meta">4 adultos · 2 noites</div></div><span class="event-spot">BAR 04</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Mapa de acomodações</span></div>
+          <div class="spot-legend">
+            <span><span class="legend-dot" style="background:#fca5a5"></span>Ocupado</span>
+            <span><span class="legend-dot" style="background:#93c5fd"></span>Chegada hoje</span>
+            <span><span class="legend-dot" style="background:#86efac"></span>Disponível</span>
+            <span><span class="legend-dot" style="background:#fde68a"></span>Saída hoje</span>
+          </div>
+          <div class="spot-sections" id="spot-map-painel"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-header"><span class="card-title">Próximas reservas</span><a href="#reservas" data-view="reservas" style="font-size:12px;color:var(--accent);text-decoration:none;font-weight:600">Ver todas →</a></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Tipo</th><th>Spot</th><th>Entrada</th><th>Saída</th><th>Pessoas</th><th>Status</th></tr></thead><tbody id="table-painel"></tbody></table></div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header"><span class="card-title">Ocupação — próximos 7 dias</span></div>
+        <div class="chart-wrap"><canvas id="occ-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ══ RESERVAS ══ -->
+    <div class="view" id="view-reservas">
+      <div class="section-hd"><h2>Reservas</h2><p>Todas as reservas ativas e futuras</p></div>
+      <div class="card" style="margin-bottom:24px">
+        <div style="padding:16px 20px 0;display:flex;gap:10px;flex-wrap:wrap" id="filter-badges"></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Tipo</th><th>Spot</th><th>Entrada</th><th>Saída</th><th>Noites</th><th>Pessoas</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody id="table-reservas"></tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- ══ OCUPAÇÃO ══ -->
+    <div class="view" id="view-ocupacao">
+      <div class="section-hd"><h2>Ocupação</h2><p>Situação atual de todos os spots</p></div>
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Glamping</span><span class="stat-icon teal">⛺</span></div><div class="stat-value" id="occ-glm">3 <span style="font-size:16px;color:var(--fg-muted);font-weight:500">/ 6</span></div><div class="stat-sub">50% ocupado</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Barracas</span><span class="stat-icon green">🏕</span></div><div class="stat-value" id="occ-bar-card">2 <span style="font-size:16px;color:var(--fg-muted);font-weight:500">/ 5</span></div><div class="stat-sub">40% ocupado</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Motorhome</span><span class="stat-icon amber">🚐</span></div><div class="stat-value" id="occ-mh">1 <span style="font-size:16px;color:var(--fg-muted);font-weight:500">/ 2</span></div><div class="stat-sub">50% ocupado</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Total</span><span class="stat-icon blue">📍</span></div><div class="stat-value" id="occ-total">38<span style="font-size:18px;font-weight:500;color:var(--fg-muted)">%</span></div><div class="occ-bar-wrap"><div class="occ-bar-fill" style="width:38%"></div></div><div class="stat-sub">5 de 13 spots</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Mapa completo</span></div>
+        <div class="spot-legend">
+          <span><span class="legend-dot" style="background:#fca5a5"></span>Ocupado</span>
+          <span><span class="legend-dot" style="background:#93c5fd"></span>Chegada hoje</span>
+          <span><span class="legend-dot" style="background:#86efac"></span>Disponível</span>
+          <span><span class="legend-dot" style="background:#fde68a"></span>Saída hoje</span>
+        </div>
+        <div class="spot-sections" id="spot-map-full"></div>
+      </div>
+    </div>
+
+    <!-- ══ CHEGADAS ══ -->
+    <div class="view" id="view-chegadas">
+      <div class="section-hd"><h2>Chegadas</h2><p>Check-ins de hoje e próximos dias</p></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header"><span class="card-title">Hoje — 29/10</span><span class="card-badge" style="background:var(--ok-lt);color:var(--ok)">2 chegadas</span></div>
+        <div class="card-body">
+          <div class="event-list">
+            <div class="event-item"><span class="event-pill pill-in">PENDENTE</span><div class="event-info"><div class="event-name">Juliana Pereira</div><div class="event-meta">GLM 03 · 2 adultos, 2 crianças · 3 noites · saída 01/11</div></div><button class="btn btn-primary btn-sm">Fazer check-in</button></div>
+            <div class="event-item"><span class="event-pill pill-in">PENDENTE</span><div class="event-info"><div class="event-name">Família Costa</div><div class="event-meta">BAR 03 · 3 adultos · 4 noites · saída 02/11</div></div><button class="btn btn-primary btn-sm">Fazer check-in</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Próximos dias</span></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Data</th><th>Hóspede</th><th>Tipo</th><th>Spot</th><th>Pessoas</th></tr></thead><tbody>
+          <tr><td class="td-muted">02/11 (dom)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#b45309">RL</div><span class="td-name">Roberto Lima</span></div></td><td><span class="type-chip">Barraca</span></td><td class="td-muted">BAR 05</td><td class="td-muted">4 adultos</td></tr>
+          <tr><td class="td-muted">03/11 (seg)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#0e7490">AO</div><span class="td-name">Ana Oliveira</span></div></td><td><span class="type-chip">Glamping</span></td><td class="td-muted">GLM 04</td><td class="td-muted">2 adultos</td></tr>
+          <tr><td class="td-muted">04/11 (ter)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#be185d">MN</div><span class="td-name">Marcos Nunes</span></div></td><td><span class="type-chip">Motorhome</span></td><td class="td-muted">MH 02</td><td class="td-muted">2 ad · 1 cr</td></tr>
+        </tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- ══ SAÍDAS ══ -->
+    <div class="view" id="view-saidas">
+      <div class="section-hd"><h2>Saídas</h2><p>Checkouts de hoje e próximos dias</p></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header"><span class="card-title">Hoje — 29/10</span><span class="card-badge" style="background:var(--warn-lt);color:var(--warn)">1 saída</span></div>
+        <div class="card-body">
+          <div class="event-list">
+            <div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">Rafael Santos</div><div class="event-meta">BAR 04 · 4 adultos · 2 noites</div></div><button class="btn btn-ghost btn-sm">Confirmar saída</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Próximas saídas</span></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Data</th><th>Hóspede</th><th>Spot</th><th>Noites</th><th>Pessoas</th></tr></thead><tbody>
+          <tr><td class="td-muted">31/10 (sáb)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#1d4ed8">FS</div><span class="td-name">Família Silva</span></div></td><td class="td-muted">GLM 01</td><td class="td-muted">4</td><td class="td-muted">2 ad · 1 cr</td></tr>
+          <tr><td class="td-muted">01/11 (dom)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#059669">JP</div><span class="td-name">Juliana Pereira</span></div></td><td class="td-muted">GLM 03</td><td class="td-muted">3</td><td class="td-muted">2 ad · 2 cr</td></tr>
+          <tr><td class="td-muted">01/11 (dom)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#6d28d9">CR</div><span class="td-name">Casal Rodrigues</span></div></td><td class="td-muted">GLM 02</td><td class="td-muted">4</td><td class="td-muted">2 adultos</td></tr>
+          <tr><td class="td-muted">02/11 (seg)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#7c3aed">FC</div><span class="td-name">Família Costa</span></div></td><td class="td-muted">BAR 03</td><td class="td-muted">4</td><td class="td-muted">3 adultos</td></tr>
+          <tr><td class="td-muted">03/11 (ter)</td><td><div class="td-guest"><div class="avatar-initials" style="background:#0f766e">FF</div><span class="td-name">Família Ferreira</span></div></td><td class="td-muted">MH 01</td><td class="td-muted">9</td><td class="td-muted">2 ad · 2 cr</td></tr>
+        </tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- ══ HÓSPEDES ══ -->
+    <div class="view" id="view-hospedes">
+      <div class="section-hd"><h2>Hóspedes</h2><p>Atualmente no camping</p></div>
+      <div class="card">
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Spot</th><th>Entrada</th><th>Saída</th><th>Pessoas</th><th>Contato</th></tr></thead><tbody>
+          <tr><td><div class="td-guest"><div class="avatar-initials" style="background:#1d4ed8">FS</div><div><div class="td-name">Família Silva</div></div></div></td><td class="td-muted">GLM 01</td><td class="td-muted">27/10</td><td class="td-muted">31/10</td><td class="td-muted">2 ad · 1 cr</td><td class="td-muted">contato@silva.com</td></tr>
+          <tr><td><div class="td-guest"><div class="avatar-initials" style="background:#6d28d9">CR</div><div><div class="td-name">Casal Rodrigues</div></div></div></td><td class="td-muted">GLM 02</td><td class="td-muted">28/10</td><td class="td-muted">01/11</td><td class="td-muted">2 adultos</td><td class="td-muted">rodrigues@email.com</td></tr>
+          <tr><td><div class="td-guest"><div class="avatar-initials" style="background:#0f766e">FF</div><div><div class="td-name">Família Ferreira</div></div></div></td><td class="td-muted">MH 01</td><td class="td-muted">25/10</td><td class="td-muted">03/11</td><td class="td-muted">2 ad · 2 cr</td><td class="td-muted">ferreira@gmail.com</td></tr>
+        </tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- ══ FINANCEIRO ══ -->
+    <div class="view" id="view-financeiro">
+      <div class="section-hd"><h2>Financeiro</h2><p>Receitas das reservas ativas e previstas</p></div>
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Receita confirmada</span><span class="stat-icon green">✓</span></div><div class="stat-value" style="font-size:22px" id="fin-confirmed">R$ 4.020</div><div class="stat-sub">reservas já pagas</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">A receber</span><span class="stat-icon amber">⏳</span></div><div class="stat-value" style="font-size:22px" id="fin-pending">R$ 870</div><div class="stat-sub">1 reserva pendente</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Total do período</span><span class="stat-icon teal">📈</span></div><div class="stat-value" style="font-size:22px" id="fin-total">R$ 4.890</div><div class="stat-sub">confirmado + pendente</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Ticket médio</span><span class="stat-icon blue">🎟</span></div><div class="stat-value" style="font-size:22px" id="fin-avg">R$ 611</div><div class="stat-sub">por reserva</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Detalhamento por reserva</span></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Tipo</th><th>Temp.</th><th>Noites</th><th>Pessoas</th><th>Base</th><th>Adicionais</th><th>Total</th><th>Status</th></tr></thead><tbody id="table-financeiro"></tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- ══ PREÇOS ══ -->
+    <div class="view" id="view-precos">
+      <div class="section-hd"><h2>Tabela de Preços</h2><p>Tarifas por tipo de acomodação e temporada</p></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:16px">
+        <div class="card">
+          <div class="card-header"><span class="card-title">⛺ Glamping</span><span class="card-badge" style="background:var(--accent-lt);color:var(--accent)">por hospedagem</span></div>
+          <div style="padding:14px 20px 18px"><table style="width:100%"><thead><tr><th style="padding:0 0 10px">Temporada</th><th style="padding:0 0 10px;text-align:right">1 pessoa</th><th style="padding:0 0 10px;text-align:right">2 pessoas</th></tr></thead><tbody>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 1 diária</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 140</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 180</td></tr>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 280</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 360</td></tr>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">☀️ Alta — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 340</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 440</td></tr>
+          </tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">🏕 Barracas</span><span class="card-badge" style="background:var(--ok-lt);color:var(--ok)">por pessoa</span></div>
+          <div style="padding:14px 20px 18px"><table style="width:100%"><thead><tr><th style="padding:0 0 10px">Temporada</th><th style="padding:0 0 10px;text-align:right">Valor</th></tr></thead><tbody>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 1 diária</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 90 / pessoa</td></tr>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 120 / pessoa</td></tr>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">☀️ Alta — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 160 / pessoa</td></tr>
+          </tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">🚐 Motorhome / Trailer</span><span class="card-badge" style="background:var(--warn-lt);color:var(--warn)">por hospedagem</span></div>
+          <div style="padding:14px 20px 18px"><table style="width:100%"><thead><tr><th style="padding:0 0 10px">Temporada</th><th style="padding:0 0 10px;text-align:right">1 pessoa</th><th style="padding:0 0 10px;text-align:right">2 pessoas</th></tr></thead><tbody>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 1 diária</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 170</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 210</td></tr>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">🌿 Baixa — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 310</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700">R$ 390</td></tr>
+            <tr><td style="padding:9px 0;border-top:1px solid var(--border);font-size:13px">☀️ Alta — 2 diárias</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 370</td><td style="padding:9px 0;border-top:1px solid var(--border);text-align:right;font-weight:700;color:var(--accent)">R$ 470</td></tr>
+          </tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">🌊 Day Use</span><span class="card-badge" style="background:#dbeafe;color:#1d4ed8">todas temporadas</span></div>
+          <div style="padding:14px 20px 18px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">Valor por pessoa</span><span style="font-weight:700;font-size:20px">R$ 40</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">👶 Adicional por criança (por noite)</span></div>
+        <div style="padding:14px 20px 18px;display:flex;gap:16px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--bg);border:1px solid var(--border);border-radius:8px;flex:1;min-width:180px"><span style="font-size:26px">👶</span><div><div style="font-size:11px;color:var(--fg-muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Até 10 anos</div><div style="font-size:22px;font-weight:700">R$ 30 <span style="font-size:13px;color:var(--fg-muted);font-weight:400">/ noite</span></div></div></div>
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--bg);border:1px solid var(--border);border-radius:8px;flex:1;min-width:180px"><span style="font-size:26px">🧒</span><div><div style="font-size:11px;color:var(--fg-muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Acima de 10 anos</div><div style="font-size:22px;font-weight:700">R$ 50 <span style="font-size:13px;color:var(--fg-muted);font-weight:400">/ noite</span></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ RELATÓRIOS ══ -->
+    <div class="view" id="view-relatorios">
+      <div class="section-hd"><h2>Relatórios</h2><p>Estatísticas de ocupação e desempenho</p></div>
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Ocupação média (out)</span><span class="stat-icon teal">📈</span></div><div class="stat-value">41<span style="font-size:16px;color:var(--fg-muted);font-weight:500">%</span></div><div class="stat-sub">baixa temporada</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Diárias este mês</span><span class="stat-icon green">🗓</span></div><div class="stat-value">87</div><div class="stat-sub">todos os tipos</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Hóspedes este mês</span><span class="stat-icon blue">👥</span></div><div class="stat-value">214</div><div class="stat-sub">adultos + crianças</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Tipo mais popular</span><span class="stat-icon amber">⛺</span></div><div class="stat-value" style="font-size:16px;margin-top:4px">Glamping</div><div class="stat-sub">58% das reservas</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Ocupação — próximos 7 dias</span></div>
+        <div class="chart-wrap"><canvas id="occ-chart-2"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ══ CONFIGURAÇÕES ══ -->
+    <div class="view" id="view-configuracoes">
+      <div class="section-hd"><h2>Configurações</h2></div>
+      <div class="placeholder-view"><div class="ph-icon">⚙️</div><h3>Em breve</h3><p>Configurações do camping disponíveis em breve.</p></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ══ MODAL NOVA RESERVA ══ -->
+<div class="modal-overlay hidden" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <span class="modal-title">Nova reserva</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- Hóspede -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nome do hóspede *</label>
+          <input class="form-input" id="f-nome" type="text" placeholder="Ex: Família Silva">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contato (e-mail ou WhatsApp)</label>
+          <input class="form-input" id="f-contato" type="text" placeholder="email@exemplo.com">
+        </div>
+      </div>
+
+      <!-- Tipo + Spot -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo de acomodação *</label>
+          <select class="form-select" id="f-tipo" onchange="onTipoChange()">
+            <option value="">Selecionar…</option>
+            <option value="glamping">⛺ Glamping</option>
+            <option value="barraca">🏕 Barraca</option>
+            <option value="motorhome">🚐 Motorhome / Trailer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Spot *</label>
+          <select class="form-select" id="f-spot">
+            <option value="">Selecione o tipo primeiro</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Datas + Temporada -->
+      <div class="form-row-3">
+        <div class="form-group">
+          <label class="form-label">Check-in *</label>
+          <input class="form-input" id="f-checkin" type="date" onchange="calcPrice()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Check-out *</label>
+          <input class="form-input" id="f-checkout" type="date" onchange="calcPrice()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Temporada *</label>
+          <select class="form-select" id="f-temporada" onchange="calcPrice()">
+            <option value="baixa">🌿 Baixa</option>
+            <option value="alta">☀️ Alta</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Pessoas -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Adultos *</label>
+          <select class="form-select" id="f-adultos" onchange="calcPrice()">
+            <option value="1">1 adulto</option>
+            <option value="2" selected>2 adultos</option>
+            <option value="3">3 adultos</option>
+            <option value="4">4 adultos</option>
+            <option value="5">5 adultos</option>
+            <option value="6">6 adultos</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Crianças</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select class="form-select" id="f-ncrianças" onchange="onCriancasChange()">
+              <option value="0">0 crianças</option>
+              <option value="1">1 criança</option>
+              <option value="2">2 crianças</option>
+              <option value="3">3 crianças</option>
+              <option value="4">4 crianças</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Faixas de idade das crianças -->
+      <div id="children-ages" style="display:none;margin-bottom:16px">
+        <label class="form-label">Faixa etária das crianças</label>
+        <div class="children-rows" id="children-rows"></div>
+      </div>
+
+      <!-- Preview de preço -->
+      <div class="price-box" id="price-box" style="display:none">
+        <div class="price-box-label">💰 Valor estimado</div>
+        <div class="price-box-total" id="price-total">R$ 0</div>
+        <div class="price-box-breakdown" id="price-breakdown"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="submitReservation()">Criar reserva</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast hidden" id="toast">
+  <span id="toast-icon">✅</span>
+  <span id="toast-msg">Reserva criada com sucesso!</span>
+</div>
+
+<script>
+// ── Date
+const TODAY = new Date('2026-10-29');
+document.getElementById('today-date').textContent =
+  TODAY.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase());
+
+// Set min dates on form
+document.getElementById('f-checkin').min = '2026-10-29';
+document.getElementById('f-checkout').min = '2026-10-30';
+
+// ── Navigation
+const TITLES = {painel:'Visão Geral',reservas:'Reservas',ocupacao:'Ocupação',chegadas:'Chegadas',saidas:'Saídas',hospedes:'Hóspedes',financeiro:'Financeiro',precos:'Tabela de Preços',relatorios:'Relatórios',configuracoes:'Configurações'};
+
+function navigate(id){
+  if(!id||!document.getElementById('view-'+id)) id='painel';
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  const ni=document.querySelector(`.nav-item[data-view="${id}"]`);
+  if(ni) ni.classList.add('active');
+  document.getElementById('page-title').textContent=TITLES[id]||'Painel';
+  if(id==='relatorios') initChart2();
+}
+window.addEventListener('hashchange',()=>navigate(location.hash.replace('#','')));
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a[data-view]');
+  if(!a) return;
+  e.preventDefault();
+  history.pushState(null,'','#'+a.dataset.view);
+  navigate(a.dataset.view);
+});
+navigate(location.hash.replace('#','')||'painel');
+
+// ── Spots config
+const ALL_SPOTS = {
+  glamping: [
+    {id:'GLM 01',emoji:'⛺',label:'GLM 01'},
+    {id:'GLM 02',emoji:'⛺',label:'GLM 02'},
+    {id:'GLM 03',emoji:'⛺',label:'GLM 03'},
+    {id:'GLM 04',emoji:'⛺',label:'GLM 04'},
+    {id:'GLM 05',emoji:'⛺',label:'GLM 05'},
+    {id:'GLM 06',emoji:'⛺',label:'GLM 06'},
+  ],
+  barraca: [
+    {id:'BAR 01',emoji:'🏕',label:'BAR 01'},
+    {id:'BAR 02',emoji:'🏕',label:'BAR 02'},
+    {id:'BAR 03',emoji:'🏕',label:'BAR 03'},
+    {id:'BAR 04',emoji:'🏕',label:'BAR 04'},
+    {id:'BAR 05',emoji:'🏕',label:'BAR 05'},
+  ],
+  motorhome: [
+    {id:'MH 01',emoji:'🚐',label:'MH 01'},
+    {id:'MH 02',emoji:'🚐',label:'MH 02'},
+  ]
+};
+
+// ── API config
+const API_BASE = 'https://rarelookingorca-n8n.cloudfy.live/webhook';
+
+// Normaliza resposta da API para formato interno do dashboard
+function normalizeRes(r){
+  return {
+    id: String(r.id),
+    nome: r.guest_nome || r.nome || '—',
+    contato: r.guest_whatsapp || r.guest_email || r.contato || '',
+    tipo: r.spot_tipo || r.tipo || 'glamping',
+    spot: r.spot_id || r.spot || '',
+    checkin: typeof r.checkin==='string'?r.checkin.slice(0,10):r.checkin,
+    checkout: typeof r.checkout==='string'?r.checkout.slice(0,10):r.checkout,
+    temporada: r.temporada || 'baixa',
+    adultos: parseInt(r.adultos) || 1,
+    criancas: Array.isArray(r.criancas)?r.criancas:(r.criancas?JSON.parse(r.criancas):[]),
+    status: r.status || 'confirmed',
+    base: parseFloat(r.preco_base ?? r.base ?? 0),
+    extras: parseFloat(r.preco_extras ?? r.extras ?? 0),
+    total: parseFloat(r.preco_total ?? r.total ?? 0),
+    source: r.source || 'dashboard',
+    notas: r.notas || ''
+  };
+}
+
+// Seed local (fallback offline)
+const SEED_RESERVATIONS = [
+  {id:'r1',nome:'Família Silva',contato:'contato@silva.com',tipo:'glamping',spot:'GLM 01',checkin:'2026-10-27',checkout:'2026-10-31',temporada:'baixa',adultos:2,criancas:[{age:'over10'}],status:'occupied',base:720,extras:100,total:820},
+  {id:'r2',nome:'Casal Rodrigues',contato:'rodrigues@email.com',tipo:'glamping',spot:'GLM 02',checkin:'2026-10-28',checkout:'2026-11-01',temporada:'baixa',adultos:2,criancas:[],status:'occupied',base:720,extras:0,total:720},
+  {id:'r3',nome:'Família Ferreira',contato:'ferreira@gmail.com',tipo:'motorhome',spot:'MH 01',checkin:'2026-10-25',checkout:'2026-11-03',temporada:'baixa',adultos:2,criancas:[{age:'over10'},{age:'under10'}],status:'occupied',base:1170,extras:450,total:1080},
+  {id:'r4',nome:'Juliana Pereira',contato:'juliana@gmail.com',tipo:'glamping',spot:'GLM 03',checkin:'2026-10-29',checkout:'2026-11-01',temporada:'baixa',adultos:2,criancas:[{age:'under10'},{age:'under10'}],status:'checkin',base:540,extras:60,total:600},
+  {id:'r5',nome:'Família Costa',contato:'marcos.costa@hotmail.com',tipo:'barraca',spot:'BAR 03',checkin:'2026-10-29',checkout:'2026-11-02',temporada:'baixa',adultos:3,criancas:[],status:'checkin',base:480,extras:0,total:480},
+  {id:'r6',nome:'Roberto Lima',contato:'rlima@outlook.com',tipo:'barraca',spot:'BAR 05',checkin:'2026-11-02',checkout:'2026-11-07',temporada:'baixa',adultos:4,criancas:[],status:'confirmed',base:320,extras:0,total:320},
+  {id:'r7',nome:'Ana Oliveira',contato:'ana.oli@gmail.com',tipo:'glamping',spot:'GLM 04',checkin:'2026-11-03',checkout:'2026-11-07',temporada:'baixa',adultos:2,criancas:[],status:'confirmed',base:720,extras:0,total:720},
+  {id:'r8',nome:'Marcos Nunes',contato:'mnunes@empresa.com',tipo:'motorhome',spot:'MH 02',checkin:'2026-11-04',checkout:'2026-11-10',temporada:'baixa',adultos:2,criancas:[{age:'over10'}],status:'pending',base:780,extras:90,total:870},
+];
+
+let reservations = [...SEED_RESERVATIONS];
+function saveReservations(){ try{localStorage.setItem('akampa_res',JSON.stringify(reservations));}catch(e){} }
+
+// Carrega reservas da API (substitui dados locais)
+async function loadReservationsFromAPI(){
+  try{
+    const res = await fetch(`${API_BASE}/akampa/reservas`, {signal: AbortSignal.timeout(8000)});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    if(data.ok && Array.isArray(data.reservas)){
+      reservations = data.reservas.map(normalizeRes);
+      renderAll();
+    }
+  }catch(e){ console.warn('API indisponível, usando dados de demonstração:', e.message); }
+}
+loadReservationsFromAPI();
+
+// ── Avatar color
+const COLORS=['#1d4ed8','#7c3aed','#0f766e','#b45309','#be185d','#059669','#0e7490','#6d28d9','#dc2626','#d97706'];
+function avatarColor(name){ let h=0; for(let c of name) h=(h*31+c.charCodeAt(0))&0xffff; return COLORS[h%COLORS.length]; }
+function initials(name){ return name.trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase(); }
+
+// ── Format date
+function fmtDate(d){ const [y,m,da]=d.split('-'); return `${da}/${m}/${y.slice(2)}`; }
+function nightsBetween(a,b){ return Math.round((new Date(b)-new Date(a))/(86400000)); }
+
+// ── Status label
+function statusBadge(s){
+  const map={occupied:['status-occupied','● Hospedado'],checkin:['status-checkin','⟳ Aguard. check-in'],confirmed:['status-confirmed','✓ Confirmada'],pending:['status-pending','⏳ Pendente pgto.']};
+  const [cls,label]=map[s]||['status-confirmed',s];
+  return `<span class="status-badge ${cls}">${label}</span>`;
+}
+
+// ── Pricing engine
+const PRICE_TABLE = {
+  glamping:{baixa:{1:[140,180],2:[280,360]},alta:{2:[340,440]}},
+  barraca:{baixa:{1:90,2:120},alta:{2:160}},
+  motorhome:{baixa:{1:[170,210],2:[310,390]},alta:{2:[370,470]}}
+};
+function calcReservationPrice(tipo,temporada,nights,adults,criancas){
+  let base=0;
+  const t=PRICE_TABLE[tipo];
+  if(!t) return {base:0,extras:0,total:0};
+  const season=t[temporada]||t.baixa;
+  if(tipo==='barraca'){
+    if(nights===1){
+      base=(season[1]??90)*adults;
+    } else {
+      // preço por pessoa/noite = pacote 2-diárias ÷ 2
+      const perPersonNight=(season[2]??120)/2;
+      base=perPersonNight*adults*nights;
+    }
+  } else {
+    const pIdx=adults>=2?1:0;
+    if(nights===1){
+      const r=season[1]||t.baixa[1];
+      base=r[pIdx];
+    } else {
+      // preço/noite = pacote 2-diárias ÷ 2 (ex: alta 340÷2=170/noite)
+      const twoNight=(season[2]||t.baixa[2])[pIdx];
+      base=(twoNight/2)*nights;
+    }
+  }
+  const extras=criancas.reduce((s,c)=>s+(c.age==='under10'?30:50)*nights,0);
+  return {base,extras,total:base+extras};
+}
+
+// ── Spot status map
+function getSpotStatus(spotId){
+  const today='2026-10-29';
+  for(const r of reservations){
+    if(r.spot!==spotId) continue;
+    if(r.checkin<=today && r.checkout>today){
+      if(r.checkin===today) return {status:'arriving',label:r.nome};
+      if(r.checkout===today) return {status:'checkout',label:r.nome};
+      return {status:'occupied',label:r.nome};
+    }
+  }
+  return {status:'available',label:'Livre'};
+}
+
+// ── Render spot maps
+function renderSpotMap(containerId,large=false){
+  const el=document.getElementById(containerId);
+  if(!el) return;
+  const size=large?80:64;
+  const pad=large?'12px 8px':'8px 6px 7px';
+  const emojiSize=large?'24px':'18px';
+  const sections=[
+    {label:'🏔 Glamping (domes)',spots:ALL_SPOTS.glamping},
+    {label:'🏕 Barracas',spots:ALL_SPOTS.barraca},
+    {label:'🚐 Motorhome / Trailer',spots:ALL_SPOTS.motorhome},
+  ];
+  el.innerHTML=sections.map(sec=>{
+    const spotsHTML=sec.spots.map(s=>{
+      const {status,label}=getSpotStatus(s.id);
+      const sub=label==='Livre'?'disponível':label.length>8?label.slice(0,8)+'…':label;
+      return `<div class="spot ${status}" title="${label}" style="width:${size}px;padding:${pad}">
+        <div class="spot-num">${s.id}</div>
+        <div class="spot-icon" style="font-size:${emojiSize}">${s.emoji}</div>
+        <div class="spot-name">${sub}</div>
+      </div>`;
+    }).join('');
+    return `<div><div class="spot-section-label">${sec.label}</div><div class="spot-row">${spotsHTML}</div></div>`;
+  }).join('');
+}
+
+// ── Render reservations table
+function renderReservas(){
+  const tbody=document.getElementById('table-reservas');
+  if(!tbody) return;
+  tbody.innerHTML=reservations.map(r=>{
+    const nights=nightsBetween(r.checkin,r.checkout);
+    const totalPeople=r.adultos+(r.criancas?.length||0);
+    const childStr=r.criancas?.length?` · ${r.criancas.length} cr`:'';
+    const col=avatarColor(r.nome);
+    const ini=initials(r.nome);
+    const typeLabel={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'}[r.tipo]||r.tipo;
+    return `<tr>
+      <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><div><div class="td-name">${r.nome}</div><div class="td-muted" style="font-size:11px">${r.contato||''}</div></div></div></td>
+      <td><span class="type-chip">${typeLabel}</span></td>
+      <td class="td-muted">${r.spot}</td>
+      <td class="td-muted">${fmtDate(r.checkin)}</td>
+      <td class="td-muted">${fmtDate(r.checkout)}</td>
+      <td class="td-muted">${nights}</td>
+      <td class="td-muted">${r.adultos} ad${childStr}</td>
+      <td style="font-weight:700">R$ ${r.total.toLocaleString('pt-BR')}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="deleteReservation('${r.id}')">🗑</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Render painel table (upcoming)
+function renderPainelTable(){
+  const tbody=document.getElementById('table-painel');
+  if(!tbody) return;
+  const upcoming=reservations.filter(r=>r.status==='checkin'||r.status==='confirmed'||r.status==='pending').slice(0,5);
+  tbody.innerHTML=upcoming.map(r=>{
+    const col=avatarColor(r.nome);
+    const ini=initials(r.nome);
+    const typeLabel={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'}[r.tipo]||r.tipo;
+    const childStr=r.criancas?.length?` · ${r.criancas.length} cr`:'';
+    const isToday=r.checkin==='2026-10-29';
+    return `<tr>
+      <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><div><div class="td-name">${r.nome}</div></div></div></td>
+      <td><span class="type-chip">${typeLabel}</span></td>
+      <td class="td-muted">${r.spot}</td>
+      <td style="${isToday?'font-weight:700;color:var(--ok)':''}">${isToday?'Hoje':fmtDate(r.checkin)}</td>
+      <td class="td-muted">${fmtDate(r.checkout)}</td>
+      <td class="td-muted">${r.adultos} ad${childStr}</td>
+      <td>${statusBadge(r.status)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Render financeiro table
+function renderFinanceiro(){
+  const tbody=document.getElementById('table-financeiro');
+  if(!tbody) return;
+  const seasLabel={baixa:'Baixa',alta:'Alta'};
+  let confirmed=0,pending=0;
+  tbody.innerHTML=reservations.map(r=>{
+    const col=avatarColor(r.nome);
+    const ini=initials(r.nome);
+    const typeLabel={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'}[r.tipo]||r.tipo;
+    const nights=nightsBetween(r.checkin,r.checkout);
+    const childStr=r.criancas?.length?` · ${r.criancas.length} cr`:'';
+    if(r.status==='pending') pending+=r.total; else confirmed+=r.total;
+    return `<tr>
+      <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><span class="td-name">${r.nome}</span></div></td>
+      <td><span class="type-chip">${typeLabel}</span></td>
+      <td class="td-muted">${seasLabel[r.temporada]||r.temporada}</td>
+      <td class="td-muted">${nights}</td>
+      <td class="td-muted">${r.adultos} ad${childStr}</td>
+      <td class="td-muted">R$ ${r.base.toLocaleString('pt-BR')}</td>
+      <td class="td-muted">${r.extras?`+ R$ ${r.extras.toLocaleString('pt-BR')}`:'—'}</td>
+      <td style="font-weight:700;color:var(--fg)">R$ ${r.total.toLocaleString('pt-BR')}</td>
+      <td>${statusBadge(r.status)}</td>
+    </tr>`;
+  }).join('')+`<tr style="background:var(--accent-lt)"><td colspan="7" style="font-weight:700;padding:12px 20px;color:var(--fg)">Total geral</td><td style="font-weight:700;font-size:15px;padding:12px 16px;color:var(--accent)">R$ ${(confirmed+pending).toLocaleString('pt-BR')}</td><td></td></tr>`;
+
+  // Update tiles
+  document.getElementById('fin-confirmed').textContent='R$ '+confirmed.toLocaleString('pt-BR');
+  document.getElementById('fin-pending').textContent='R$ '+pending.toLocaleString('pt-BR');
+  document.getElementById('fin-total').textContent='R$ '+(confirmed+pending).toLocaleString('pt-BR');
+  const avg=reservations.length?Math.round((confirmed+pending)/reservations.length):0;
+  document.getElementById('fin-avg').textContent='R$ '+avg.toLocaleString('pt-BR');
+}
+
+// ── Update badge
+function updateBadge(){
+  const b=document.getElementById('badge-reservas');
+  if(b) b.textContent=reservations.length;
+}
+
+// ── Full render
+function renderAll(){
+  renderSpotMap('spot-map-painel',false);
+  renderSpotMap('spot-map-full',true);
+  renderReservas();
+  renderPainelTable();
+  renderFinanceiro();
+  updateBadge();
+}
+renderAll();
+
+// ── Delete / cancelar reservation
+async function deleteReservation(id){
+  const numId=parseInt(id);
+  if(numId){
+    try{
+      await fetch(`${API_BASE}/akampa/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:numId,status:'cancelled'}),signal:AbortSignal.timeout(6000)});
+    }catch(e){ console.warn('API cancel error:',e.message); }
+  }
+  reservations=reservations.filter(r=>r.id!==id);
+  saveReservations();
+  renderAll();
+  showToast('Reserva cancelada.','🗑');
+}
+
+// ── Modal
+function openModal(){
+  document.getElementById('modal-overlay').classList.remove('hidden');
+  document.getElementById('f-checkin').value='2026-10-29';
+  document.getElementById('f-checkout').value='2026-10-30';
+  calcPrice();
+}
+function closeModal(){ document.getElementById('modal-overlay').classList.add('hidden'); }
+function closeModalOutside(e){ if(e.target===document.getElementById('modal-overlay')) closeModal(); }
+
+function onTipoChange(){
+  const tipo=document.getElementById('f-tipo').value;
+  const sel=document.getElementById('f-spot');
+  sel.innerHTML='';
+  if(!tipo){ sel.innerHTML='<option value="">Selecione o tipo primeiro</option>'; calcPrice(); return; }
+  const taken=new Set(reservations.filter(r=>r.status==='occupied'||r.status==='checkin').map(r=>r.spot));
+  let any=false;
+  for(const s of ALL_SPOTS[tipo]||[]){
+    const opt=document.createElement('option');
+    opt.value=s.id;
+    opt.textContent=s.label+(taken.has(s.id)?' (ocupado)':'');
+    opt.disabled=taken.has(s.id);
+    sel.appendChild(opt);
+    if(!any&&!taken.has(s.id)){ opt.selected=true; any=true; }
+  }
+  calcPrice();
+}
+
+function onCriancasChange(){
+  const n=parseInt(document.getElementById('f-ncrianças').value)||0;
+  const wrap=document.getElementById('children-ages');
+  const rows=document.getElementById('children-rows');
+  wrap.style.display=n?'block':'none';
+  rows.innerHTML=Array.from({length:n},(_,i)=>`
+    <div class="child-row">
+      <span style="font-size:13px;color:var(--fg-muted);min-width:70px">Criança ${i+1}</span>
+      <select class="form-select" onchange="calcPrice()">
+        <option value="under10">Até 10 anos (R$ 30/noite)</option>
+        <option value="over10">Acima de 10 anos (R$ 50/noite)</option>
+      </select>
+    </div>`).join('');
+  calcPrice();
+}
+
+function calcPrice(){
+  const tipo=document.getElementById('f-tipo').value;
+  const checkin=document.getElementById('f-checkin').value;
+  const checkout=document.getElementById('f-checkout').value;
+  const temporada=document.getElementById('f-temporada').value;
+  const adults=parseInt(document.getElementById('f-adultos').value)||2;
+  const box=document.getElementById('price-box');
+
+  if(!tipo||!checkin||!checkout){ box.style.display='none'; return; }
+  const nights=nightsBetween(checkin,checkout);
+  if(nights<=0){ box.style.display='none'; return; }
+
+  const criancasSels=[...document.querySelectorAll('#children-rows select')];
+  const criancas=criancasSels.map(s=>({age:s.value}));
+  const {base,extras,total}=calcReservationPrice(tipo,temporada,nights,adults,criancas);
+
+  box.style.display='block';
+  document.getElementById('price-total').textContent='R$ '+total.toLocaleString('pt-BR');
+
+  const typeLabel={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'}[tipo];
+  const seasLabel={baixa:'Baixa',alta:'Alta'}[temporada];
+  let breakdown=`${nights} noite${nights>1?'s':''} · ${typeLabel} · Temp. ${seasLabel} · Base: R$ ${base.toLocaleString('pt-BR')}`;
+  if(extras) breakdown+=`\nAdicionais crianças: + R$ ${extras.toLocaleString('pt-BR')}`;
+  document.getElementById('price-breakdown').style.whiteSpace='pre';
+  document.getElementById('price-breakdown').textContent=breakdown;
+}
+
+async function submitReservation(){
+  const nome=document.getElementById('f-nome').value.trim();
+  const contato=document.getElementById('f-contato').value.trim();
+  const tipo=document.getElementById('f-tipo').value;
+  const spot=document.getElementById('f-spot').value;
+  const checkin=document.getElementById('f-checkin').value;
+  const checkout=document.getElementById('f-checkout').value;
+  const temporada=document.getElementById('f-temporada').value;
+  const adultos=parseInt(document.getElementById('f-adultos').value)||2;
+  const criancasSels=[...document.querySelectorAll('#children-rows select')];
+  const criancas=criancasSels.map(s=>({age:s.value}));
+
+  if(!nome){ alert('Por favor informe o nome do hóspede.'); return; }
+  if(!tipo||!spot){ alert('Por favor selecione o tipo de acomodação e o spot.'); return; }
+  if(!checkin||!checkout||nightsBetween(checkin,checkout)<=0){ alert('Por favor selecione datas válidas.'); return; }
+
+  const nights=nightsBetween(checkin,checkout);
+  const {base,extras,total}=calcReservationPrice(tipo,temporada,nights,adultos,criancas);
+  const isToday=new Date().toISOString().slice(0,10)===checkin;
+
+  const btn=document.querySelector('.modal-footer .btn-primary');
+  btn.textContent='Salvando…'; btn.disabled=true;
+
+  let apiOk=false;
+  try{
+    const res=await fetch(`${API_BASE}/akampa/reserva`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        spot_id:spot, nome, email:'',
+        whatsapp:contato.match(/\d/)?contato:'',
+        checkin, checkout, temporada,
+        adultos, criancas,
+        preco_base:base, preco_extras:extras, preco_total:total,
+        source:'dashboard', notas:''
+      }),
+      signal:AbortSignal.timeout(10000)
+    });
+    if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.message||'Erro '+res.status); }
+    apiOk=true;
+    await loadReservationsFromAPI();
+  }catch(e){
+    console.warn('API create error:',e.message);
+    // Fallback offline
+    const nova={id:'r'+Date.now(),nome,contato,tipo,spot,checkin,checkout,temporada,adultos,criancas,status:isToday?'checkin':'confirmed',base,extras,total};
+    reservations.push(nova);
+    saveReservations();
+    renderAll();
+  }finally{
+    btn.textContent='Criar reserva'; btn.disabled=false;
+  }
+
+  closeModal();
+  showToast(`Reserva de ${nome} criada${apiOk?'':' (offline)'}! R$ ${total.toLocaleString('pt-BR')}`,'🎉');
+
+  // Reset form
+  document.getElementById('f-nome').value='';
+  document.getElementById('f-contato').value='';
+  document.getElementById('f-tipo').value='';
+  document.getElementById('f-spot').innerHTML='<option value="">Selecione o tipo primeiro</option>';
+  document.getElementById('f-ncrianças').value='0';
+  document.getElementById('children-ages').style.display='none';
+  document.getElementById('price-box').style.display='none';
+}
+
+// ── Toast
+function showToast(msg,icon='✅'){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  document.getElementById('toast-icon').textContent=icon;
+  t.classList.remove('hidden');
+  setTimeout(()=>t.classList.add('hidden'),3500);
+}
+
+// ── Chart
+const chartLabels=['Hoje 29/10','30/10','31/10','01/11','02/11','03/11','04/11'];
+const chartData=[38,38,50,67,67,83,75];
+let chart2Init=false;
+
+function getColors(){
+  const dark=document.documentElement.dataset.theme==='dark'||(!document.documentElement.dataset.theme&&window.matchMedia('(prefers-color-scheme:dark)').matches);
+  return{line:dark?'#3aaa7a':'#2a7d5e',fill:dark?'rgba(58,170,122,.15)':'rgba(42,125,94,.10)',text:dark?'#8da898':'#6b7c73',grid:dark?'#273d2f':'#e2ddd6'};
+}
+function makeChart(id){
+  const c=getColors(),ctx=document.getElementById(id);
+  if(!ctx) return;
+  return new Chart(ctx,{type:'line',data:{labels:chartLabels,datasets:[{data:chartData,borderColor:c.line,backgroundColor:c.fill,fill:true,tension:.4,pointRadius:4,pointHoverRadius:6,pointBackgroundColor:c.line,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y}% de ocupação`}}},scales:{x:{ticks:{color:c.text,font:{size:11,family:'Plus Jakarta Sans'}},grid:{color:c.grid}},y:{min:0,max:100,ticks:{color:c.text,font:{size:11,family:'Plus Jakarta Sans'},callback:v=>v+'%'},grid:{color:c.grid}}}}});
+}
+makeChart('occ-chart');
+function initChart2(){ if(!chart2Init){chart2Init=true;makeChart('occ-chart-2');} }
+</script>
