@@ -655,19 +655,7 @@ function normalizeRes(r){
   };
 }
 
-// Seed local (fallback offline)
-const SEED_RESERVATIONS = [
-  {id:'r1',nome:'Família Silva',contato:'contato@silva.com',tipo:'glamping',spot:'GLM 01',checkin:'2026-10-27',checkout:'2026-10-31',temporada:'baixa',adultos:2,criancas:[{age:'over10'}],status:'occupied',base:720,extras:100,total:820},
-  {id:'r2',nome:'Casal Rodrigues',contato:'rodrigues@email.com',tipo:'glamping',spot:'GLM 02',checkin:'2026-10-28',checkout:'2026-11-01',temporada:'baixa',adultos:2,criancas:[],status:'occupied',base:720,extras:0,total:720},
-  {id:'r3',nome:'Família Ferreira',contato:'ferreira@gmail.com',tipo:'motorhome',spot:'MH 01',checkin:'2026-10-25',checkout:'2026-11-03',temporada:'baixa',adultos:2,criancas:[{age:'over10'},{age:'under10'}],status:'occupied',base:1170,extras:450,total:1080},
-  {id:'r4',nome:'Juliana Pereira',contato:'juliana@gmail.com',tipo:'glamping',spot:'GLM 03',checkin:'2026-10-29',checkout:'2026-11-01',temporada:'baixa',adultos:2,criancas:[{age:'under10'},{age:'under10'}],status:'checkin',base:540,extras:60,total:600},
-  {id:'r5',nome:'Família Costa',contato:'marcos.costa@hotmail.com',tipo:'barraca',spot:'BAR 03',checkin:'2026-10-29',checkout:'2026-11-02',temporada:'baixa',adultos:3,criancas:[],status:'checkin',base:480,extras:0,total:480},
-  {id:'r6',nome:'Roberto Lima',contato:'rlima@outlook.com',tipo:'barraca',spot:'BAR 05',checkin:'2026-11-02',checkout:'2026-11-07',temporada:'baixa',adultos:4,criancas:[],status:'confirmed',base:320,extras:0,total:320},
-  {id:'r7',nome:'Ana Oliveira',contato:'ana.oli@gmail.com',tipo:'glamping',spot:'GLM 04',checkin:'2026-11-03',checkout:'2026-11-07',temporada:'baixa',adultos:2,criancas:[],status:'confirmed',base:720,extras:0,total:720},
-  {id:'r8',nome:'Marcos Nunes',contato:'mnunes@empresa.com',tipo:'motorhome',spot:'MH 02',checkin:'2026-11-04',checkout:'2026-11-10',temporada:'baixa',adultos:2,criancas:[{age:'over10'}],status:'pending',base:780,extras:90,total:870},
-];
-
-let reservations = [...SEED_RESERVATIONS];
+let reservations = [];
 function saveReservations(){ try{localStorage.setItem('akampa_res',JSON.stringify(reservations));}catch(e){} }
 
 // Carrega reservas da API (substitui dados locais)
