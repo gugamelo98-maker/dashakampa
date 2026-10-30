@@ -660,11 +660,11 @@ tr:hover td{background:rgba(0,0,0,.02)}
       <div class="form-row-3">
         <div class="form-group">
           <label class="form-label">Check-in *</label>
-          <input class="form-input" id="f-checkin" type="date" onchange="calcPrice()">
+          <input class="form-input" id="f-checkin" type="date" onchange="onTipoChange();calcPrice()">
         </div>
         <div class="form-group">
           <label class="form-label">Check-out *</label>
-          <input class="form-input" id="f-checkout" type="date" onchange="calcPrice()">
+          <input class="form-input" id="f-checkout" type="date" onchange="onTipoChange();calcPrice()">
         </div>
         <div class="form-group">
           <label class="form-label">Temporada *</label>
@@ -1595,18 +1595,42 @@ function closeModalOutside(e){ if(e.target===document.getElementById('modal-over
 function onTipoChange(){
   const tipo=document.getElementById('f-tipo').value;
   const sel=document.getElementById('f-spot');
+  const prevVal=sel.value;
   sel.innerHTML='';
   if(!tipo){ sel.innerHTML='<option value="">Selecione o tipo primeiro</option>'; calcPrice(); return; }
-  const taken=new Set(reservations.filter(r=>r.status==='occupied'||r.status==='checkin').map(r=>r.spot));
+
+  // Datas selecionadas no formulário
+  const checkin=document.getElementById('f-checkin').value;
+  const checkout=document.getElementById('f-checkout').value;
+  const hasRange=checkin&&checkout&&checkin<checkout;
+
+  // Spots ocupados agora (checkin/occupied) — sempre bloqueados
+  const takenNow=new Set(reservations.filter(r=>r.status==='occupied'||r.status==='checkin').map(r=>r.spot));
+
+  // Spots com conflito de datas (se datas estiverem preenchidas)
+  const takenDates=new Set();
+  if(hasRange){
+    for(const r of reservations){
+      if(r.status==='cancelled'||r.status==='no_show'||r.status==='checkout') continue;
+      if(r.checkin<checkout && r.checkout>checkin) takenDates.add(r.spot);
+    }
+  }
+
   let any=false;
   for(const s of ALL_SPOTS[tipo]||[]){
+    const blockedNow=takenNow.has(s.id);
+    const blockedDate=takenDates.has(s.id);
+    const blocked=blockedNow||blockedDate;
     const opt=document.createElement('option');
     opt.value=s.id;
-    opt.textContent=s.label+(taken.has(s.id)?' (ocupado)':'');
-    opt.disabled=taken.has(s.id);
+    opt.textContent=s.label+(blockedDate?' 🔒 ocupado nessas datas':blockedNow?' (ocupado agora)':'');
+    opt.disabled=blocked;
+    opt.style.color=blocked?'var(--fg-muted)':'';
     sel.appendChild(opt);
-    if(!any&&!taken.has(s.id)){ opt.selected=true; any=true; }
+    if(!any&&!blocked){ opt.selected=true; any=true; }
   }
+  // Mantém seleção anterior se ainda disponível
+  if(prevVal&&!takenNow.has(prevVal)&&!takenDates.has(prevVal)) sel.value=prevVal;
   calcPrice();
 }
 
@@ -1793,16 +1817,23 @@ async function submitReservation(){
       }),
       signal:AbortSignal.timeout(10000)
     });
-    if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.message||'Erro '+res.status); }
+    if(!res.ok){
+      const e=await res.json().catch(()=>({}));
+      if(res.status===409){
+        // Conflito de datas — não fechar modal, não criar offline
+        btn.textContent='Criar reserva'; btn.disabled=false;
+        showToast(e.message||'Acomodação já ocupada nessas datas!','⚠️');
+        return;
+      }
+      throw new Error(e.message||'Erro '+res.status);
+    }
     apiOk=true;
     await loadReservationsFromAPI();
   }catch(e){
     console.warn('API create error:',e.message);
-    // Fallback offline
-    const nova={id:'r'+Date.now(),nome,contato,tipo,spot,checkin,checkout,temporada,adultos,criancas,status:isToday?'checkin':'confirmed',base,extras,total,desconto,sinal_pago,forma_pagamento};
-    reservations.push(nova);
-    saveReservations();
-    renderAll();
+    btn.textContent='Criar reserva'; btn.disabled=false;
+    showToast('Erro ao criar reserva: '+e.message,'❌');
+    return;
   }finally{
     btn.textContent='Criar reserva'; btn.disabled=false;
   }
@@ -1810,7 +1841,7 @@ async function submitReservation(){
   closeModal();
   const saldo=total-sinal_pago;
   const toastExtra=sinal_pago>0?(saldo>0?` · Saldo: R$ ${saldo.toLocaleString('pt-BR')}`:'· Pago total'):'';
-  showToast(`Reserva de ${nome} criada${apiOk?'':' (offline)'}!${toastExtra}`,'🎉');
+  showToast(`Reserva de ${nome} criada!${toastExtra}`,'🎉');
 
   // Reset form
   document.getElementById('f-nome').value='';
