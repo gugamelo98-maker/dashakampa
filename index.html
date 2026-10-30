@@ -408,16 +408,36 @@ tr:hover td{background:rgba(0,0,0,.02)}
 
     <!-- ══ RELATÓRIOS ══ -->
     <div class="view" id="view-relatorios">
-      <div class="section-hd"><h2>Relatórios</h2><p>Estatísticas de ocupação e desempenho</p></div>
+      <div class="section-hd" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div><h2>Relatórios</h2><p>Estatísticas de ocupação e receita</p></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+          <button onclick="relMesNav(-1)" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--fg);font-size:15px">‹</button>
+          <span id="rel-mes-label" style="font-size:14px;font-weight:600;min-width:120px;text-align:center"></span>
+          <button onclick="relMesNav(1)" id="rel-btn-next" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--fg);font-size:15px">›</button>
+        </div>
+      </div>
       <div class="stats-grid" style="margin-bottom:20px">
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Ocupação média (mês)</span><span class="stat-icon teal">📈</span></div><div class="stat-value" id="rel-ocu-pct">—<span style="font-size:16px;color:var(--fg-muted);font-weight:500">%</span></div><div class="stat-sub" id="rel-ocu-sub">sem reservas</div></div>
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Diárias este mês</span><span class="stat-icon green">🗓</span></div><div class="stat-value" id="rel-diarias">0</div><div class="stat-sub">todos os tipos</div></div>
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Hóspedes este mês</span><span class="stat-icon blue">👥</span></div><div class="stat-value" id="rel-hospedes">0</div><div class="stat-sub">adultos + crianças</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Ocupação média</span><span class="stat-icon teal">📈</span></div><div class="stat-value" id="rel-ocu-pct">—<span style="font-size:16px;color:var(--fg-muted);font-weight:500">%</span></div><div class="stat-sub" id="rel-ocu-sub">sem reservas</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Receita total</span><span class="stat-icon green">💰</span></div><div class="stat-value" style="font-size:20px" id="rel-receita">R$ 0</div><div class="stat-sub" id="rel-receita-sub">0 reservas</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Hóspedes</span><span class="stat-icon blue">👥</span></div><div class="stat-value" id="rel-hospedes">0</div><div class="stat-sub">adultos + crianças</div></div>
         <div class="stat-card"><div class="stat-header"><span class="stat-label">Tipo mais popular</span><span class="stat-icon amber">⛺</span></div><div class="stat-value" style="font-size:16px;margin-top:4px" id="rel-tipo">—</div><div class="stat-sub" id="rel-tipo-sub">sem reservas</div></div>
       </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Ocupação — próximos 7 dias</span></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header"><span class="card-title" id="rel-chart-title">Ocupação diária do mês</span></div>
         <div class="chart-wrap"><canvas id="occ-chart-2"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Receita por tipo de acomodação</span></div>
+        <div style="padding:14px 20px 18px">
+          <table style="width:100%"><thead><tr>
+            <th style="padding:0 0 10px;font-size:12px;font-weight:600;color:var(--fg-muted)">Tipo</th>
+            <th style="padding:0 0 10px;text-align:right;font-size:12px;font-weight:600;color:var(--fg-muted)">Reservas</th>
+            <th style="padding:0 0 10px;text-align:right;font-size:12px;font-weight:600;color:var(--fg-muted)">Diárias</th>
+            <th style="padding:0 0 10px;text-align:right;font-size:12px;font-weight:600;color:var(--fg-muted)">Receita</th>
+          </tr></thead>
+          <tbody id="rel-tabela-tipos"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -958,20 +978,15 @@ function renderAll(){
   renderHospedes();
   renderFinanceiro();
   updateBadge();
-  // Atualiza gráfico e stats de relatórios se já foram inicializados
-  if(chart2Init) updateRelatorios();
+  // Atualiza gráfico do painel principal
   if(chart1){
     const {labels,data}=buildChartData();
     chart1.data.labels=labels;
     chart1.data.datasets[0].data=data;
     chart1.update();
   }
-  if(chart2&&chart2Init){
-    const {labels,data}=buildChartData();
-    chart2.data.labels=labels;
-    chart2.data.datasets[0].data=data;
-    chart2.update();
-  }
+  // Atualiza relatórios se já foram inicializados
+  if(chart2Init){ updateRelatorios(); refreshChart2(); }
 }
 renderAll();
 
@@ -1140,8 +1155,28 @@ function showToast(msg,icon='✅'){
   setTimeout(()=>t.classList.add('hidden'),3500);
 }
 
-// ── Chart (dados dinâmicos baseados nas reservas reais)
+// ── Chart e Relatórios dinâmicos
 const TOTAL_SPOTS=13;
+const MESES_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+// Mês selecionado nos relatórios (offset em meses a partir do mês atual)
+let relMesOffset=0;
+
+function getRelMes(){
+  const now=new Date();
+  const d=new Date(now.getFullYear(),now.getMonth()+relMesOffset,1);
+  return{y:d.getFullYear(),m:d.getMonth()};
+}
+
+function relMesNav(dir){
+  const hoje=new Date();
+  const novoOffset=relMesOffset+dir;
+  // Não avança além do mês atual
+  if(novoOffset>0) return;
+  relMesOffset=novoOffset;
+  updateRelatorios();
+  refreshChart2();
+}
 
 function buildChartData(){
   const today=new Date(); today.setHours(0,0,0,0);
@@ -1157,48 +1192,96 @@ function buildChartData(){
   return{labels,data};
 }
 
+function buildMesChartData(y,m){
+  const diasMes=new Date(y,m+1,0).getDate();
+  const labels=[],data=[];
+  for(let d=1;d<=diasMes;d++){
+    const dd=String(d).padStart(2,'0'),mm=String(m+1).padStart(2,'0');
+    labels.push(`${dd}/${mm}`);
+    const ds=`${y}-${mm}-${dd}`;
+    const ocp=reservations.filter(r=>r.status!=='cancelled'&&r.status!=='no_show'&&r.checkin<=ds&&r.checkout>ds).length;
+    data.push(Math.round(ocp/TOTAL_SPOTS*100));
+  }
+  return{labels,data};
+}
+
 function updateRelatorios(){
-  const now=new Date();
-  const y=now.getFullYear(),m=now.getMonth();
+  const {y,m}=getRelMes();
+  const hoje=new Date(); const ehMesAtual=y===hoje.getFullYear()&&m===hoje.getMonth();
+
+  // Label do mês
+  document.getElementById('rel-mes-label').textContent=`${MESES_PT[m]} ${y}`;
+  // Botão "próximo" desabilitado se for mês atual
+  const btnNext=document.getElementById('rel-btn-next');
+  btnNext.style.opacity=relMesOffset>=0?'0.3':'1';
+  btnNext.style.cursor=relMesOffset>=0?'not-allowed':'pointer';
+
+  // Título do gráfico
+  document.getElementById('rel-chart-title').textContent=
+    ehMesAtual?'Ocupação — próximos 7 dias':`Ocupação diária — ${MESES_PT[m]} ${y}`;
+
   const mesStart=new Date(y,m,1).toISOString().slice(0,10);
   const mesEnd=new Date(y,m+1,0).toISOString().slice(0,10);
   const mesRes=reservations.filter(r=>r.status!=='cancelled'&&r.status!=='no_show'&&r.checkin<=mesEnd&&r.checkout>mesStart);
 
-  // Diárias e hóspedes
-  let diarias=0,hospedes=0;
-  const tipoCont={glamping:0,barraca:0,motorhome:0};
+  // Diárias, hóspedes, receita por tipo
+  let diarias=0,hospedes=0,receitaTotal=0;
+  const tipoStats={glamping:{res:0,diarias:0,receita:0},barraca:{res:0,diarias:0,receita:0},motorhome:{res:0,diarias:0,receita:0}};
   mesRes.forEach(r=>{
     const cin=new Date(Math.max(new Date(r.checkin),new Date(y,m,1)));
-    const cout=new Date(Math.min(new Date(r.checkout),new Date(y,m+1,0)));
+    const cout=new Date(Math.min(new Date(r.checkout),new Date(y,m+1,1)));
     const noites=Math.max(0,Math.round((cout-cin)/(864e5)));
     diarias+=noites;
     hospedes+=(r.adultos||1)+(r.criancas||[]).length;
-    const t=(r.spot_tipo||r.spot_id||'').toLowerCase().includes('glm')?'glamping':(r.spot_tipo||r.spot_id||'').toLowerCase().includes('bar')?'barraca':'motorhome';
-    tipoCont[t]=(tipoCont[t]||0)+1;
+    const sid=(r.spot_tipo||r.spot_id||'').toLowerCase();
+    const t=sid.includes('glm')?'glamping':sid.includes('bar')?'barraca':'motorhome';
+    const rec=r.preco_total||0;
+    tipoStats[t].res++;
+    tipoStats[t].diarias+=noites;
+    tipoStats[t].receita+=rec;
+    receitaTotal+=rec;
   });
 
-  document.getElementById('rel-diarias').textContent=diarias;
   document.getElementById('rel-hospedes').textContent=hospedes;
+  document.getElementById('rel-receita').textContent='R$ '+receitaTotal.toLocaleString('pt-BR');
+  document.getElementById('rel-receita-sub').textContent=`${mesRes.length} reserva${mesRes.length!==1?'s':''}`;
 
   // Ocupação média
   const diasMes=new Date(y,m+1,0).getDate();
   const totalSlots=TOTAL_SPOTS*diasMes;
-  const ocu=totalSlots>0?Math.round(diarias/totalSlots*100):0;
+  const ocu=diarias>0?Math.round(diarias/totalSlots*100):0;
   const ocuEl=document.getElementById('rel-ocu-pct');
   ocuEl.innerHTML=mesRes.length?`${ocu}<span style="font-size:16px;color:var(--fg-muted);font-weight:500">%</span>`:'—';
-  document.getElementById('rel-ocu-sub').textContent=mesRes.length?(ocu>=60?'alta ocupação':'baixa ocupação'):'sem reservas';
+  document.getElementById('rel-ocu-sub').textContent=mesRes.length?(ocu>=60?'alta ocupação':'baixa temporada'):'sem reservas';
 
   // Tipo mais popular
   const tipoNomes={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'};
-  const total=Object.values(tipoCont).reduce((a,b)=>a+b,0);
-  if(total>0){
-    const top=Object.entries(tipoCont).sort((a,b)=>b[1]-a[1])[0];
-    document.getElementById('rel-tipo').textContent=tipoNomes[top[0]]||top[0];
-    document.getElementById('rel-tipo-sub').textContent=`${Math.round(top[1]/total*100)}% das reservas`;
+  const totalRes=mesRes.length;
+  if(totalRes>0){
+    const top=Object.entries(tipoStats).sort((a,b)=>b[1].res-a[1].res)[0];
+    document.getElementById('rel-tipo').textContent=tipoNomes[top[0]];
+    document.getElementById('rel-tipo-sub').textContent=`${Math.round(top[1].res/totalRes*100)}% das reservas`;
   } else {
     document.getElementById('rel-tipo').textContent='—';
     document.getElementById('rel-tipo-sub').textContent='sem reservas';
   }
+
+  // Tabela por tipo
+  const tbody=document.getElementById('rel-tabela-tipos');
+  const icones={glamping:'🏕',barraca:'⛺',motorhome:'🚐'};
+  tbody.innerHTML=Object.entries(tipoStats).map(([k,v])=>`
+    <tr>
+      <td style="padding:10px 0;border-top:1px solid var(--border)">${icones[k]} ${tipoNomes[k]}</td>
+      <td style="padding:10px 0;border-top:1px solid var(--border);text-align:right">${v.res}</td>
+      <td style="padding:10px 0;border-top:1px solid var(--border);text-align:right">${v.diarias}</td>
+      <td style="padding:10px 0;border-top:1px solid var(--border);text-align:right;font-weight:600">R$ ${v.receita.toLocaleString('pt-BR')}</td>
+    </tr>`).join('')+`
+    <tr style="font-weight:700">
+      <td style="padding:10px 0;border-top:2px solid var(--border)">Total</td>
+      <td style="padding:10px 0;border-top:2px solid var(--border);text-align:right">${totalRes}</td>
+      <td style="padding:10px 0;border-top:2px solid var(--border);text-align:right">${diarias}</td>
+      <td style="padding:10px 0;border-top:2px solid var(--border);text-align:right;color:var(--ok)">R$ ${receitaTotal.toLocaleString('pt-BR')}</td>
+    </tr>`;
 }
 
 let chart1,chart2,chart2Init=false;
@@ -1213,6 +1296,24 @@ function makeChart(id){
   if(!ctx) return;
   return new Chart(ctx,{type:'line',data:{labels,datasets:[{data,borderColor:c.line,backgroundColor:c.fill,fill:true,tension:.4,pointRadius:4,pointHoverRadius:6,pointBackgroundColor:c.line,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y}% de ocupação`}}},scales:{x:{ticks:{color:c.text,font:{size:11,family:'Plus Jakarta Sans'}},grid:{color:c.grid}},y:{min:0,max:100,ticks:{color:c.text,font:{size:11,family:'Plus Jakarta Sans'},callback:v=>v+'%'},grid:{color:c.grid}}}}});
 }
+
+function refreshChart2(){
+  if(!chart2) return;
+  const {y,m}=getRelMes();
+  const ehMesAtual=relMesOffset===0;
+  const {labels,data}=ehMesAtual?buildChartData():buildMesChartData(y,m);
+  chart2.data.labels=labels;
+  chart2.data.datasets[0].data=data;
+  chart2.update();
+}
+
 chart1=makeChart('occ-chart');
-function initChart2(){ if(!chart2Init){chart2Init=true;chart2=makeChart('occ-chart-2');updateRelatorios();} }
+function initChart2(){
+  if(!chart2Init){
+    chart2Init=true;
+    chart2=makeChart('occ-chart-2');
+  }
+  updateRelatorios();
+  refreshChart2();
+}
 </script>
