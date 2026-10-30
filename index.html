@@ -349,16 +349,77 @@ tr:hover td{background:rgba(0,0,0,.02)}
 
     <!-- ══ FINANCEIRO ══ -->
     <div class="view" id="view-financeiro">
-      <div class="section-hd"><h2>Financeiro</h2><p>Receitas das reservas ativas e previstas</p></div>
+      <div class="section-hd"><h2>Financeiro</h2><p>Receitas, gastos e resultado do período</p></div>
       <div class="stats-grid" style="margin-bottom:20px">
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Receita confirmada</span><span class="stat-icon green">✓</span></div><div class="stat-value" style="font-size:22px" id="fin-confirmed">R$ 4.020</div><div class="stat-sub">reservas já pagas</div></div>
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">A receber</span><span class="stat-icon amber">⏳</span></div><div class="stat-value" style="font-size:22px" id="fin-pending">R$ 870</div><div class="stat-sub">1 reserva pendente</div></div>
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Total do período</span><span class="stat-icon teal">📈</span></div><div class="stat-value" style="font-size:22px" id="fin-total">R$ 4.890</div><div class="stat-sub">confirmado + pendente</div></div>
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Ticket médio</span><span class="stat-icon blue">🎟</span></div><div class="stat-value" style="font-size:22px" id="fin-avg">R$ 611</div><div class="stat-sub">por reserva</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Receita confirmada</span><span class="stat-icon green">✓</span></div><div class="stat-value" style="font-size:22px" id="fin-confirmed">R$ 0</div><div class="stat-sub">reservas já pagas</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">A receber</span><span class="stat-icon amber">⏳</span></div><div class="stat-value" style="font-size:22px" id="fin-pending">R$ 0</div><div class="stat-sub">saldo pendente</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Total gastos</span><span class="stat-icon red">↓</span></div><div class="stat-value" style="font-size:22px;color:var(--danger)" id="fin-gastos">R$ 0</div><div class="stat-sub">despesas registradas</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Resultado</span><span class="stat-icon teal">⚖</span></div><div class="stat-value" style="font-size:22px" id="fin-resultado">R$ 0</div><div class="stat-sub">receita − gastos</div></div>
       </div>
-      <div class="card">
+      <div class="card" style="margin-bottom:20px">
         <div class="card-header"><span class="card-title">Detalhamento por reserva</span></div>
         <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Tipo</th><th>Temp.</th><th>Noites</th><th>Pessoas</th><th>Base</th><th>Adicionais</th><th>Total</th><th>Status</th></tr></thead><tbody id="table-financeiro"></tbody></table></div></div>
+      </div>
+
+      <!-- Gastos -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">💸 Gastos</span>
+          <button class="btn-primary" style="font-size:12px;padding:6px 14px" onclick="toggleGastoForm()">+ Novo gasto</button>
+        </div>
+
+        <!-- Formulário novo gasto -->
+        <div id="gasto-form" style="display:none;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--accent-lt);border-radius:0">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div>
+              <label class="form-label" style="margin-bottom:4px;display:block">Nome do gasto *</label>
+              <input class="form-input" id="g-nome" type="text" placeholder="Ex: Gás, Limpeza, Manutenção">
+            </div>
+            <div>
+              <label class="form-label" style="margin-bottom:4px;display:block">Categoria</label>
+              <select class="form-input" id="g-categoria">
+                <option value="">— Sem categoria —</option>
+                <option value="Manutenção">Manutenção</option>
+                <option value="Limpeza">Limpeza</option>
+                <option value="Alimentação">Alimentação</option>
+                <option value="Utilidades">Utilidades</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Equipamento">Equipamento</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div>
+              <label class="form-label" style="margin-bottom:4px;display:block">Valor (R$) *</label>
+              <div style="position:relative">
+                <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--fg-muted);font-size:13px;pointer-events:none">R$</span>
+                <input class="form-input" id="g-valor" type="number" min="0.01" step="0.01" placeholder="0,00" style="padding-left:36px">
+              </div>
+            </div>
+            <div>
+              <label class="form-label" style="margin-bottom:4px;display:block">Data *</label>
+              <input class="form-input" id="g-data" type="date">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn-secondary" onclick="toggleGastoForm()">Cancelar</button>
+            <button class="btn-primary" onclick="salvarGasto()">Salvar gasto</button>
+          </div>
+          <div id="gasto-form-err" style="display:none;margin-top:10px;color:var(--danger);font-size:13px;font-weight:600"></div>
+        </div>
+
+        <!-- Tabela de gastos -->
+        <div style="padding-top:14px">
+          <div id="gastos-loading" style="padding:20px;text-align:center;color:var(--fg-muted);font-size:13px">Carregando gastos…</div>
+          <div class="table-wrap" id="gastos-table-wrap" style="display:none">
+            <table>
+              <thead><tr><th>Nome</th><th>Categoria</th><th>Data</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+              <tbody id="table-gastos"></tbody>
+            </table>
+          </div>
+          <div id="gastos-empty" style="display:none;padding:28px;text-align:center;color:var(--fg-muted);font-size:13px">Nenhum gasto registrado</div>
+        </div>
       </div>
     </div>
 
@@ -549,6 +610,26 @@ tr:hover td{background:rgba(0,0,0,.02)}
       <div id="children-ages" style="display:none;margin-bottom:16px">
         <label class="form-label">Faixa etária das crianças</label>
         <div class="children-rows" id="children-rows"></div>
+      </div>
+
+      <!-- Valor personalizado da diária -->
+      <div style="margin-bottom:4px">
+        <button type="button" id="btn-custom-rate" onclick="toggleCustomRate()"
+          style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--fg-muted);font-size:12px;font-weight:600;padding:0;margin-bottom:8px">
+          <span id="custom-rate-arrow" style="transition:transform .2s;display:inline-block">▶</span>
+          🎯 Usar valor personalizado da diária
+        </button>
+        <div id="custom-rate-section" style="display:none;background:var(--sidebar);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">
+          <div style="font-size:11px;color:var(--fg-muted);margin-bottom:8px">Substitui o preço calculado pela tabela. O valor de extras de crianças continua sendo somado.</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="position:relative;flex:1">
+              <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--fg-muted);font-size:13px">R$</span>
+              <input class="form-input" id="f-diaria-custom" type="number" min="0" step="1" placeholder="ex: 200" style="padding-left:36px" oninput="calcPrice()">
+            </div>
+            <span style="font-size:12px;color:var(--fg-muted);white-space:nowrap">/ noite</span>
+            <button type="button" onclick="clearCustomRate()" style="padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--fg-muted);font-size:12px;cursor:pointer">Limpar</button>
+          </div>
+        </div>
       </div>
 
       <!-- Preview de preço -->
@@ -745,13 +826,15 @@ function statusBadge(s){
 // Barraca:   Baixa 1nt=R$90/p, 2+nt=R$60/p/nt | Alta mín 2nt=R$80/p/nt
 // Motorhome: Baixa 1nt: 1p=R$170, 2p=R$210 | Baixa 2+nt: 1p=R$155/nt, 2p=R$195/nt | Alta: 1p=R$185/nt, 2p=R$235/nt
 // Alta temporada: mínimo 2 noites (Glamping, Barraca e Motorhome)
-function calcReservationPrice(tipo,temporada,nights,adults,criancas){
+function calcReservationPrice(tipo,temporada,nights,adults,criancas,diariaCustom=0){
   if(!tipo) return {base:0,extras:0,total:0,noites:0};
   // Alta mín 2 noites para todos os tipos
   const noitesEf=(temporada==='alta'&&nights<2)?2:nights;
   const pFaixa=adults>=2?2:1;
   let base=0;
-  if(tipo==='glamping'){
+  if(diariaCustom>0){
+    base=diariaCustom*noitesEf;
+  } else if(tipo==='glamping'){
     const tab={baixa:{1:140,2:180},alta:{1:170,2:220}};
     base=(tab[temporada]?.[pFaixa]??tab.baixa[pFaixa])*noitesEf;
   } else if(tipo==='barraca'){
@@ -908,9 +991,122 @@ function renderFinanceiro(){
   // Update tiles
   document.getElementById('fin-confirmed').textContent='R$ '+confirmed.toLocaleString('pt-BR');
   document.getElementById('fin-pending').textContent='R$ '+pending.toLocaleString('pt-BR');
-  document.getElementById('fin-total').textContent='R$ '+(confirmed+pending).toLocaleString('pt-BR');
-  const avg=reservations.length?Math.round((confirmed+pending)/reservations.length):0;
-  document.getElementById('fin-avg').textContent='R$ '+avg.toLocaleString('pt-BR');
+  updateFinResultado(confirmed+pending);
+}
+
+function updateFinResultado(receita){
+  const totalGastos=gastos.reduce((s,g)=>s+parseFloat(g.valor||0),0);
+  const resultado=receita-totalGastos;
+  const elG=document.getElementById('fin-gastos');
+  const elR=document.getElementById('fin-resultado');
+  if(elG) elG.textContent='R$ '+totalGastos.toLocaleString('pt-BR');
+  if(elR){
+    elR.textContent='R$ '+Math.abs(resultado).toLocaleString('pt-BR')+(resultado<0?' (prejuízo)':'');
+    elR.style.color=resultado<0?'var(--danger)':'var(--ok)';
+  }
+}
+
+// ── Gastos
+let gastos=[];
+
+async function loadGastos(){
+  try{
+    const r=await fetch(API_BASE+'/akampa/gastos');
+    const d=await r.json();
+    if(d.ok){ gastos=d.gastos||[]; renderGastos(); }
+  } catch(e){ console.error('Erro ao carregar gastos',e); }
+  finally{
+    const el=document.getElementById('gastos-loading');
+    if(el) el.style.display='none';
+  }
+}
+
+function renderGastos(){
+  const tbody=document.getElementById('table-gastos');
+  const wrap=document.getElementById('gastos-table-wrap');
+  const empty=document.getElementById('gastos-empty');
+  if(!tbody) return;
+  if(!gastos.length){
+    if(wrap) wrap.style.display='none';
+    if(empty) empty.style.display='block';
+    updateFinResultado(0);
+    return;
+  }
+  if(wrap) wrap.style.display='block';
+  if(empty) empty.style.display='none';
+  const catColors={'Manutenção':'var(--warn-lt)','Limpeza':'var(--ok-lt)','Alimentação':'var(--accent-lt)','Utilidades':'var(--warn-lt)','Marketing':'var(--accent-lt)','Equipamento':'var(--warn-lt)','Outros':'var(--border)'};
+  const catText={'Manutenção':'var(--warn)','Limpeza':'var(--ok)','Alimentação':'var(--accent)','Utilidades':'var(--warn)','Marketing':'var(--accent)','Equipamento':'var(--warn)','Outros':'var(--fg-muted)'};
+  let total=0;
+  tbody.innerHTML=gastos.map(g=>{
+    const v=parseFloat(g.valor||0);
+    total+=v;
+    const cat=g.categoria||'';
+    const catBadge=cat?`<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:99px;background:${catColors[cat]||'var(--border)'};color:${catText[cat]||'var(--fg-muted)'}">${cat}</span>`:'<span class="td-muted">—</span>';
+    return `<tr>
+      <td style="font-weight:600">${g.nome}</td>
+      <td>${catBadge}</td>
+      <td class="td-muted">${fmtDate(g.data)}</td>
+      <td style="text-align:right;font-weight:700;color:var(--danger)">R$ ${v.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td style="text-align:right"><button onclick="deleteGasto(${g.id})" style="background:none;border:none;cursor:pointer;color:var(--fg-muted);font-size:15px;padding:2px 6px" title="Excluir">🗑</button></td>
+    </tr>`;
+  }).join('')+`<tr style="background:var(--danger-lt)"><td colspan="3" style="font-weight:700;padding:12px 20px;color:var(--fg)">Total gastos</td><td style="font-weight:700;font-size:15px;padding:12px 16px;text-align:right;color:var(--danger)">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td><td></td></tr>`;
+
+  // re-calc resultado
+  const confirmed=reservations.filter(r=>r.status!=='pending').reduce((s,r)=>s+r.total,0);
+  const pending=reservations.filter(r=>r.status==='pending').reduce((s,r)=>s+r.total,0);
+  updateFinResultado(confirmed+pending);
+}
+
+function toggleGastoForm(){
+  const f=document.getElementById('gasto-form');
+  if(!f) return;
+  const show=f.style.display==='none';
+  f.style.display=show?'block':'none';
+  if(show){
+    document.getElementById('g-data').value=todayStr();
+    document.getElementById('g-nome').focus();
+  }
+}
+
+async function salvarGasto(){
+  const nome=document.getElementById('g-nome').value.trim();
+  const valor=parseFloat(document.getElementById('g-valor').value||0);
+  const data=document.getElementById('g-data').value;
+  const categoria=document.getElementById('g-categoria').value;
+  const errEl=document.getElementById('gasto-form-err');
+  errEl.style.display='none';
+  if(!nome||!valor||!data){
+    errEl.style.display='block';
+    errEl.textContent='Preencha nome, valor e data.';
+    return;
+  }
+  try{
+    const r=await fetch(API_BASE+'/akampa/gastos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome,valor,data,categoria:categoria||null})});
+    const d=await r.json();
+    if(d.ok){
+      gastos.unshift(d.gasto);
+      renderGastos();
+      toggleGastoForm();
+      document.getElementById('g-nome').value='';
+      document.getElementById('g-valor').value='';
+      document.getElementById('g-categoria').value='';
+    } else {
+      errEl.style.display='block';
+      errEl.textContent=d.message||'Erro ao salvar.';
+    }
+  } catch(e){
+    errEl.style.display='block';
+    errEl.textContent='Erro de conexão.';
+  }
+}
+
+async function deleteGasto(id){
+  if(!confirm('Excluir este gasto?')) return;
+  try{
+    await fetch(API_BASE+'/akampa/gastos',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+    gastos=gastos.filter(g=>g.id!==id);
+    renderGastos();
+  } catch(e){ alert('Erro ao excluir.'); }
 }
 
 // ── Update badge
@@ -1069,6 +1265,7 @@ function renderAll(){
   renderSaidas();
   renderHospedes();
   renderFinanceiro();
+  loadGastos();
   updateBadge();
   // Atualiza gráfico do painel principal
   if(chart1){
@@ -1155,7 +1352,8 @@ function calcPrice(){
 
   const criancasSels=[...document.querySelectorAll('#children-rows select')];
   const criancas=criancasSels.map(s=>({age:s.value}));
-  const {base,extras,total}=calcReservationPrice(tipo,temporada,nights,adults,criancas);
+  const diariaCustom=parseFloat(document.getElementById('f-diaria-custom').value)||0;
+  const {base,extras,total,noites}=calcReservationPrice(tipo,temporada,nights,adults,criancas,diariaCustom);
 
   box.style.display='block';
   document.getElementById('payment-section').style.display='block';
@@ -1163,7 +1361,8 @@ function calcPrice(){
 
   const typeLabel={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'}[tipo];
   const seasLabel={baixa:'Baixa',alta:'Alta'}[temporada];
-  let breakdown=`${nights} noite${nights>1?'s':''} · ${typeLabel} · Temp. ${seasLabel} · Base: R$ ${base.toLocaleString('pt-BR')}`;
+  const diariaLabel=diariaCustom>0?`🎯 R$ ${diariaCustom.toLocaleString('pt-BR')}/nt (personalizado)`:`Base: R$ ${base.toLocaleString('pt-BR')}`;
+  let breakdown=`${noites} noite${noites>1?'s':''} · ${typeLabel} · Temp. ${seasLabel} · ${diariaLabel}`;
   if(extras) breakdown+=`\nAdicionais crianças: + R$ ${extras.toLocaleString('pt-BR')}`;
   document.getElementById('price-breakdown').style.whiteSpace='pre';
   document.getElementById('price-breakdown').textContent=breakdown;
@@ -1200,7 +1399,8 @@ function _getPaymentCalcBase(){
   if(!tipo||!checkin||!checkout) return null;
   const nights=nightsBetween(checkin,checkout);
   if(nights<=0) return null;
-  const {total}=calcReservationPrice(tipo,temporada,nights,adults,criancas);
+  const diariaCustom=parseFloat(document.getElementById('f-diaria-custom').value)||0;
+  const {total}=calcReservationPrice(tipo,temporada,nights,adults,criancas,diariaCustom);
   const desconto=parseFloat(document.getElementById('f-desconto').value||0)||0;
   return {total, totalComDesconto: Math.max(0, total-desconto), desconto};
 }
@@ -1242,6 +1442,20 @@ function setDescontoPct(pct){
   updateSaldoPreview();
 }
 
+function toggleCustomRate(){
+  const sec=document.getElementById('custom-rate-section');
+  const arrow=document.getElementById('custom-rate-arrow');
+  const open=sec.style.display==='none';
+  sec.style.display=open?'block':'none';
+  arrow.style.transform=open?'rotate(90deg)':'rotate(0deg)';
+  if(!open){ document.getElementById('f-diaria-custom').value=''; calcPrice(); }
+}
+
+function clearCustomRate(){
+  document.getElementById('f-diaria-custom').value='';
+  calcPrice();
+}
+
 async function submitReservation(){
   const nome=document.getElementById('f-nome').value.trim();
   const telefone=document.getElementById('f-telefone').value.trim();
@@ -1262,7 +1476,8 @@ async function submitReservation(){
   if(!checkin||!checkout||nightsBetween(checkin,checkout)<=0){ alert('Por favor selecione datas válidas.'); return; }
 
   const nights=nightsBetween(checkin,checkout);
-  const {base,extras,total,noites}=calcReservationPrice(tipo,temporada,nights,adultos,criancas);
+  const diariaCustom=parseFloat(document.getElementById('f-diaria-custom').value)||0;
+  const {base,extras,total,noites}=calcReservationPrice(tipo,temporada,nights,adultos,criancas,diariaCustom);
   const desconto=parseFloat(document.getElementById('f-desconto').value||0)||0;
   const sinal_pago=parseFloat(document.getElementById('f-sinal').value||0)||0;
   const forma_pagamento=document.getElementById('f-forma-pag').value||'pix';
@@ -1284,7 +1499,8 @@ async function submitReservation(){
         spot_id:spot, nome, email, whatsapp, data_nascimento,
         checkin, checkout, temporada,
         adultos, criancas, desconto, sinal_pago, forma_pagamento,
-        source:'dashboard', notas:''
+        source:'dashboard', notas:'',
+        ...(diariaCustom>0?{preco_diaria_custom:diariaCustom}:{})
         // preços calculados pelo n8n — não enviados
       }),
       signal:AbortSignal.timeout(10000)
@@ -1324,6 +1540,9 @@ async function submitReservation(){
   document.getElementById('saldo-preview').style.display='none';
   document.getElementById('f-forma-pag').value='pix';
   setFormaPag('pix');
+  document.getElementById('f-diaria-custom').value='';
+  document.getElementById('custom-rate-section').style.display='none';
+  document.getElementById('custom-rate-arrow').style.transform='rotate(0deg)';
 }
 
 // ── Toast
