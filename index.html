@@ -343,7 +343,7 @@ tr:hover td{background:rgba(0,0,0,.02)}
     <div class="view" id="view-hospedes">
       <div class="section-hd"><h2>Hóspedes</h2><p>Atualmente no camping</p></div>
       <div class="card">
-        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Spot</th><th>Entrada</th><th>Saída</th><th>Pessoas</th><th>Contato</th></tr></thead><tbody id="table-hospedes"></tbody></table></div></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Spot</th><th>Entrada</th><th>Saída</th><th>Pessoas</th><th>Telefone</th><th>E-mail</th><th>Nascimento</th></tr></thead><tbody id="table-hospedes"></tbody></table></div></div>
       </div>
     </div>
 
@@ -465,8 +465,18 @@ tr:hover td{background:rgba(0,0,0,.02)}
           <input class="form-input" id="f-nome" type="text" placeholder="Ex: Família Silva">
         </div>
         <div class="form-group">
-          <label class="form-label">Contato (e-mail ou WhatsApp)</label>
+          <label class="form-label">Telefone / WhatsApp</label>
+          <input class="form-input" id="f-telefone" type="tel" placeholder="(48) 99999-9999">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">E-mail</label>
           <input class="form-input" id="f-contato" type="text" placeholder="email@exemplo.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data de nascimento</label>
+          <input class="form-input" id="f-nascimento" type="date">
         </div>
       </div>
 
@@ -547,6 +557,54 @@ tr:hover td{background:rgba(0,0,0,.02)}
         <div class="price-box-total" id="price-total">R$ 0</div>
         <div class="price-box-breakdown" id="price-breakdown"></div>
       </div>
+
+      <!-- Pagamento / Sinal -->
+      <div id="payment-section" style="display:none;margin-top:16px;background:var(--sidebar);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--fg)">💳 Pagamento no ato da reserva</div>
+        <!-- Forma de pagamento -->
+        <div style="margin-bottom:12px">
+          <label class="form-label" style="margin-bottom:6px;display:block">Forma de pagamento</label>
+          <div style="display:flex;gap:6px">
+            <button type="button" id="fp-pix" onclick="setFormaPag('pix')" style="flex:1;padding:9px 4px;border-radius:8px;border:2px solid var(--accent);background:var(--accent-lt);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s">PIX</button>
+            <button type="button" id="fp-dinheiro" onclick="setFormaPag('dinheiro')" style="flex:1;padding:9px 4px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--fg-muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s">💵 Dinheiro</button>
+            <button type="button" id="fp-cartao" onclick="setFormaPag('cartao')" style="flex:1;padding:9px 4px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--fg-muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s">💳 Cartão</button>
+          </div>
+          <input type="hidden" id="f-forma-pag" value="pix">
+        </div>
+        <!-- Desconto -->
+        <div style="margin-bottom:12px">
+          <label class="form-label" style="margin-bottom:6px;display:block">Desconto</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="position:relative;flex:1">
+              <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--fg-muted);font-size:13px">R$</span>
+              <input class="form-input" id="f-desconto" type="number" min="0" step="0.01" placeholder="0,00" style="padding-left:36px" oninput="updateSaldoPreview()">
+            </div>
+            <div style="display:flex;gap:4px">
+              <button type="button" onclick="setDescontoPct(5)"  style="padding:8px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--fg-muted);font-size:11px;font-weight:600;cursor:pointer">5%</button>
+              <button type="button" onclick="setDescontoPct(10)" style="padding:8px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--fg-muted);font-size:11px;font-weight:600;cursor:pointer">10%</button>
+              <button type="button" onclick="setDescontoPct(0)"  style="padding:8px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--fg-muted);font-size:11px;font-weight:600;cursor:pointer">—</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:0">
+          <div class="form-group">
+            <label class="form-label">Sinal pago</label>
+            <div style="position:relative">
+              <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--fg-muted);font-size:13px">R$</span>
+              <input class="form-input" id="f-sinal" type="number" min="0" step="0.01" placeholder="0,00" style="padding-left:36px" oninput="updateSaldoPreview()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Atalhos</label>
+            <div style="display:flex;gap:6px">
+              <button type="button" onclick="setSinalPct(50)" style="flex:1;padding:8px 4px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--fg)">50%</button>
+              <button type="button" onclick="setSinalPct(100)" style="flex:1;padding:8px 4px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--fg)">100%</button>
+              <button type="button" onclick="setSinalPct(0)" style="flex:1;padding:8px 4px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--fg-muted)">Sem sinal</button>
+            </div>
+          </div>
+        </div>
+        <div id="saldo-preview" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600"></div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
@@ -626,6 +684,9 @@ function normalizeRes(r){
   return {
     id: String(r.id),
     nome: r.guest_nome || r.nome || '—',
+    whatsapp: r.guest_whatsapp || r.whatsapp || '',
+    email: r.guest_email || r.email || '',
+    data_nascimento: r.data_nascimento || r.guest_data_nascimento || null,
     contato: r.guest_whatsapp || r.guest_email || r.contato || '',
     tipo: r.spot_tipo || r.tipo || 'glamping',
     spot: r.spot_id || r.spot || '',
@@ -638,6 +699,9 @@ function normalizeRes(r){
     base: parseFloat(r.preco_base ?? r.base ?? 0),
     extras: parseFloat(r.preco_extras ?? r.extras ?? 0),
     total: parseFloat(r.preco_total ?? r.total ?? 0),
+    desconto: parseFloat(r.desconto ?? 0),
+    sinal_pago: parseFloat(r.sinal_pago ?? 0),
+    forma_pagamento: r.forma_pagamento || '',
     source: r.source || 'dashboard',
     notas: r.notas || ''
   };
@@ -767,7 +831,25 @@ function renderReservas(){
       <td class="td-muted">${fmtDate(r.checkout)}</td>
       <td class="td-muted">${nights}</td>
       <td class="td-muted">${r.adultos} ad${childStr}</td>
-      <td style="font-weight:700">R$ ${r.total.toLocaleString('pt-BR')}</td>
+      <td style="font-weight:700">
+        ${(()=>{
+          const desc=parseFloat(r.desconto||0);
+          const totalLiq=Math.max(0,r.total-desc);
+          const s=parseFloat(r.sinal_pago||0);
+          const saldo=totalLiq-s;
+          const fpMap={pix:'PIX',dinheiro:'💵',cartao:'💳'};
+          const fpLabel=r.forma_pagamento?` <span style="font-size:10px;font-weight:500;color:var(--fg-muted)">${fpMap[r.forma_pagamento]||r.forma_pagamento}</span>`:'';
+          let html=`R$ ${totalLiq.toLocaleString('pt-BR')}`;
+          if(desc>0) html+=`<div style="font-size:10px;font-weight:600;color:var(--accent);margin-top:1px">🏷️ -R$ ${desc.toLocaleString('pt-BR')}</div>`;
+          if(s>0){
+            if(saldo<=0) html+=`<div style="font-size:10px;font-weight:600;color:var(--ok);margin-top:1px">✅ Pago${fpLabel}</div>`;
+            else html+=`<div style="font-size:10px;font-weight:600;color:var(--warn);margin-top:1px">⚠ Saldo R$ ${saldo.toLocaleString('pt-BR')}${fpLabel}</div>`;
+          } else if(fpLabel){
+            html+=`<div style="font-size:10px;margin-top:1px">${fpLabel.trim()}</div>`;
+          }
+          return html;
+        })()}
+      </td>
       <td>${statusBadge(r.status)}</td>
       <td><button class="btn btn-ghost btn-sm" onclick="deleteReservation('${r.id}')">🗑</button></td>
     </tr>`;
@@ -948,8 +1030,18 @@ function renderHospedes(){
   if(!tbody) return;
   tbody.innerHTML=ativos.length?ativos.map(r=>{
     const cr=r.criancas?.length?` · ${r.criancas.length} cr`:''; const col=avatarColor(r.nome); const ini=initials(r.nome);
-    return `<tr><td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><div><div class="td-name">${r.nome}</div></div></div></td><td class="td-muted">${r.spot}</td><td class="td-muted">${fmtDate(r.checkin)}</td><td class="td-muted">${fmtDate(r.checkout)}</td><td class="td-muted">${r.adultos} ad${cr}</td><td class="td-muted">${r.contato||'—'}</td></tr>`;
-  }).join(''):`<tr><td colspan="6" class="td-muted" style="text-align:center;padding:16px">Nenhum hóspede no momento</td></tr>`;
+    const nasc=r.data_nascimento?fmtDate(r.data_nascimento):'—';
+    return `<tr>
+      <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><div class="td-name">${r.nome}</div></div></td>
+      <td class="td-muted">${r.spot}</td>
+      <td class="td-muted">${fmtDate(r.checkin)}</td>
+      <td class="td-muted">${fmtDate(r.checkout)}</td>
+      <td class="td-muted">${r.adultos} ad${cr}</td>
+      <td class="td-muted">${r.whatsapp||r.contato||'—'}</td>
+      <td class="td-muted">${r.email||'—'}</td>
+      <td class="td-muted">${nasc}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="8" class="td-muted" style="text-align:center;padding:16px">Nenhum hóspede no momento</td></tr>`;
 }
 
 // ── Check-in / Checkout buttons
@@ -1066,6 +1158,7 @@ function calcPrice(){
   const {base,extras,total}=calcReservationPrice(tipo,temporada,nights,adults,criancas);
 
   box.style.display='block';
+  document.getElementById('payment-section').style.display='block';
   document.getElementById('price-total').textContent='R$ '+total.toLocaleString('pt-BR');
 
   const typeLabel={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'}[tipo];
@@ -1074,11 +1167,86 @@ function calcPrice(){
   if(extras) breakdown+=`\nAdicionais crianças: + R$ ${extras.toLocaleString('pt-BR')}`;
   document.getElementById('price-breakdown').style.whiteSpace='pre';
   document.getElementById('price-breakdown').textContent=breakdown;
+  updateSaldoPreview();
+}
+
+function setFormaPag(val){
+  document.getElementById('f-forma-pag').value=val;
+  const ids=['pix','dinheiro','cartao'];
+  ids.forEach(id=>{
+    const btn=document.getElementById('fp-'+id);
+    if(!btn)return;
+    if(id===val){
+      btn.style.border='2px solid var(--accent)';
+      btn.style.background='var(--accent-lt)';
+      btn.style.color='var(--accent)';
+      btn.style.fontWeight='700';
+    } else {
+      btn.style.border='1px solid var(--border)';
+      btn.style.background='var(--bg-card)';
+      btn.style.color='var(--fg-muted)';
+      btn.style.fontWeight='600';
+    }
+  });
+}
+
+function _getPaymentCalcBase(){
+  const tipo=document.getElementById('f-tipo').value;
+  const checkin=document.getElementById('f-checkin').value;
+  const checkout=document.getElementById('f-checkout').value;
+  const temporada=document.getElementById('f-temporada').value;
+  const adults=parseInt(document.getElementById('f-adultos').value)||2;
+  const criancas=[...document.querySelectorAll('#children-rows select')].map(s=>({age:s.value}));
+  if(!tipo||!checkin||!checkout) return null;
+  const nights=nightsBetween(checkin,checkout);
+  if(nights<=0) return null;
+  const {total}=calcReservationPrice(tipo,temporada,nights,adults,criancas);
+  const desconto=parseFloat(document.getElementById('f-desconto').value||0)||0;
+  return {total, totalComDesconto: Math.max(0, total-desconto), desconto};
+}
+
+function updateSaldoPreview(){
+  const base=_getPaymentCalcBase();
+  if(!base) return;
+  const {total, totalComDesconto, desconto}=base;
+  const sinalInput=parseFloat(document.getElementById('f-sinal').value||0)||0;
+  const saldo=totalComDesconto-sinalInput;
+  const el=document.getElementById('saldo-preview');
+  const lines=[];
+  if(desconto>0) lines.push(`🏷️ Desconto: R$ ${desconto.toLocaleString('pt-BR')} → Total: R$ ${totalComDesconto.toLocaleString('pt-BR')}`);
+  if(sinalInput>0){
+    if(saldo<=0) lines.push('✅ Pago integralmente — sem saldo devedor');
+    else lines.push(`⚠️ Saldo devedor: R$ ${saldo.toLocaleString('pt-BR')} (restante no check-in)`);
+  }
+  if(lines.length){
+    el.style.display='block';
+    el.style.background= (saldo<=0&&sinalInput>0) ? 'var(--ok-lt)' : (desconto>0&&!sinalInput) ? 'var(--accent-lt)' : 'var(--warn-lt)';
+    el.style.color= (saldo<=0&&sinalInput>0) ? 'var(--ok)' : (desconto>0&&!sinalInput) ? 'var(--accent)' : 'var(--warn)';
+    el.innerHTML=lines.join('<br>');
+  } else {
+    el.style.display='none';
+  }
+}
+
+function setSinalPct(pct){
+  const base=_getPaymentCalcBase();
+  if(!base) return;
+  document.getElementById('f-sinal').value=(base.totalComDesconto*pct/100).toFixed(2);
+  updateSaldoPreview();
+}
+
+function setDescontoPct(pct){
+  const base=_getPaymentCalcBase();
+  if(!base) return;
+  document.getElementById('f-desconto').value=pct>0?(base.total*pct/100).toFixed(2):'';
+  updateSaldoPreview();
 }
 
 async function submitReservation(){
   const nome=document.getElementById('f-nome').value.trim();
+  const telefone=document.getElementById('f-telefone').value.trim();
   const contato=document.getElementById('f-contato').value.trim();
+  const data_nascimento=document.getElementById('f-nascimento').value||null;
   const tipo=document.getElementById('f-tipo').value;
   const spot=document.getElementById('f-spot').value;
   const checkin=document.getElementById('f-checkin').value;
@@ -1095,12 +1263,14 @@ async function submitReservation(){
 
   const nights=nightsBetween(checkin,checkout);
   const {base,extras,total,noites}=calcReservationPrice(tipo,temporada,nights,adultos,criancas);
+  const desconto=parseFloat(document.getElementById('f-desconto').value||0)||0;
+  const sinal_pago=parseFloat(document.getElementById('f-sinal').value||0)||0;
+  const forma_pagamento=document.getElementById('f-forma-pag').value||'pix';
   const isToday=new Date().toISOString().slice(0,10)===checkin;
 
-  // Detectar se contato é whatsapp (tem dígitos suficientes) ou email
-  const isWpp=contato.replace(/\D/g,'').length>=8;
-  const whatsapp=isWpp?contato:'';
-  const email=(!isWpp&&contato.includes('@'))?contato:'';
+  // telefone vem do campo dedicado; contato pode ser e-mail adicional
+  const whatsapp=telefone||'';
+  const email=contato.includes('@')?contato:'';
 
   const btn=document.querySelector('.modal-footer .btn-primary');
   btn.textContent='Salvando…'; btn.disabled=true;
@@ -1111,9 +1281,9 @@ async function submitReservation(){
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        spot_id:spot, nome, email, whatsapp,
+        spot_id:spot, nome, email, whatsapp, data_nascimento,
         checkin, checkout, temporada,
-        adultos, criancas,
+        adultos, criancas, desconto, sinal_pago, forma_pagamento,
         source:'dashboard', notas:''
         // preços calculados pelo n8n — não enviados
       }),
@@ -1125,7 +1295,7 @@ async function submitReservation(){
   }catch(e){
     console.warn('API create error:',e.message);
     // Fallback offline
-    const nova={id:'r'+Date.now(),nome,contato,tipo,spot,checkin,checkout,temporada,adultos,criancas,status:isToday?'checkin':'confirmed',base,extras,total};
+    const nova={id:'r'+Date.now(),nome,contato,tipo,spot,checkin,checkout,temporada,adultos,criancas,status:isToday?'checkin':'confirmed',base,extras,total,desconto,sinal_pago,forma_pagamento};
     reservations.push(nova);
     saveReservations();
     renderAll();
@@ -1134,16 +1304,26 @@ async function submitReservation(){
   }
 
   closeModal();
-  showToast(`Reserva de ${nome} criada${apiOk?'':' (offline)'}! R$ ${total.toLocaleString('pt-BR')}`,'🎉');
+  const saldo=total-sinal_pago;
+  const toastExtra=sinal_pago>0?(saldo>0?` · Saldo: R$ ${saldo.toLocaleString('pt-BR')}`:'· Pago total'):'';
+  showToast(`Reserva de ${nome} criada${apiOk?'':' (offline)'}!${toastExtra}`,'🎉');
 
   // Reset form
   document.getElementById('f-nome').value='';
+  document.getElementById('f-telefone').value='';
   document.getElementById('f-contato').value='';
+  document.getElementById('f-nascimento').value='';
   document.getElementById('f-tipo').value='';
   document.getElementById('f-spot').innerHTML='<option value="">Selecione o tipo primeiro</option>';
   document.getElementById('f-ncrianças').value='0';
   document.getElementById('children-ages').style.display='none';
   document.getElementById('price-box').style.display='none';
+  document.getElementById('payment-section').style.display='none';
+  document.getElementById('f-desconto').value='';
+  document.getElementById('f-sinal').value='';
+  document.getElementById('saldo-preview').style.display='none';
+  document.getElementById('f-forma-pag').value='pix';
+  setFormaPag('pix');
 }
 
 // ── Toast
