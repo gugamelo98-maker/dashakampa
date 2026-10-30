@@ -1565,18 +1565,20 @@ function renderAll(){
 }
 renderAll();
 
-// ── Delete / cancelar reservation
+// ── Delete reservation (apaga do banco de dados)
 async function deleteReservation(id){
+  if(!confirm('Excluir esta reserva permanentemente?')) return;
   const numId=parseInt(id);
   if(numId){
     try{
-      await fetch(`${API_BASE}/akampa/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:numId,status:'cancelled'}),signal:AbortSignal.timeout(6000)});
-    }catch(e){ console.warn('API cancel error:',e.message); }
+      const res=await fetch(`${API_BASE}/akampa/reservas`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:numId}),signal:AbortSignal.timeout(6000)});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+    }catch(e){ console.warn('API delete error:',e.message); showToast('Erro ao excluir.','❌'); return; }
   }
   reservations=reservations.filter(r=>r.id!==id);
   saveReservations();
   renderAll();
-  showToast('Reserva cancelada.','🗑');
+  showToast('Reserva excluída.','🗑');
 }
 
 // ── Modal
