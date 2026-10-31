@@ -1978,13 +1978,10 @@ function getRelMes(){
 }
 
 function relMesNav(dir){
-  const hoje=new Date();
   const novoOffset=relMesOffset+dir;
-  // Não avança além do mês atual
   if(novoOffset>0) return;
   relMesOffset=novoOffset;
-  updateRelatorios();
-  refreshChart2();
+  initChart2();
 }
 
 function buildChartData(){
