@@ -818,7 +818,7 @@ function navigate(id){
   const ni=document.querySelector(`.nav-item[data-view="${id}"]`);
   if(ni) ni.classList.add('active');
   document.getElementById('page-title').textContent=TITLES[id]||'Painel';
-  if(id==='relatorios'){ initChart2(); updateRelatorios(); refreshChart2(); }
+  if(id==='relatorios' && document.getElementById('auth-overlay').classList.contains('hidden')){ initChart2(); updateRelatorios(); refreshChart2(); }
 }
 window.addEventListener('hashchange',()=>navigate(location.hash.replace('#','')));
 document.addEventListener('click',e=>{
@@ -877,6 +877,12 @@ function setUserUI(s){
 function showDashboard(s){
   document.getElementById('auth-overlay').classList.add('hidden');
   setUserUI(s);
+  // Se já estava na aba relatórios, inicializa agora
+  const cur=location.hash.replace('#','');
+  if(cur==='relatorios'){ initChart2(); updateRelatorios(); refreshChart2(); }
+  // Garante label do mês sempre visível
+  const lbl=document.getElementById('rel-mes-label');
+  if(lbl && !lbl.textContent){ const {y,m}=getRelMes(); lbl.textContent=MESES_PT[m]+' '+y; }
 }
 
 async function checkAuth(){
