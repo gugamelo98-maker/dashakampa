@@ -818,7 +818,7 @@ function navigate(id){
   const ni=document.querySelector(`.nav-item[data-view="${id}"]`);
   if(ni) ni.classList.add('active');
   document.getElementById('page-title').textContent=TITLES[id]||'Painel';
-  if(id==='relatorios'){ initChart2(); if(chart2Init) updateRelatorios(); }
+  if(id==='relatorios'){ initChart2(); updateRelatorios(); refreshChart2(); }
 }
 window.addEventListener('hashchange',()=>navigate(location.hash.replace('#','')));
 document.addEventListener('click',e=>{
