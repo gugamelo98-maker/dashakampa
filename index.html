@@ -568,9 +568,9 @@ tr:hover td{background:rgba(0,0,0,.02)}
       <div class="section-hd" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
         <div><h2>Relatórios</h2><p>Estatísticas de ocupação e receita</p></div>
         <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-          <button onclick="relMesNav(-1)" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--fg);font-size:15px">‹</button>
-          <span id="rel-mes-label" style="font-size:14px;font-weight:600;min-width:120px;text-align:center"></span>
-          <button onclick="relMesNav(1)" id="rel-btn-next" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--fg);font-size:15px">›</button>
+          <button onclick="relMesNav(-1)" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--fg);font-size:15px">‹</button>
+          <span id="rel-mes-label" style="font-size:14px;font-weight:600;min-width:120px;text-align:center;color:var(--fg)"></span>
+          <button onclick="relMesNav(1)" id="rel-btn-next" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--fg);font-size:15px">›</button>
         </div>
       </div>
       <div class="stats-grid" style="margin-bottom:20px">
@@ -818,7 +818,14 @@ function navigate(id){
   const ni=document.querySelector(`.nav-item[data-view="${id}"]`);
   if(ni) ni.classList.add('active');
   document.getElementById('page-title').textContent=TITLES[id]||'Painel';
-  if(id==='relatorios' && document.getElementById('auth-overlay').classList.contains('hidden')){ initChart2(); updateRelatorios(); refreshChart2(); }
+  if(id==='relatorios'){
+    // Sempre atualiza o label do mês, independente de auth
+    const _lbl=document.getElementById('rel-mes-label');
+    if(_lbl){ const {y,m}=getRelMes(); _lbl.textContent=MESES_PT[m]+' '+y; }
+    const _btnNext=document.getElementById('rel-btn-next');
+    if(_btnNext){ _btnNext.style.opacity=relMesOffset>=0?'0.3':'1'; _btnNext.style.cursor=relMesOffset>=0?'not-allowed':'pointer'; }
+    if(document.getElementById('auth-overlay').classList.contains('hidden')){ initChart2(); }
+  }
 }
 window.addEventListener('hashchange',()=>navigate(location.hash.replace('#','')));
 document.addEventListener('click',e=>{
@@ -1981,6 +1988,11 @@ function relMesNav(dir){
   const novoOffset=relMesOffset+dir;
   if(novoOffset>0) return;
   relMesOffset=novoOffset;
+  // Atualiza label imediatamente, antes de qualquer init de chart
+  const lbl=document.getElementById('rel-mes-label');
+  if(lbl){ const {y,m}=getRelMes(); lbl.textContent=MESES_PT[m]+' '+y; }
+  const btnN=document.getElementById('rel-btn-next');
+  if(btnN){ btnN.style.opacity=relMesOffset>=0?'0.3':'1'; btnN.style.cursor=relMesOffset>=0?'not-allowed':'pointer'; }
   initChart2();
 }
 
