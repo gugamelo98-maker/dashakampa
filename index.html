@@ -807,6 +807,12 @@ document.getElementById('today-date').textContent =
 document.getElementById('f-checkin').min = todayStr();
 document.getElementById('f-checkout').min = '2026-10-30';
 
+// ── Mês dos relatórios (definido cedo para uso em navigate())
+const MESES_PT_EARLY=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+let relMesOffset=0;
+function getRelMes(){ const now=new Date(),d=new Date(now.getFullYear(),now.getMonth()+relMesOffset,1); return{y:d.getFullYear(),m:d.getMonth()}; }
+function _setRelLabel(){ const lbl=document.getElementById('rel-mes-label'); if(lbl){ const{y,m}=getRelMes(); lbl.textContent=MESES_PT_EARLY[m]+' '+y; } const bn=document.getElementById('rel-btn-next'); if(bn){bn.style.opacity=relMesOffset>=0?'0.3':'1';bn.style.cursor=relMesOffset>=0?'not-allowed':'pointer';} }
+
 // ── Navigation
 const TITLES = {painel:'Visão Geral',reservas:'Reservas',ocupacao:'Ocupação',chegadas:'Chegadas',saidas:'Saídas',hospedes:'Hóspedes',clientes:'Clientes',financeiro:'Financeiro',precos:'Tabela de Preços',relatorios:'Relatórios',configuracoes:'Configurações'};
 
@@ -819,11 +825,7 @@ function navigate(id){
   if(ni) ni.classList.add('active');
   document.getElementById('page-title').textContent=TITLES[id]||'Painel';
   if(id==='relatorios'){
-    // Sempre atualiza o label do mês, independente de auth
-    const _lbl=document.getElementById('rel-mes-label');
-    if(_lbl){ const {y,m}=getRelMes(); _lbl.textContent=MESES_PT[m]+' '+y; }
-    const _btnNext=document.getElementById('rel-btn-next');
-    if(_btnNext){ _btnNext.style.opacity=relMesOffset>=0?'0.3':'1'; _btnNext.style.cursor=relMesOffset>=0?'not-allowed':'pointer'; }
+    _setRelLabel(); // sempre atualiza label do mês (seguro desde o início)
     if(document.getElementById('auth-overlay').classList.contains('hidden')){ initChart2(); }
   }
 }
@@ -884,12 +886,10 @@ function setUserUI(s){
 function showDashboard(s){
   document.getElementById('auth-overlay').classList.add('hidden');
   setUserUI(s);
-  // Se já estava na aba relatórios, inicializa agora
-  const cur=location.hash.replace('#','');
-  if(cur==='relatorios'){ initChart2(); updateRelatorios(); refreshChart2(); }
-  // Garante label do mês sempre visível
-  const lbl=document.getElementById('rel-mes-label');
-  if(lbl && !lbl.textContent){ const {y,m}=getRelMes(); lbl.textContent=MESES_PT[m]+' '+y; }
+  _setRelLabel(); // garante label do mês visível
+  // Re-navega para o hash atual (ativa dados da aba correta após login)
+  const cur=location.hash.replace('#','')||'painel';
+  navigate(cur);
 }
 
 async function checkAuth(){
@@ -1973,26 +1973,13 @@ function showToast(msg,icon='✅'){
 
 // ── Chart e Relatórios dinâmicos
 const TOTAL_SPOTS=13;
-const MESES_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-
-// Mês selecionado nos relatórios (offset em meses a partir do mês atual)
-let relMesOffset=0;
-
-function getRelMes(){
-  const now=new Date();
-  const d=new Date(now.getFullYear(),now.getMonth()+relMesOffset,1);
-  return{y:d.getFullYear(),m:d.getMonth()};
-}
+const MESES_PT=MESES_PT_EARLY; // alias — definido no topo do script
 
 function relMesNav(dir){
   const novoOffset=relMesOffset+dir;
   if(novoOffset>0) return;
   relMesOffset=novoOffset;
-  // Atualiza label imediatamente, antes de qualquer init de chart
-  const lbl=document.getElementById('rel-mes-label');
-  if(lbl){ const {y,m}=getRelMes(); lbl.textContent=MESES_PT[m]+' '+y; }
-  const btnN=document.getElementById('rel-btn-next');
-  if(btnN){ btnN.style.opacity=relMesOffset>=0?'0.3':'1'; btnN.style.cursor=relMesOffset>=0?'not-allowed':'pointer'; }
+  _setRelLabel(); // atualiza label e botão imediatamente
   initChart2();
 }
 
