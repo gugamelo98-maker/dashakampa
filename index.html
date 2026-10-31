@@ -826,7 +826,10 @@ function navigate(id){
   document.getElementById('page-title').textContent=TITLES[id]||'Painel';
   if(id==='relatorios'){
     _setRelLabel(); // sempre atualiza label do mês (seguro desde o início)
-    if(document.getElementById('auth-overlay').classList.contains('hidden')){ initChart2(); }
+    if(document.getElementById('auth-overlay').classList.contains('hidden')){
+      // Busca dados frescos ao entrar na aba e depois inicializa o gráfico
+      loadReservationsFromAPI().then(()=>initChart2());
+    }
   }
 }
 window.addEventListener('hashchange',()=>navigate(location.hash.replace('#','')));
@@ -1975,9 +1978,11 @@ function showToast(msg,icon='✅'){
 const TOTAL_SPOTS=13;
 const MESES_PT=MESES_PT_EARLY; // alias — definido no topo do script
 
-function relMesNav(dir){
+async function relMesNav(dir){
   relMesOffset+=dir;
   _setRelLabel();
+  // Busca dados frescos da API a cada navegação de mês
+  await loadReservationsFromAPI();
   initChart2();
 }
 
