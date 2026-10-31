@@ -454,7 +454,7 @@ tr:hover td{background:rgba(0,0,0,.02)}
       </div>
       <div class="card" style="margin-bottom:20px">
         <div class="card-header"><span class="card-title">Detalhamento por reserva</span></div>
-        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Tipo</th><th>Temp.</th><th>Noites</th><th>Pessoas</th><th>Base</th><th>Adicionais</th><th>Total</th><th>Status</th></tr></thead><tbody id="table-financeiro"></tbody></table></div></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Tipo</th><th>Temp.</th><th>Noites</th><th>Pessoas</th><th>Base</th><th>Adicionais</th><th>Total</th><th>Pago</th><th>Saldo</th><th>Status</th><th></th></tr></thead><tbody id="table-financeiro"></tbody></table></div></div>
       </div>
 
       <!-- Gastos -->
@@ -1210,14 +1210,31 @@ function renderFinanceiro(){
       <td class="td-muted">R$ ${r.base.toLocaleString('pt-BR')}</td>
       <td class="td-muted">${r.extras?`+ R$ ${r.extras.toLocaleString('pt-BR')}`:'—'}</td>
       <td style="font-weight:700;color:var(--fg)">R$ ${r.total.toLocaleString('pt-BR')}</td>
+      <td style="color:var(--ok);font-weight:600">R$ ${sinal.toLocaleString('pt-BR')}</td>
+      <td style="color:${saldo>0?'var(--warn)':'var(--fg-muted)'};font-weight:${saldo>0?'600':'400'}">R$ ${saldo.toLocaleString('pt-BR')}</td>
       <td>${statusBadge(r.status)}</td>
+      <td>${saldo>0?`<button class="btn-xs" onclick="confirmarPagamento(${r.id})" style="background:var(--ok);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600">✓ Quitar</button>`:''}</td>
     </tr>`;
-  }).join('')+`<tr style="background:var(--accent-lt)"><td colspan="7" style="font-weight:700;padding:12px 20px;color:var(--fg)">Total geral</td><td style="font-weight:700;font-size:15px;padding:12px 16px;color:var(--accent)">R$ ${(confirmed+pending).toLocaleString('pt-BR')}</td><td></td></tr>`;
+  }).join('')+`<tr style="background:var(--accent-lt)"><td colspan="7" style="font-weight:700;padding:12px 20px;color:var(--fg)">Total geral</td><td style="font-weight:700;font-size:15px;padding:12px 16px;color:var(--accent)">R$ ${(confirmed+pending).toLocaleString('pt-BR')}</td><td style="font-weight:700;color:var(--ok)">R$ ${confirmed.toLocaleString('pt-BR')}</td><td style="font-weight:700;color:var(--warn)">R$ ${pending.toLocaleString('pt-BR')}</td><td colspan="2"></td></tr>`;
 
   // Update tiles
   document.getElementById('fin-confirmed').textContent='R$ '+confirmed.toLocaleString('pt-BR');
   document.getElementById('fin-pending').textContent='R$ '+pending.toLocaleString('pt-BR');
   updateFinResultado(confirmed);
+}
+
+async function confirmarPagamento(id){
+  if(!confirm('Confirmar quitação total desta reserva?')) return;
+  try{
+    const res=await fetch(`${API_BASE}/akampa/pagar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id}),signal:AbortSignal.timeout(8000)});
+    const d=await res.json();
+    if(!d.ok) throw new Error('Falha');
+    // atualiza local
+    const r=reservations.find(x=>x.id===id||x.id===String(id));
+    if(r){ r.sinal_pago=d.sinal_pago; }
+    renderFinanceiro();
+    showToast('Pagamento confirmado!','✅');
+  }catch(e){ showToast('Erro ao confirmar pagamento','❌'); }
 }
 
 function updateFinResultado(receita){
