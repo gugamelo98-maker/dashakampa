@@ -831,13 +831,8 @@ function navigate(id){
     _setRelLabel(); // sempre atualiza label do mês (seguro desde o início)
     const authHidden = document.getElementById('auth-overlay').classList.contains('hidden');
     if(authHidden){
-      if(reservations.length > 0){
-        // Dados já carregados — inicializa/atualiza direto, sem novo fetch
-        initChart2();
-      } else {
-        // Primeira vez: busca dados da API
-        loadReservationsFromAPI().then(()=>initChart2());
-      }
+      // Sempre busca dados frescos do n8n ao entrar na aba
+      loadReservationsFromAPI().then(()=>initChart2());
     }
   }
 }
