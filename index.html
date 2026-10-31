@@ -830,14 +830,14 @@ function navigate(id){
   if(id==='relatorios'){
     _setRelLabel(); // sempre atualiza label do mês (seguro desde o início)
     const authHidden = document.getElementById('auth-overlay').classList.contains('hidden');
-    const dbg = document.getElementById('rel-debug');
-    if(dbg) dbg.textContent = `navigate: auth=${authHidden ? 'ok' : 'logado?'} res=${reservations.length}`;
     if(authHidden){
-      // Busca dados frescos ao entrar na aba e depois inicializa o gráfico
-      loadReservationsFromAPI().then(()=>initChart2());
-    } else {
-      // auth-overlay ainda visível — aguarda showDashboard chamar navigate novamente
-      if(dbg) dbg.textContent = 'aguardando login...';
+      if(reservations.length > 0){
+        // Dados já carregados — inicializa/atualiza direto, sem novo fetch
+        initChart2();
+      } else {
+        // Primeira vez: busca dados da API
+        loadReservationsFromAPI().then(()=>initChart2());
+      }
     }
   }
 }
@@ -2130,7 +2130,7 @@ chart1=makeChart('occ-chart');
 function initChart2(){
   if(!chart2Init){
     chart2Init=true;
-    chart2=makeChart('occ-chart-2');
+    try{ chart2=makeChart('occ-chart-2'); }catch(e){ console.error('[Akampa] chart2 init error:', e); }
   }
   updateRelatorios();
   refreshChart2();
