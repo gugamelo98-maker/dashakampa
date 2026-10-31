@@ -829,9 +829,15 @@ function navigate(id){
   document.getElementById('page-title').textContent=TITLES[id]||'Painel';
   if(id==='relatorios'){
     _setRelLabel(); // sempre atualiza label do mês (seguro desde o início)
-    if(document.getElementById('auth-overlay').classList.contains('hidden')){
+    const authHidden = document.getElementById('auth-overlay').classList.contains('hidden');
+    const dbg = document.getElementById('rel-debug');
+    if(dbg) dbg.textContent = `navigate: auth=${authHidden ? 'ok' : 'logado?'} res=${reservations.length}`;
+    if(authHidden){
       // Busca dados frescos ao entrar na aba e depois inicializa o gráfico
       loadReservationsFromAPI().then(()=>initChart2());
+    } else {
+      // auth-overlay ainda visível — aguarda showDashboard chamar navigate novamente
+      if(dbg) dbg.textContent = 'aguardando login...';
     }
   }
 }
