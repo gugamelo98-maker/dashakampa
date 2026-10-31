@@ -813,6 +813,7 @@ document.getElementById('f-checkout').min = '2026-10-30';
 // ── Mês dos relatórios (definido cedo para uso em navigate())
 const MESES_PT_EARLY=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 let relMesOffset=0;
+var chart2Init=false; // var para garantir escopo global em qualquer contexto
 function getRelMes(){ const now=new Date(),d=new Date(now.getFullYear(),now.getMonth()+relMesOffset,1); return{y:d.getFullYear(),m:d.getMonth()}; }
 function _setRelLabel(){ const lbl=document.getElementById('rel-mes-label'); if(lbl){ const{y,m}=getRelMes(); lbl.textContent=MESES_PT_EARLY[m]+' '+y; } }
 
@@ -1989,9 +1990,8 @@ const MESES_PT=MESES_PT_EARLY; // alias — definido no topo do script
 function relMesNav(dir){
   relMesOffset+=dir;
   _setRelLabel();
-  // Os dados já estão em memória — só filtra e atualiza a view
-  updateRelatorios();
-  refreshChart2();
+  // Busca dados frescos do n8n para o mês selecionado
+  loadReservationsFromAPI().then(()=>initChart2());
 }
 
 function buildChartData(){
@@ -2098,7 +2098,7 @@ function updateRelatorios(){
     </tr>`;
 }
 
-let chart1,chart2,chart2Init=false;
+let chart1,chart2; // chart2Init já declarado no topo como var global
 
 function getColors(){
   const dark=document.documentElement.dataset.theme==='dark'||(!document.documentElement.dataset.theme&&window.matchMedia('(prefers-color-scheme:dark)').matches);
