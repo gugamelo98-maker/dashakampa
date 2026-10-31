@@ -567,10 +567,13 @@ tr:hover td{background:rgba(0,0,0,.02)}
     <div class="view" id="view-relatorios">
       <div class="section-hd" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
         <div><h2>Relatórios</h2><p>Estatísticas de ocupação e receita</p></div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-          <button onclick="relMesNav(-1)" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--fg);font-size:15px">‹</button>
-          <span id="rel-mes-label" style="font-size:14px;font-weight:600;min-width:120px;text-align:center;color:var(--fg)"></span>
-          <button onclick="relMesNav(1)" id="rel-btn-next" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--fg);font-size:15px">›</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin-top:4px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <button onclick="relMesNav(-1)" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--fg);font-size:15px">‹</button>
+            <span id="rel-mes-label" style="font-size:14px;font-weight:600;min-width:120px;text-align:center;color:var(--fg)"></span>
+            <button onclick="relMesNav(1)" id="rel-btn-next" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--fg);font-size:15px">›</button>
+          </div>
+          <span id="rel-debug" style="font-size:10px;color:var(--fg-muted);opacity:0.7"></span>
         </div>
       </div>
       <div class="stats-grid" style="margin-bottom:20px">
@@ -2031,6 +2034,8 @@ function updateRelatorios(){
   const mesEnd=`${y}-${String(m+1).padStart(2,'0')}-${String(new Date(y,m+1,0).getDate()).padStart(2,'0')}`;
   const mesRes=reservations.filter(r=>r.status!=='cancelled'&&r.status!=='no_show'&&r.checkin<=mesEnd&&r.checkout>mesStart);
   console.log(`[Relatorios] ${MESES_PT[m]} ${y} → total=${reservations.length} mesStart=${mesStart} mesEnd=${mesEnd} filtradas=${mesRes.length}`);
+  const dbg=document.getElementById('rel-debug');
+  if(dbg) dbg.textContent=`debug: ${reservations.length} reservas na memória, ${mesRes.length} em ${MESES_PT[m]}`;
 
   // Diárias, hóspedes, receita por tipo
   let diarias=0,hospedes=0,receitaTotal=0;
