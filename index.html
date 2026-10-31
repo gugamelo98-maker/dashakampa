@@ -811,7 +811,7 @@ document.getElementById('f-checkout').min = '2026-10-30';
 const MESES_PT_EARLY=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 let relMesOffset=0;
 function getRelMes(){ const now=new Date(),d=new Date(now.getFullYear(),now.getMonth()+relMesOffset,1); return{y:d.getFullYear(),m:d.getMonth()}; }
-function _setRelLabel(){ const lbl=document.getElementById('rel-mes-label'); if(lbl){ const{y,m}=getRelMes(); lbl.textContent=MESES_PT_EARLY[m]+' '+y; } const bn=document.getElementById('rel-btn-next'); if(bn){bn.style.opacity=relMesOffset>=0?'0.3':'1';bn.style.cursor=relMesOffset>=0?'not-allowed':'pointer';} }
+function _setRelLabel(){ const lbl=document.getElementById('rel-mes-label'); if(lbl){ const{y,m}=getRelMes(); lbl.textContent=MESES_PT_EARLY[m]+' '+y; } }
 
 // ── Navigation
 const TITLES = {painel:'Visão Geral',reservas:'Reservas',ocupacao:'Ocupação',chegadas:'Chegadas',saidas:'Saídas',hospedes:'Hóspedes',clientes:'Clientes',financeiro:'Financeiro',precos:'Tabela de Preços',relatorios:'Relatórios',configuracoes:'Configurações'};
@@ -1976,10 +1976,8 @@ const TOTAL_SPOTS=13;
 const MESES_PT=MESES_PT_EARLY; // alias — definido no topo do script
 
 function relMesNav(dir){
-  const novoOffset=relMesOffset+dir;
-  if(novoOffset>0) return;
-  relMesOffset=novoOffset;
-  _setRelLabel(); // atualiza label e botão imediatamente
+  relMesOffset+=dir;
+  _setRelLabel();
   initChart2();
 }
 
@@ -2016,11 +2014,6 @@ function updateRelatorios(){
 
   // Label do mês
   document.getElementById('rel-mes-label').textContent=`${MESES_PT[m]} ${y}`;
-  // Botão "próximo" desabilitado se for mês atual
-  const btnNext=document.getElementById('rel-btn-next');
-  btnNext.style.opacity=relMesOffset>=0?'0.3':'1';
-  btnNext.style.cursor=relMesOffset>=0?'not-allowed':'pointer';
-
   // Título do gráfico
   document.getElementById('rel-chart-title').textContent=
     ehMesAtual?'Ocupação — próximos 7 dias':`Ocupação diária — ${MESES_PT[m]} ${y}`;
