@@ -1106,7 +1106,7 @@ function renderSpotMap(containerId,large=false){
     const spotsHTML=sec.spots.map(s=>{
       const {status,label}=getSpotStatus(s.id);
       const sub=label==='Livre'?'disponível':label.length>8?label.slice(0,8)+'…':label;
-      return `<div class="spot ${status}" title="${label}" style="width:${size}px;padding:${pad}">
+      return `<div class="spot ${status}" title="${label}" style="width:${size}px;padding:${pad};cursor:pointer" onclick="showSpotModal('${s.id}','${s.emoji}')">
         <div class="spot-num">${s.id}</div>
         <div class="spot-icon" style="font-size:${emojiSize}">${s.emoji}</div>
         <div class="spot-name">${sub}</div>
@@ -1114,6 +1114,56 @@ function renderSpotMap(containerId,large=false){
     }).join('');
     return `<div><div class="spot-section-label">${sec.label}</div><div class="spot-row">${spotsHTML}</div></div>`;
   }).join('');
+}
+
+// ── Modal de reservas por spot
+function showSpotModal(spotId, emoji){
+  const spotReservations = reservations
+    .filter(r => r.spot === spotId)
+    .sort((a,b) => b.checkin.localeCompare(a.checkin));
+  const statusLabel = {confirmed:'Confirmada',pending:'Pendente',occupied:'Hospedado',checkin:'Check-in',checkout:'Check-out',cancelled:'Cancelada',no_show:'No-show'};
+  const statusColor = {confirmed:'var(--ok)',pending:'var(--warn)',occupied:'var(--accent)',checkin:'#3b82f6',checkout:'var(--fg-muted)',cancelled:'var(--danger)',no_show:'var(--danger)'};
+  const rows = spotReservations.length ? spotReservations.map(r=>{
+    const nights = nightsBetween(r.checkin, r.checkout);
+    const sinal = parseFloat(r.sinal_pago||0);
+    const totalLiq = Math.max(0, r.total - parseFloat(r.desconto||0));
+    const saldo = Math.max(0, totalLiq - sinal);
+    const st = r.status||'pending';
+    return `<tr style="border-top:1px solid var(--border)">
+      <td style="padding:10px 12px;font-weight:600">${r.nome}</td>
+      <td style="padding:10px 12px;color:var(--fg-muted);font-size:13px">${r.checkin} → ${r.checkout}<br><span style="font-size:11px">${nights} noite${nights!==1?'s':''}</span></td>
+      <td style="padding:10px 12px"><span style="background:${statusColor[st]}22;color:${statusColor[st]};padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600">${statusLabel[st]||st}</span></td>
+      <td style="padding:10px 12px;font-size:13px"><span style="color:var(--ok)">R$ ${sinal.toLocaleString('pt-BR')}</span>${saldo>0?` <span style="color:var(--fg-muted)">/ R$ ${saldo.toLocaleString('pt-BR')} a receber</span>`:' <span style="color:var(--ok);font-size:11px">✓ quitado</span>'}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="4" style="padding:24px;text-align:center;color:var(--fg-muted)">Nenhuma reserva para esta acomodação</td></tr>`;
+
+  const existing = document.getElementById('spot-modal-overlay');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'spot-modal-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = `<div style="background:var(--surface);border-radius:16px;width:100%;max-width:680px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:28px">${emoji}</span>
+        <div><div style="font-size:18px;font-weight:700;color:var(--fg)">${spotId}</div><div style="font-size:13px;color:var(--fg-muted)">${spotReservations.length} reserva${spotReservations.length!==1?'s':''}</div></div>
+      </div>
+      <button onclick="document.getElementById('spot-modal-overlay').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--fg-muted);line-height:1">✕</button>
+    </div>
+    <div style="overflow-y:auto;flex:1">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:var(--bg)">
+          <th style="padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted)">Hóspede</th>
+          <th style="padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted)">Período</th>
+          <th style="padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted)">Status</th>
+          <th style="padding:8px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted)">Pagamento</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
+  overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
 }
 
 // ── Render reservations table
