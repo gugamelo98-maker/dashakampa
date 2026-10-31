@@ -1030,14 +1030,18 @@ function saveReservations(){ try{localStorage.setItem('akampa_res',JSON.stringif
 // Carrega reservas da API (substitui dados locais)
 async function loadReservationsFromAPI(){
   try{
-    const res = await fetch(`${API_BASE}/akampa/reservas`, {signal: AbortSignal.timeout(8000), cache: 'no-store'});
+    const res = await fetch(`${API_BASE}/akampa/reservas?_=${Date.now()}`, {signal: AbortSignal.timeout(8000)});
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
+    console.log('[Akampa] API reservas →', JSON.stringify(data).slice(0,200));
     if(data.ok && Array.isArray(data.reservas)){
       reservations = data.reservas.map(normalizeRes);
+      console.log('[Akampa] reservations carregadas:', reservations.length, reservations.map(r=>r.checkin));
       renderAll();
+      // Garante atualização dos relatórios se já estiver nessa aba
+      if(chart2Init){ updateRelatorios(); refreshChart2(); }
     }
-  }catch(e){ console.warn('API indisponível, usando dados de demonstração:', e.message); }
+  }catch(e){ console.error('[Akampa] API erro:', e.message); }
 }
 loadReservationsFromAPI();
 checkAuth();
@@ -1978,12 +1982,12 @@ function showToast(msg,icon='✅'){
 const TOTAL_SPOTS=13;
 const MESES_PT=MESES_PT_EARLY; // alias — definido no topo do script
 
-async function relMesNav(dir){
+function relMesNav(dir){
   relMesOffset+=dir;
   _setRelLabel();
-  // Busca dados frescos da API a cada navegação de mês
-  await loadReservationsFromAPI();
-  initChart2();
+  // Os dados já estão em memória — só filtra e atualiza a view
+  updateRelatorios();
+  refreshChart2();
 }
 
 function buildChartData(){
@@ -2023,9 +2027,10 @@ function updateRelatorios(){
   document.getElementById('rel-chart-title').textContent=
     ehMesAtual?'Ocupação — próximos 7 dias':`Ocupação diária — ${MESES_PT[m]} ${y}`;
 
-  const mesStart=new Date(y,m,1).toISOString().slice(0,10);
-  const mesEnd=new Date(y,m+1,0).toISOString().slice(0,10);
+  const mesStart=`${y}-${String(m+1).padStart(2,'0')}-01`;
+  const mesEnd=`${y}-${String(m+1).padStart(2,'0')}-${String(new Date(y,m+1,0).getDate()).padStart(2,'0')}`;
   const mesRes=reservations.filter(r=>r.status!=='cancelled'&&r.status!=='no_show'&&r.checkin<=mesEnd&&r.checkout>mesStart);
+  console.log(`[Relatorios] ${MESES_PT[m]} ${y} → total=${reservations.length} mesStart=${mesStart} mesEnd=${mesEnd} filtradas=${mesRes.length}`);
 
   // Diárias, hóspedes, receita por tipo
   let diarias=0,hospedes=0,receitaTotal=0;
