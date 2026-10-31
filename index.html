@@ -1027,7 +1027,7 @@ function saveReservations(){ try{localStorage.setItem('akampa_res',JSON.stringif
 // Carrega reservas da API (substitui dados locais)
 async function loadReservationsFromAPI(){
   try{
-    const res = await fetch(`${API_BASE}/akampa/reservas`, {signal: AbortSignal.timeout(8000)});
+    const res = await fetch(`${API_BASE}/akampa/reservas`, {signal: AbortSignal.timeout(8000), cache: 'no-store'});
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
     if(data.ok && Array.isArray(data.reservas)){
@@ -2032,7 +2032,7 @@ function updateRelatorios(){
     diarias+=noites;
     hospedes+=(r.adultos||1)+(r.criancas||[]).length;
     const sid=(r.spot_tipo||r.spot_id||'').toLowerCase();
-    const t=sid.includes('glm')?'glamping':sid.includes('bar')?'barraca':'motorhome';
+    const t=sid.includes('glamping')||sid.includes('glm')?'glamping':sid.includes('barraca')||sid.includes('bar')?'barraca':sid.includes('motorhome')||sid.includes('mth')?'motorhome':'glamping';
     const rec=r.preco_total||0;
     tipoStats[t].res++;
     tipoStats[t].diarias+=noites;
