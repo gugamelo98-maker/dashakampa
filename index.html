@@ -310,7 +310,7 @@ tr:hover td{background:rgba(0,0,0,.02)}
       <div class="topbar-date" id="today-date"></div>
     </div>
     <div class="topbar-actions">
-      <button class="btn btn-ghost">⬇ Exportar</button>
+      <button class="btn btn-ghost" onclick="exportarReservas()">⬇ Exportar</button>
       <button class="btn btn-primary" onclick="openModal()">+ Nova reserva</button>
     </div>
   </div>
@@ -802,6 +802,22 @@ tr:hover td{background:rgba(0,0,0,.02)}
 <script>
 // ── Date
 const TODAY = new Date();
+function brlN(v){ v=Math.round((Number(v)||0)*100)/100; return Number.isInteger(v)?v.toLocaleString('pt-BR'):v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function exportarReservas(){
+  if(!reservations.length){ showToast('Nenhuma reserva para exportar','ℹ️'); return; }
+  const st={pending:'Pendente pgto.',confirmed:'Confirmada',checkin:'Check-in',occupied:'Hospedado',checkout:'Check-out feito',cancelled:'Cancelada',no_show:'No-show'};
+  const tipos={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'};
+  const num=v=>String(Math.round((Number(v)||0)*100)/100).replace('.',',');
+  const cel=v=>{ const t=String(v==null?'':v); return /[;"\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t; };
+  const cab=['Nº','Hóspede','WhatsApp','E-mail','Tipo','Spot','Entrada','Saída','Noites','Adultos','Crianças','Temporada','Total','Desconto','Pago','Saldo','Forma pgto.','Status','Origem','Anotações'];
+  const linhas=reservations.map(r=>{ const liq=Math.max(0,(r.total||0)-(parseFloat(r.desconto)||0)); const pago=parseFloat(r.sinal_pago)||0;
+    return [r.id,r.nome,r.whatsapp,r.email,tipos[r.tipo]||r.tipo,r.spot,fmtDate(r.checkin),fmtDate(r.checkout),nightsBetween(r.checkin,r.checkout),r.adultos,(r.criancas||[]).length,r.temporada,num(r.total),num(r.desconto),num(pago),num(Math.max(0,liq-pago)),r.forma_pagamento,st[r.status]||r.status,r.source==='whatsapp'?'WhatsApp (IA)':'Painel',r.notas].map(cel).join(';'); });
+  const csv='﻿'+cab.join(';')+'\n'+linhas.join('\n');
+  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a'); a.href=url; a.download='reservas-akampa-'+todayStr()+'.csv'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+  showToast('Planilha de reservas baixada!','⬇');
+}
 function todayStr(){ return TODAY.toISOString().slice(0,10); }
 document.getElementById('today-date').textContent =
   TODAY.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase());
@@ -814,6 +830,9 @@ document.getElementById('f-checkout').min = '2026-10-30';
 const MESES_PT_EARLY=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 let relMesOffset=0;
 var chart2Init=false; // var para garantir escopo global em qualquer contexto
+const TOTAL_SPOTS=13;
+const MESES_PT=MESES_PT_EARLY;
+let chart1=null,chart2=null; // declarados no topo: são usados antes do fim do script
 function getRelMes(){ const now=new Date(),d=new Date(now.getFullYear(),now.getMonth()+relMesOffset,1); return{y:d.getFullYear(),m:d.getMonth()}; }
 function _setRelLabel(){ const lbl=document.getElementById('rel-mes-label'); if(lbl){ const{y,m}=getRelMes(); lbl.textContent=MESES_PT_EARLY[m]+' '+y; } }
 
@@ -1181,11 +1200,11 @@ function showSpotModal(spotId, emoji){
       <div style="display:flex;gap:16px;flex-wrap:wrap">
         <div style="flex:1;min-width:100px;border:1px solid var(--border);border-radius:8px;padding:8px 12px">
           <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--fg-muted);margin-bottom:4px">Total</div>
-          <div style="font-weight:700;font-size:16px;color:var(--fg)">R$ ${totalLiq.toLocaleString('pt-BR')}</div>
+          <div style="font-weight:700;font-size:16px;color:var(--fg)">R$ ${brlN(totalLiq)}</div>
         </div>
         <div style="flex:1;min-width:100px;border:2px solid #16a34a;border-radius:8px;padding:8px 12px">
           <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#16a34a;margin-bottom:4px">Pago</div>
-          <div style="font-weight:700;font-size:16px;color:#16a34a">R$ ${sinal.toLocaleString('pt-BR')}</div>
+          <div style="font-weight:700;font-size:16px;color:#16a34a">R$ ${brlN(sinal)}</div>
         </div>
         <div style="flex:1;min-width:100px;border:2px solid ${saldo>0?"#d97706":"var(--border)"};border-radius:8px;padding:8px 12px">
           <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:${saldo>0?"#d97706":"var(--fg-muted)"};margin-bottom:4px">A receber</div>
@@ -1244,11 +1263,11 @@ function renderReservas(){
           const saldo=totalLiq-s;
           const fpMap={pix:'PIX',dinheiro:'💵',cartao:'💳'};
           const fpLabel=r.forma_pagamento?` <span style="font-size:10px;font-weight:500;color:var(--fg-muted)">${fpMap[r.forma_pagamento]||r.forma_pagamento}</span>`:'';
-          let html=`R$ ${totalLiq.toLocaleString('pt-BR')}`;
-          if(desc>0) html+=`<div style="font-size:10px;font-weight:600;color:var(--accent);margin-top:1px">🏷️ -R$ ${desc.toLocaleString('pt-BR')}</div>`;
+          let html=`R$ ${brlN(totalLiq)}`;
+          if(desc>0) html+=`<div style="font-size:10px;font-weight:600;color:var(--accent);margin-top:1px">🏷️ -R$ ${brlN(desc)}</div>`;
           if(s>0){
             if(saldo<=0) html+=`<div style="font-size:10px;font-weight:600;color:var(--ok);margin-top:1px">✅ Pago${fpLabel}</div>`;
-            else html+=`<div style="font-size:10px;font-weight:600;color:var(--warn);margin-top:1px">⚠ Saldo R$ ${saldo.toLocaleString('pt-BR')}${fpLabel}</div>`;
+            else html+=`<div style="font-size:10px;font-weight:600;color:var(--warn);margin-top:1px">⚠ Saldo R$ ${brlN(saldo)}${fpLabel}</div>`;
           } else if(fpLabel){
             html+=`<div style="font-size:10px;margin-top:1px">${fpLabel.trim()}</div>`;
           }
@@ -1308,19 +1327,19 @@ function renderFinanceiro(){
       <td class="td-muted">${seasLabel[r.temporada]||r.temporada}</td>
       <td class="td-muted">${nights}</td>
       <td class="td-muted">${r.adultos} ad${childStr}</td>
-      <td class="td-muted">R$ ${r.base.toLocaleString('pt-BR')}</td>
-      <td class="td-muted">${r.extras?`+ R$ ${r.extras.toLocaleString('pt-BR')}`:'—'}</td>
-      <td style="font-weight:700;color:var(--fg)">R$ ${r.total.toLocaleString('pt-BR')}</td>
-      <td style="color:var(--ok);font-weight:600">R$ ${sinal.toLocaleString('pt-BR')}</td>
-      <td style="color:${saldo>0?'var(--warn)':'var(--fg-muted)'};font-weight:${saldo>0?'600':'400'}">R$ ${saldo.toLocaleString('pt-BR')}</td>
+      <td class="td-muted">R$ ${brlN(r.base)}</td>
+      <td class="td-muted">${r.extras?`+ R$ ${brlN(r.extras)}`:'—'}</td>
+      <td style="font-weight:700;color:var(--fg)">R$ ${brlN(r.total)}</td>
+      <td style="color:var(--ok);font-weight:600">R$ ${brlN(sinal)}</td>
+      <td style="color:${saldo>0?'var(--warn)':'var(--fg-muted)'};font-weight:${saldo>0?'600':'400'}">R$ ${brlN(saldo)}</td>
       <td>${statusBadge(r.status)}</td>
       <td style="white-space:nowrap">${saldo>0?`<button class="btn-xs" onclick="registrarPagamento('${r.id}')" style="background:var(--accent);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;margin-right:4px">💰 Registrar</button><button class="btn-xs" onclick="confirmarPagamento(${r.id})" style="background:var(--ok);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600">✓ Quitar</button>`:''}</td>
     </tr>`;
-  }).join('')+`<tr style="background:var(--accent-lt)"><td colspan="7" style="font-weight:700;padding:12px 20px;color:var(--fg)">Total geral</td><td style="font-weight:700;font-size:15px;padding:12px 16px;color:var(--accent)">R$ ${(confirmed+pending).toLocaleString('pt-BR')}</td><td style="font-weight:700;color:var(--ok)">R$ ${confirmed.toLocaleString('pt-BR')}</td><td style="font-weight:700;color:var(--warn)">R$ ${pending.toLocaleString('pt-BR')}</td><td colspan="2"></td></tr>`;
+  }).join('')+`<tr style="background:var(--accent-lt)"><td colspan="7" style="font-weight:700;padding:12px 20px;color:var(--fg)">Total geral</td><td style="font-weight:700;font-size:15px;padding:12px 16px;color:var(--accent)">R$ ${brlN((confirmed+pending))}</td><td style="font-weight:700;color:var(--ok)">R$ ${brlN(confirmed)}</td><td style="font-weight:700;color:var(--warn)">R$ ${brlN(pending)}</td><td colspan="2"></td></tr>`;
 
   // Update tiles
-  document.getElementById('fin-confirmed').textContent='R$ '+confirmed.toLocaleString('pt-BR');
-  document.getElementById('fin-pending').textContent='R$ '+pending.toLocaleString('pt-BR');
+  document.getElementById('fin-confirmed').textContent='R$ '+brlN(confirmed);
+  document.getElementById('fin-pending').textContent='R$ '+brlN(pending);
   updateFinResultado(confirmed);
 }
 
@@ -1462,7 +1481,7 @@ async function registrarPagamento(id){
   if(!r) return;
   const totalLiq=Math.max(0,r.total-parseFloat(r.desconto||0));
   const saldo=Math.max(0,totalLiq-parseFloat(r.sinal_pago||0));
-  const txt=prompt(`Quanto ${r.nome} pagou agora? (R$)\n\nTotal: R$ ${totalLiq.toLocaleString('pt-BR')} · Já pago: R$ ${parseFloat(r.sinal_pago||0).toLocaleString('pt-BR')} · Saldo: R$ ${saldo.toLocaleString('pt-BR')}`, '');
+  const txt=prompt(`Quanto ${r.nome} pagou agora? (R$)\n\nTotal: R$ ${brlN(totalLiq)} · Já pago: R$ ${brlN(parseFloat(r.sinal_pago||0))} · Saldo: R$ ${brlN(saldo)}`, '');
   if(txt===null) return;
   const valor=parseFloat(String(txt).replace(/[^\d,.-]/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.'));
   if(!(valor>0)){ alert('Informe um valor maior que zero (ex.: 180 ou 1,80).'); return; }
@@ -1472,7 +1491,7 @@ async function registrarPagamento(id){
     if(!d.ok) throw new Error('Falha');
     r.sinal_pago=d.sinal_pago; if(d.status) r.status=d.status; if(d.notas!==undefined) r.notas=d.notas;
     renderAll(); renderFinanceiro();
-    showToast(`Pagamento de R$ ${valor.toLocaleString('pt-BR')} registrado!`,'💰');
+    showToast(`Pagamento de R$ ${brlN(valor)} registrado!`,'💰');
   }catch(e){ showToast('Erro ao registrar pagamento','❌'); }
 }
 async function confirmarPagamento(id){
@@ -1489,14 +1508,15 @@ async function confirmarPagamento(id){
   }catch(e){ showToast('Erro ao confirmar pagamento','❌'); }
 }
 
-function updateFinResultado(receita){
+function updateFinResultado(){
+  const receita=reservations.filter(r=>!['cancelled','no_show'].includes(r.status)).reduce((s,r)=>s+(parseFloat(r.sinal_pago)||0),0);
   const totalGastos=gastos.reduce((s,g)=>s+parseFloat(g.valor||0),0);
   const resultado=receita-totalGastos;
   const elG=document.getElementById('fin-gastos');
   const elR=document.getElementById('fin-resultado');
-  if(elG) elG.textContent='R$ '+totalGastos.toLocaleString('pt-BR');
+  if(elG) elG.textContent='R$ '+brlN(totalGastos);
   if(elR){
-    elR.textContent='R$ '+Math.abs(resultado).toLocaleString('pt-BR')+(resultado<0?' (prejuízo)':'');
+    elR.textContent='R$ '+brlN(Math.abs(resultado))+(resultado<0?' (prejuízo)':'');
     elR.style.color=resultado<0?'var(--danger)':'var(--ok)';
   }
 }
@@ -1942,13 +1962,13 @@ function calcPrice(){
 
   box.style.display='block';
   document.getElementById('payment-section').style.display='block';
-  document.getElementById('price-total').textContent='R$ '+total.toLocaleString('pt-BR');
+  document.getElementById('price-total').textContent='R$ '+brlN(total);
 
   const typeLabel={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'}[tipo];
   const seasLabel={baixa:'Baixa',alta:'Alta'}[temporada];
-  const diariaLabel=diariaCustom>0?`🎯 R$ ${diariaCustom.toLocaleString('pt-BR')}/nt (personalizado)`:`Base: R$ ${base.toLocaleString('pt-BR')}`;
+  const diariaLabel=diariaCustom>0?`🎯 R$ ${brlN(diariaCustom)}/nt (personalizado)`:`Base: R$ ${brlN(base)}`;
   let breakdown=`${noites} noite${noites>1?'s':''} · ${typeLabel} · Temp. ${seasLabel} · ${diariaLabel}`;
-  if(extras) breakdown+=`\n3ª pessoa: + R$ ${extras.toLocaleString('pt-BR')}`;
+  if(extras) breakdown+=`\n3ª pessoa: + R$ ${brlN(extras)}`;
   if(erro) breakdown+=`\n⚠️ ${erro}`;
   document.getElementById('price-breakdown').style.whiteSpace='pre';
   document.getElementById('price-breakdown').textContent=breakdown;
@@ -1999,10 +2019,10 @@ function updateSaldoPreview(){
   const saldo=totalComDesconto-sinalInput;
   const el=document.getElementById('saldo-preview');
   const lines=[];
-  if(desconto>0) lines.push(`🏷️ Desconto: R$ ${desconto.toLocaleString('pt-BR')} → Total: R$ ${totalComDesconto.toLocaleString('pt-BR')}`);
+  if(desconto>0) lines.push(`🏷️ Desconto: R$ ${brlN(desconto)} → Total: R$ ${brlN(totalComDesconto)}`);
   if(sinalInput>0){
     if(saldo<=0) lines.push('✅ Pago integralmente — sem saldo devedor');
-    else lines.push(`⚠️ Saldo devedor: R$ ${saldo.toLocaleString('pt-BR')} (restante no check-in)`);
+    else lines.push(`⚠️ Saldo devedor: R$ ${brlN(saldo)} (restante no check-in)`);
   }
   if(lines.length){
     el.style.display='block';
@@ -2115,7 +2135,7 @@ async function submitReservation(){
 
   closeModal();
   const saldo=total-sinal_pago;
-  const toastExtra=sinal_pago>0?(saldo>0?` · Saldo: R$ ${saldo.toLocaleString('pt-BR')}`:'· Pago total'):'';
+  const toastExtra=sinal_pago>0?(saldo>0?` · Saldo: R$ ${brlN(saldo)}`:'· Pago total'):'';
   showToast(`Reserva de ${nome} criada!${toastExtra}`,'🎉');
 
   // Reset form
@@ -2149,8 +2169,6 @@ function showToast(msg,icon='✅'){
 }
 
 // ── Chart e Relatórios dinâmicos
-const TOTAL_SPOTS=13;
-const MESES_PT=MESES_PT_EARLY; // alias — definido no topo do script
 
 function relMesNav(dir){
   relMesOffset+=dir;
@@ -2194,14 +2212,13 @@ function updateRelatorios(){
   document.getElementById('rel-mes-label').textContent=`${MESES_PT[m]} ${y}`;
   // Título do gráfico
   document.getElementById('rel-chart-title').textContent=
-    ehMesAtual?'Ocupação — próximos 7 dias':`Ocupação diária — ${MESES_PT[m]} ${y}`;
+    `Ocupação diária — ${MESES_PT[m]} ${y}`;
 
   const mesStart=`${y}-${String(m+1).padStart(2,'0')}-01`;
   const mesEnd=`${y}-${String(m+1).padStart(2,'0')}-${String(new Date(y,m+1,0).getDate()).padStart(2,'0')}`;
   const mesRes=reservations.filter(r=>r.status!=='cancelled'&&r.status!=='no_show'&&r.checkin<=mesEnd&&r.checkout>mesStart);
-  console.log(`[Relatorios] ${MESES_PT[m]} ${y} → total=${reservations.length} mesStart=${mesStart} mesEnd=${mesEnd} filtradas=${mesRes.length}`);
   const dbg=document.getElementById('rel-debug');
-  if(dbg) dbg.textContent=`debug: ${reservations.length} reservas na memória, ${mesRes.length} em ${MESES_PT[m]}`;
+  if(dbg) dbg.textContent='';
 
   // Diárias, hóspedes, receita por tipo
   let diarias=0,hospedes=0,receitaTotal=0;
@@ -2214,7 +2231,7 @@ function updateRelatorios(){
     hospedes+=(r.adultos||1)+(r.criancas||[]).length;
     const sid=(r.spot_tipo||r.spot_id||'').toLowerCase();
     const t=sid.includes('glamping')||sid.includes('glm')?'glamping':sid.includes('barraca')||sid.includes('bar')?'barraca':sid.includes('motorhome')||sid.includes('mth')?'motorhome':'glamping';
-    const rec=r.preco_total||0;
+    const rec=Math.max(0,(r.total||0)-(parseFloat(r.desconto)||0));
     tipoStats[t].res++;
     tipoStats[t].diarias+=noites;
     tipoStats[t].receita+=rec;
@@ -2222,7 +2239,7 @@ function updateRelatorios(){
   });
 
   document.getElementById('rel-hospedes').textContent=hospedes;
-  document.getElementById('rel-receita').textContent='R$ '+receitaTotal.toLocaleString('pt-BR');
+  document.getElementById('rel-receita').textContent='R$ '+brlN(receitaTotal);
   document.getElementById('rel-receita-sub').textContent=`${mesRes.length} reserva${mesRes.length!==1?'s':''}`;
 
   // Ocupação média
@@ -2247,23 +2264,22 @@ function updateRelatorios(){
 
   // Tabela por tipo
   const tbody=document.getElementById('rel-tabela-tipos');
-  const icones={glamping:'🏕',barraca:'⛺',motorhome:'🚐'};
+  const icones={glamping:'⛺',barraca:'🏕',motorhome:'🚐'};
   tbody.innerHTML=Object.entries(tipoStats).map(([k,v])=>`
     <tr>
       <td style="padding:10px 0;border-top:1px solid var(--border)">${icones[k]} ${tipoNomes[k]}</td>
       <td style="padding:10px 0;border-top:1px solid var(--border);text-align:right">${v.res}</td>
       <td style="padding:10px 0;border-top:1px solid var(--border);text-align:right">${v.diarias}</td>
-      <td style="padding:10px 0;border-top:1px solid var(--border);text-align:right;font-weight:600">R$ ${v.receita.toLocaleString('pt-BR')}</td>
+      <td style="padding:10px 0;border-top:1px solid var(--border);text-align:right;font-weight:600">R$ ${brlN(v.receita)}</td>
     </tr>`).join('')+`
     <tr style="font-weight:700">
       <td style="padding:10px 0;border-top:2px solid var(--border)">Total</td>
       <td style="padding:10px 0;border-top:2px solid var(--border);text-align:right">${totalRes}</td>
       <td style="padding:10px 0;border-top:2px solid var(--border);text-align:right">${diarias}</td>
-      <td style="padding:10px 0;border-top:2px solid var(--border);text-align:right;color:var(--ok)">R$ ${receitaTotal.toLocaleString('pt-BR')}</td>
+      <td style="padding:10px 0;border-top:2px solid var(--border);text-align:right;color:var(--ok)">R$ ${brlN(receitaTotal)}</td>
     </tr>`;
 }
 
-let chart1,chart2; // chart2Init já declarado no topo como var global
 
 function getColors(){
   const dark=document.documentElement.dataset.theme==='dark'||(!document.documentElement.dataset.theme&&window.matchMedia('(prefers-color-scheme:dark)').matches);
@@ -2279,8 +2295,7 @@ function makeChart(id){
 function refreshChart2(){
   if(!chart2) return;
   const {y,m}=getRelMes();
-  const ehMesAtual=relMesOffset===0;
-  const {labels,data}=ehMesAtual?buildChartData():buildMesChartData(y,m);
+  const {labels,data}=buildMesChartData(y,m);
   chart2.data.labels=labels;
   chart2.data.datasets[0].data=data;
   chart2.update();
