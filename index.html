@@ -939,6 +939,20 @@ async function removerUsuario(id,username){
     showToast('Usuário removido','🗑'); carregarUsuarios();
   }catch(e){ showToast(e.message||'Erro ao remover','❌'); }
 }
+function escolher(titulo,texto,botoes){
+  return new Promise(res=>{
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px';
+    ov.innerHTML=`<div style="background:var(--card,var(--bg,#fff));color:var(--fg);border-radius:16px;width:100%;max-width:440px;box-shadow:0 24px 64px rgba(0,0,0,.35);padding:22px 22px 18px">
+      <div style="font-weight:700;font-size:17px;margin-bottom:8px">${titulo}</div>
+      <div style="font-size:14px;color:var(--fg-muted);line-height:1.5;margin-bottom:18px">${texto}</div>
+      <div data-b style="display:flex;flex-direction:column;gap:8px"></div></div>`;
+    const box=ov.querySelector('[data-b]');
+    botoes.forEach(b=>{ const el=document.createElement('button'); el.type='button'; el.className='btn '+(b.primario?'btn-primary':'btn-ghost'); el.style.cssText='width:100%;justify-content:center;padding:10px 12px;font-size:14px'; el.textContent=b.texto; el.onclick=()=>{ ov.remove(); res(b.valor); }; box.appendChild(el); });
+    ov.onclick=e=>{ if(e.target===ov){ ov.remove(); res(null); } };
+    document.body.appendChild(ov);
+  });
+}
 function saldoDe(r){ return Math.max(0,Math.round(((r.total||0)-(parseFloat(r.desconto)||0)-(parseFloat(r.sinal_pago)||0))*100)/100); }
 function saldoTag(r){
   if(['cancelled','no_show'].includes(r.status)) return '';
@@ -1612,9 +1626,9 @@ async function registrarPagamento(id,sugestao){
   const totalLiq=Math.max(0,r.total-parseFloat(r.desconto||0));
   const saldo=Math.max(0,totalLiq-parseFloat(r.sinal_pago||0));
   const txt=prompt(`Quanto ${r.nome} pagou agora? (R$)\n\nTotal: R$ ${brlN(totalLiq)} · Já pago: R$ ${brlN(parseFloat(r.sinal_pago||0))} · Saldo: R$ ${brlN(saldo)}`, sugestao?String(brlN(sugestao)).replace(/\./g,''):'');
-  if(txt===null) return;
+  if(txt===null) return false;
   const valor=parseFloat(String(txt).replace(/[^\d,.-]/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.'));
-  if(!(valor>0)){ alert('Informe um valor maior que zero (ex.: 180 ou 1,80).'); return; }
+  if(!(valor>0)){ alert('Informe um valor maior que zero (ex.: 180 ou 1,80).'); return false; }
   try{
     const res=await fetch(`${API_BASE}/akampa/pagar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(r.id),valor}),signal:AbortSignal.timeout(8000)});
     const d=await res.json();
@@ -1622,7 +1636,8 @@ async function registrarPagamento(id,sugestao){
     r.sinal_pago=d.sinal_pago; if(d.status) r.status=d.status; if(d.notas!==undefined) r.notas=d.notas;
     renderAll(); renderFinanceiro();
     showToast(`Pagamento de R$ ${brlN(valor)} registrado!`,'💰');
-  }catch(e){ showToast('Erro ao registrar pagamento','❌'); }
+    return true;
+  }catch(e){ showToast('Erro ao registrar pagamento','❌'); return false; }
 }
 async function confirmarPagamento(id){
   if(!confirm('Confirmar quitação total desta reserva?')) return;
@@ -1789,7 +1804,7 @@ function renderPainelStats(){
       ?chegadas.map(r=>`<div class="event-item"><span class="event-pill pill-in">CHECK-IN</span><div class="event-info"><div class="event-name">${escHtml(r.nome)}</div><div class="event-meta">${r.adultos} adultos${r.criancas?.length?`, ${r.criancas.length} cr`:''} · ${nightsBetween(r.checkin,r.checkout)} noites</div><div style="margin-top:4px">${saldoTag(r)}</div></div><span class="event-spot">${r.spot}</span></div>`).join('')
       :`<div class="td-muted" style="font-size:12px;padding:4px 0">Sem chegadas hoje</div>`;
     const saHtml=saidas.length
-      ?saidas.map(r=>`<div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">${r.nome}</div><div class="event-meta">${r.adultos} adultos${r.criancas?.length?`, ${r.criancas.length} cr`:''}</div></div><span class="event-spot">${r.spot}</span></div>`).join('')
+      ?saidas.map(r=>`<div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">${escHtml(r.nome)}</div><div class="event-meta">${r.adultos} adultos${r.criancas?.length?`, ${r.criancas.length} cr`:''}</div><div style="margin-top:4px">${saldoTag(r)}</div></div><span class="event-spot">${r.spot}</span></div>`).join('')
       :`<div class="td-muted" style="font-size:12px;padding:4px 0">Sem saídas hoje</div>`;
     mv.innerHTML=`<div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-muted);margin-bottom:8px">Chegadas</div><div class="event-list">${chHtml}</div><div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-muted);margin:14px 0 8px">Saídas</div><div class="event-list">${saHtml}</div>`;
   }
@@ -1852,13 +1867,13 @@ function renderSaidas(){
     if(!saidas.length) lista.innerHTML=`<div class="td-muted" style="text-align:center;padding:8px 0">Sem saídas hoje</div>`;
     else lista.innerHTML=`<div class="event-list">${saidas.map(r=>{
       const cr=r.criancas?.length?`, ${r.criancas.length} cr`:'';
-      return `<div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">${r.nome}</div><div class="event-meta">${r.spot} · ${r.adultos} adultos${cr}</div></div><button class="btn btn-ghost btn-sm" onclick="doCheckout('${r.id}')">Confirmar saída</button></div>`;
+      return `<div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">${escHtml(r.nome)}</div><div class="event-meta">${r.spot} · ${r.adultos} adultos${cr}</div><div style="margin-top:4px">${saldoTag(r)}</div></div><button class="btn btn-ghost btn-sm" onclick="doCheckout('${r.id}')">Confirmar saída</button></div>`;
     }).join('')}</div>`;
   }
   if(tbody) tbody.innerHTML=proximas.length?proximas.map(r=>{
     const cr=r.criancas?.length?` · ${r.criancas.length} cr`:''; const col=avatarColor(r.nome); const ini=initials(r.nome);
     const n=nightsBetween(r.checkin,r.checkout);
-    return `<tr><td class="td-muted">${fmtDate(r.checkout)}</td><td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><span class="td-name">${r.nome}</span>${r.checkin>today?` <span class="status-badge status-checkin" title="Check-in em ${fmtDate(r.checkin)}">Chega ${fmtDate(r.checkin)}</span>`:''}</div></td><td class="td-muted">${r.spot}</td><td class="td-muted">${n}</td><td class="td-muted">${r.adultos} ad${cr}</td></tr>`;
+    return `<tr><td class="td-muted">${fmtDate(r.checkout)}</td><td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><span class="td-name">${escHtml(r.nome)}</span> ${saldoDe(r)>0?saldoTag(r):''}${r.checkin>today?` <span class="status-badge status-checkin" title="Check-in em ${fmtDate(r.checkin)}">Chega ${fmtDate(r.checkin)}</span>`:''}</div></td><td class="td-muted">${r.spot}</td><td class="td-muted">${n}</td><td class="td-muted">${r.adultos} ad${cr}</td></tr>`;
   }).join(''):`<tr><td colspan="5" class="td-muted" style="text-align:center;padding:16px">Sem saídas nos próximos dias</td></tr>`;
 }
 
@@ -1954,9 +1969,24 @@ async function doCheckin(id){
   if(numId){ try{ await fetch(`${API_BASE}/akampa/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:numId,status:'checkin'}),signal:AbortSignal.timeout(6000)}); }catch(e){ console.warn('check-in API:',e.message); } }
   const r=reservations.find(x=>x.id===id); if(r) r.status='checkin';
   saveReservations(); renderAll(); showToast('Check-in realizado!','✅');
-  if(r&&saldoDe(r)>0&&confirm(`${r.nome} ainda tem R$ ${brlN(saldoDe(r))} a pagar.\n\nRegistrar o pagamento agora?`)) registrarPagamento(r.id,saldoDe(r));
+  if(r&&saldoDe(r)>0){
+    const op=await escolher('Check-in feito ✅',`<b>${escHtml(r.nome)}</b> ainda tem <b>R$ ${brlN(saldoDe(r))}</b> a pagar.`,[
+      {texto:'💰 Registrar pagamento agora',valor:'pagar',primario:true},
+      {texto:'⏭ Pagar na saída',valor:'saida'}]);
+    if(op==='pagar') registrarPagamento(r.id,saldoDe(r));
+    else showToast(`Saldo de R$ ${brlN(saldoDe(r))} fica para o check-out`,'⏭');
+  }
 }
 async function doCheckout(id){
+  const rr=reservations.find(x=>x.id===id);
+  if(rr&&saldoDe(rr)>0){
+    const op=await escolher('Confirmar saída',`<b>${escHtml(rr.nome)}</b> ainda tem <b>R$ ${brlN(saldoDe(rr))}</b> a pagar.`,[
+      {texto:'💰 Registrar pagamento e confirmar saída',valor:'pagar',primario:true},
+      {texto:'Confirmar saída sem pagar',valor:'sair'},
+      {texto:'Voltar',valor:null}]);
+    if(!op) return;
+    if(op==='pagar'){ const ok=await registrarPagamento(rr.id,saldoDe(rr)); if(!ok) return; }
+  }
   const numId=parseInt(id);
   if(numId){ try{ await fetch(`${API_BASE}/akampa/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:numId,status:'checkout'}),signal:AbortSignal.timeout(6000)}); }catch(e){ console.warn('checkout API:',e.message); } }
   const r=reservations.find(x=>x.id===id); if(r) r.status='checkout';
