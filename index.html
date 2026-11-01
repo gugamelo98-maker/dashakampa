@@ -286,6 +286,7 @@ tr:hover td{background:rgba(0,0,0,.02)}
   <div class="nav-section">Gestão</div>
   <a class="nav-item" href="#hospedes"     data-view="hospedes"><span class="icon">👥</span> Hóspedes</a>
   <a class="nav-item" href="#clientes"     data-view="clientes"><span class="icon">🗂</span> Clientes</a>
+  <a class="nav-item" href="#cantina"      data-view="cantina"><span class="icon">🍺</span> Cantina</a>
   <a class="nav-item" href="#financeiro"   data-view="financeiro"><span class="icon">💰</span> Financeiro</a>
   <a class="nav-item" href="#precos"       data-view="precos"><span class="icon">🏷</span> Preços</a>
   <a class="nav-item" href="#relatorios"   data-view="relatorios"><span class="icon">📊</span> Relatórios</a>
@@ -602,6 +603,28 @@ tr:hover td{background:rgba(0,0,0,.02)}
     </div>
 
     <!-- ══ CONFIGURAÇÕES ══ -->
+    <!-- ══ CANTINA ══ -->
+    <div class="view" id="view-cantina">
+      <div class="section-hd" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div><h2>Cantina</h2><p>Comandas, produtos, estoque e vendas</p></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="novaComanda()">+ Nova comanda</button>
+          <button class="btn btn-ghost" onclick="abrirBaixa()">📦 Consumo próprio</button>
+          <button class="btn btn-ghost" onclick="abrirProduto()">+ Produto</button>
+        </div>
+      </div>
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Comandas abertas</span><span class="stat-icon amber">🧾</span></div><div class="stat-value" id="cant-st-abertas">0</div><div class="stat-sub" id="cant-st-receber">R$ 0,00 a receber</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Vendido hoje</span><span class="stat-icon green">🍺</span></div><div class="stat-value" id="cant-st-hoje">R$ 0</div><div class="stat-sub" id="cant-st-hoje-sub">0 itens</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Vendido no mês</span><span class="stat-icon blue">📅</span></div><div class="stat-value" id="cant-st-mes">R$ 0</div><div class="stat-sub" id="cant-st-mes-sub">0 itens</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Lucro no mês</span><span class="stat-icon teal">💹</span></div><div class="stat-value" id="cant-st-lucro">R$ 0</div><div class="stat-sub" id="cant-st-lucro-sub">margem —</div></div>
+      </div>
+      <div class="card" style="margin-bottom:24px">
+        <div style="padding:16px 20px 0;display:flex;gap:8px;flex-wrap:wrap" id="cant-tabs"></div>
+        <div id="cant-body"></div>
+      </div>
+    </div>
+
     <div class="view" id="view-configuracoes">
       <div class="section-hd"><h2>Configurações</h2><p>Dados do camping, informações que a IA usa no WhatsApp e acesso ao painel</p></div>
       <div class="card" style="margin-bottom:16px">
@@ -939,16 +962,17 @@ async function removerUsuario(id,username){
     showToast('Usuário removido','🗑'); carregarUsuarios();
   }catch(e){ showToast(e.message||'Erro ao remover','❌'); }
 }
-function pedirValor(titulo,texto,sugestao){
+function pedirValor(titulo,texto,sugestao){ return pedirNumero(titulo,texto,{sugestao}); }
+function pedirNumero(titulo,texto,{label='Valor recebido',prefixo='R$',sugestao='',inteiro=false}={}){
   return new Promise(res=>{
     const ov=document.createElement('div');
     ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10002;display:flex;align-items:center;justify-content:center;padding:16px';
     ov.innerHTML=`<div style="background:var(--card,var(--bg,#fff));color:var(--fg);border-radius:16px;width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.35);padding:22px 22px 18px">
       <div style="font-weight:700;font-size:17px;margin-bottom:8px">${titulo}</div>
       <div style="font-size:14px;color:var(--fg-muted);line-height:1.5;margin-bottom:14px">${texto}</div>
-      <label style="font-size:12px;font-weight:600;color:var(--fg-muted)">Valor recebido</label>
+      <label style="font-size:12px;font-weight:600;color:var(--fg-muted)">${label}</label>
       <div style="display:flex;align-items:center;gap:8px;margin:6px 0 4px;border:1.5px solid var(--border,#ddd);border-radius:10px;padding:0 12px">
-        <span style="font-weight:700;color:var(--fg-muted)">R$</span>
+        <span style="font-weight:700;color:var(--fg-muted)">${prefixo}</span>
         <input data-v inputmode="decimal" style="flex:1;border:0;outline:0;background:transparent;color:var(--fg);font-size:20px;font-weight:700;padding:10px 0" value="${sugestao||''}">
       </div>
       <div data-e style="color:#dc2626;font-size:12px;min-height:16px;margin-bottom:10px"></div>
@@ -960,6 +984,7 @@ function pedirValor(titulo,texto,sugestao){
     const fim=v=>{ ov.remove(); res(v); };
     const ok=()=>{
       const v=parseFloat(String(inp.value).replace(/[^\d,.-]/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.'));
+      if(inteiro){ const q=parseInt(inp.value); if(!(q>0)||String(q)!==String(inp.value).trim()){ err.textContent='Informe um número inteiro maior que zero.'; inp.focus(); return; } fim(q); return; }
       if(!(v>0)){ err.textContent='Informe um valor maior que zero (ex.: 180 ou 1,80).'; inp.focus(); return; }
       fim(v);
     };
@@ -1012,7 +1037,7 @@ function getRelMes(){ const now=new Date(),d=new Date(now.getFullYear(),now.getM
 function _setRelLabel(){ const lbl=document.getElementById('rel-mes-label'); if(lbl){ const{y,m}=getRelMes(); lbl.textContent=MESES_PT_EARLY[m]+' '+y; } }
 
 // ── Navigation
-const TITLES = {painel:'Visão Geral',reservas:'Reservas',ocupacao:'Ocupação',chegadas:'Chegadas',saidas:'Saídas',hospedes:'Hóspedes',clientes:'Clientes',financeiro:'Financeiro',precos:'Tabela de Preços',relatorios:'Relatórios',configuracoes:'Configurações'};
+const TITLES = {painel:'Visão Geral',reservas:'Reservas',ocupacao:'Ocupação',chegadas:'Chegadas',saidas:'Saídas',hospedes:'Hóspedes',clientes:'Clientes',financeiro:'Financeiro',precos:'Tabela de Preços',relatorios:'Relatórios',cantina:'Cantina',configuracoes:'Configurações'};
 
 function navigate(id){
   if(!id||!document.getElementById('view-'+id)) id='painel';
@@ -1023,6 +1048,7 @@ function navigate(id){
   if(ni) ni.classList.add('active');
   document.getElementById('page-title').textContent=TITLES[id]||'Painel';
   if(id==='configuracoes') carregarConfiguracoes();
+  if(id==='cantina') carregarCantina();
   if(id==='relatorios'){
     _setRelLabel(); // sempre atualiza label do mês (seguro desde o início)
     const authHidden = document.getElementById('auth-overlay').classList.contains('hidden');
@@ -1240,6 +1266,7 @@ async function loadReservationsFromAPI(){
     console.log('[Akampa] API reservas →', JSON.stringify(data).slice(0,200));
     if(data.ok && Array.isArray(data.reservas)){
       reservations = data.reservas.map(normalizeRes);
+      if(typeof carregarCantina==='function') carregarCantina(true);
       console.log('[Akampa] reservations carregadas:', reservations.length, reservations.map(r=>r.checkin));
       renderAll();
       // Garante atualização dos relatórios se já estiver nessa aba
@@ -1918,7 +1945,7 @@ function renderSaidas(){
     if(!saidas.length) lista.innerHTML=`<div class="td-muted" style="text-align:center;padding:8px 0">Sem saídas hoje</div>`;
     else lista.innerHTML=`<div class="event-list">${saidas.map(r=>{
       const cr=r.criancas?.length?`, ${r.criancas.length} cr`:'';
-      return `<div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">${escHtml(r.nome)}</div><div class="event-meta">${r.spot} · ${r.adultos} adultos${cr}</div><div style="margin-top:4px">${saldoTag(r)}</div></div><button class="btn btn-ghost btn-sm" onclick="doCheckout('${r.id}')">Confirmar saída</button></div>`;
+      return `<div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">${escHtml(r.nome)}</div><div class="event-meta">${r.spot} · ${r.adultos} adultos${cr}</div><div style="margin-top:4px">${saldoTag(r)}${cantinaTag(r)}</div></div><button class="btn btn-ghost btn-sm" onclick="doCheckout('${r.id}')">Confirmar saída</button></div>`;
     }).join('')}</div>`;
   }
   if(tbody) tbody.innerHTML=proximas.length?proximas.map(r=>{
@@ -2026,6 +2053,7 @@ async function doCheckin(id){
   const numId=parseInt(id);
   if(numId && !(await salvarStatus(numId,'checkin'))){ showToast('Não foi possível salvar o check-in. Tente de novo.','⚠️'); return; }
   const r=reservations.find(x=>x.id===id); if(r){ r.status='checkin'; r.checkin_at=new Date().toISOString(); }
+  carregarCantina(true);
   saveReservations(); renderAll(); showToast('Check-in realizado!','✅');
   if(r&&saldoDe(r)>0){
     const op=await escolher('Check-in feito ✅',`<b>${escHtml(r.nome)}</b> ainda tem <b>R$ ${brlN(saldoDe(r))}</b> a pagar.`,[
@@ -2036,6 +2064,19 @@ async function doCheckin(id){
   }
 }
 async function doCheckout(id){
+  if(parseInt(id)){
+    await carregarCantina(true);
+    const cm=comandaDaReserva(id);
+    if(cm&&cm.total>0){
+      const nIt=cm.itens.reduce((s,i)=>s+i.qtd,0);
+      const opC=await escolher('Comanda da cantina 🍺',`<b>${escHtml(cm.nome)}</b> tem <b>${brlR(cm.total)}</b> de consumo na cantina (${nIt} ite${nIt===1?'m':'ns'}).`,[
+        {texto:'💰 Receber cantina agora',valor:'receber',primario:true},
+        {texto:'Deixar comanda em aberto e continuar',valor:'seguir'},
+        {texto:'Voltar',valor:null}]);
+      if(!opC) return;
+      if(opC==='receber'){ const okC=await fecharComandaFluxo(cm.id); if(!okC) return; }
+    }
+  }
   const rr=reservations.find(x=>x.id===id);
   if(rr&&saldoDe(rr)>0){
     const op=await escolher('Confirmar saída',`<b>${escHtml(rr.nome)}</b> ainda tem <b>R$ ${brlN(saldoDe(rr))}</b> a pagar.`,[
@@ -2049,6 +2090,332 @@ async function doCheckout(id){
   if(numId && !(await salvarStatus(numId,'checkout'))){ showToast('Não foi possível salvar o check-out. Tente de novo.','⚠️'); return; }
   const r=reservations.find(x=>x.id===id); if(r) r.status='checkout';
   saveReservations(); renderAll(); showToast('Checkout confirmado!','👋');
+}
+
+// ══ CANTINA ══════════════════════════════════════════════
+let cantina={produtos:[],comandas:[],vendas:[],baixas:[]};
+let cantTab='comandas', cantPeriodo='mes', cantComandaId=null, cantBusca='', cantCat='';
+const CANT_CATS=['Bebidas','Lanches','Doces','Gelo e lenha','Higiene','Outros'];
+const FORMAS={pix:'Pix',dinheiro:'Dinheiro',cartao:'Cartão'};
+function hojeBR(){ return new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'}); }
+function somaDias(iso,n){ const d=new Date(iso+'T12:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+function brlR(v){ return 'R$ '+brlN(v||0); }
+
+async function cantApi(acao,dados={},silencioso=false){
+  try{
+    const res=await fetch(`${API_BASE}/akampa/cantina`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao,...dados}),signal:AbortSignal.timeout(10000)});
+    const d=await res.json().catch(()=>null);
+    if(!res.ok||!d||d.ok===false){ if(!silencioso) showToast((d&&d.erro)||'Não foi possível salvar. Tente de novo.','⚠️'); return null; }
+    return d;
+  }catch(e){ if(!silencioso) showToast('Sem conexão com o servidor da cantina','⚠️'); return null; }
+}
+async function carregarCantina(silencioso=false){
+  const d=await cantApi('listar',{},silencioso);
+  if(d){ cantina={produtos:d.produtos||[],comandas:d.comandas||[],vendas:d.vendas||[],baixas:d.baixas||[]}; }
+  renderCantina();
+  if(cantComandaId) renderComandaPartes();
+  try{ renderSaidas(); }catch(e){}
+  return !!d;
+}
+function comandaDaReserva(id){ return cantina.comandas.find(c=>c.status==='aberta'&&String(c.reserva_id)===String(id)); }
+function cantinaTag(r){
+  const c=comandaDaReserva(r.id);
+  if(!c||!(c.total>0)) return '';
+  return ` <span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#ffedd5;color:#c2410c;white-space:nowrap">🍺 Cantina ${brlR(c.total)}</span>`;
+}
+
+// ── modal genérico
+function criarModal(titulo,largura=480){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px';
+  ov.innerHTML=`<div style="background:var(--card,var(--bg,#fff));color:var(--fg);border-radius:16px;width:100%;max-width:${largura}px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.35)">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px 10px"><div data-t style="font-weight:700;font-size:17px"></div><button type="button" data-x class="btn btn-ghost btn-sm">✕</button></div>
+    <div data-c style="padding:4px 22px 16px;overflow:auto"></div>
+    <div data-f style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:12px 22px 18px;border-top:1px solid var(--border)"></div></div>`;
+  ov.querySelector('[data-t]').innerHTML=titulo;
+  const fechar=()=>ov.remove();
+  ov.querySelector('[data-x]').onclick=fechar;
+  ov.onclick=e=>{ if(e.target===ov) fechar(); };
+  document.body.appendChild(ov);
+  return {ov,corpo:ov.querySelector('[data-c]'),rodape:ov.querySelector('[data-f]'),fechar};
+}
+
+// ── render da aba
+function renderCantina(){
+  if(!document.getElementById('view-cantina')) return;
+  const hoje=hojeBR(), mes=hoje.slice(0,7);
+  const abertas=cantina.comandas.filter(c=>c.status==='aberta');
+  const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('cant-st-abertas',abertas.length);
+  set('cant-st-receber',brlR(abertas.reduce((s,c)=>s+c.total,0))+' a receber');
+  const vh=cantina.vendas.filter(v=>v.dia===hoje), vm=cantina.vendas.filter(v=>v.dia.startsWith(mes));
+  const soma=(a,k)=>a.reduce((s,v)=>s+(v[k]||0),0);
+  set('cant-st-hoje',brlR(soma(vh,'receita'))); set('cant-st-hoje-sub',`${soma(vh,'qtd')} itens`);
+  set('cant-st-mes',brlR(soma(vm,'receita'))); set('cant-st-mes-sub',`${soma(vm,'qtd')} itens`);
+  const recM=soma(vm,'receita'), lucM=recM-soma(vm,'custo');
+  set('cant-st-lucro',brlR(lucM)); set('cant-st-lucro-sub',recM>0?`margem ${Math.round(lucM/recM*100)}%`:'margem —');
+  const baixo=cantina.produtos.filter(p=>p.estoque!==null&&p.estoque<=p.estoque_min).length;
+  const tabs=document.getElementById('cant-tabs');
+  if(tabs){
+    const chip=(k,t)=>`<button type="button" class="btn btn-sm ${cantTab===k?'btn-primary':'btn-ghost'}" onclick="cantTab='${k}';renderCantina()">${t}</button>`;
+    tabs.innerHTML=chip('comandas',`🧾 Comandas <span style="opacity:.75">${abertas.length}</span>`)+chip('produtos',`📦 Produtos e estoque${baixo?` <span style="background:#dc2626;color:#fff;border-radius:99px;padding:0 6px;font-size:11px">${baixo}</span>`:''}`)+chip('relatorio','📊 Relatório');
+  }
+  const body=document.getElementById('cant-body'); if(!body) return;
+  body.innerHTML=cantTab==='produtos'?htmlCantProdutos():cantTab==='relatorio'?htmlCantRelatorio():htmlCantComandas();
+}
+function tagComanda(c){
+  return c.tipo==='hospede'
+    ?`<span class="type-chip">🏕 Hóspede${c.spot_id?' · '+escHtml(c.spot_id):''}</span>`
+    :`<span class="type-chip">👤 Avulsa</span>`;
+}
+function htmlCantComandas(){
+  const abertas=cantina.comandas.filter(c=>c.status==='aberta');
+  const fechadas=cantina.comandas.filter(c=>c.status!=='aberta').sort((a,b)=>String(b.fechada_em).localeCompare(String(a.fechada_em))).slice(0,20);
+  let h='';
+  if(!abertas.length) h+=`<div class="td-muted" style="text-align:center;padding:28px 20px">Nenhuma comanda aberta.<br><span style="font-size:12px">A comanda do hóspede abre sozinha no check-in. Para quem não é hóspede, use <b>+ Nova comanda</b>.</span></div>`;
+  else h+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;padding:16px 20px">${abertas.map(c=>`
+    <button type="button" onclick="abrirComanda(${c.id})" style="text-align:left;cursor:pointer;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px;color:var(--fg);font-family:inherit">
+      <div style="font-weight:700;font-size:14.5px;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(c.nome)}</div>
+      <div style="margin-bottom:10px">${tagComanda(c)}</div>
+      <div style="font-size:20px;font-weight:800">${brlR(c.total)}</div>
+      <div class="td-muted" style="font-size:12px">${c.itens.reduce((s,i)=>s+i.qtd,0)} itens · aberta ${new Date(c.aberta_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',timeZone:'America/Sao_Paulo'})}</div>
+    </button>`).join('')}</div>`;
+  if(fechadas.length) h+=`<div style="padding:4px 20px 6px;font-size:12px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em">Fechadas recentemente</div>
+    <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Tipo</th><th>Fechada em</th><th>Total</th><th>Recebido</th><th>Status</th></tr></thead><tbody>${fechadas.map(c=>`<tr>
+      <td class="td-name">${escHtml(c.nome)}</td><td>${tagComanda(c)}</td>
+      <td class="td-muted">${c.fechada_em?new Date(c.fechada_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}):'—'}</td>
+      <td style="font-weight:700">${brlR(c.total)}</td>
+      <td class="td-muted">${c.status==='cancelada'?'—':brlR(c.pago)+(c.forma_pagamento?' · '+(FORMAS[c.forma_pagamento]||c.forma_pagamento):'')}</td>
+      <td>${c.status==='cancelada'?'<span class="status-badge status-pending">✕ Cancelada</span>':(c.pago+0.001<c.total?'<span class="status-badge status-pending">⚠ Recebido a menos</span>':'<span class="status-badge status-confirmed">✓ Paga</span>')}</td></tr>`).join('')}</tbody></table></div>`;
+  return h;
+}
+function htmlCantProdutos(){
+  const ps=cantina.produtos;
+  if(!ps.length) return `<div class="td-muted" style="text-align:center;padding:28px 20px">Nenhum produto cadastrado ainda.<br><button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="abrirProduto()">+ Cadastrar primeiro produto</button></div>`;
+  const baixo=ps.filter(p=>p.estoque!==null&&p.estoque<=p.estoque_min);
+  return `${baixo.length?`<div style="margin:14px 20px 0;padding:10px 14px;border-radius:10px;background:#fee2e2;color:#991b1b;font-size:13px">⚠️ Estoque baixo: <b>${baixo.map(p=>escHtml(p.nome)+' ('+p.estoque+')').join(', ')}</b></div>`:''}
+  <div class="table-wrap" style="padding-top:8px"><table><thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Custo</th><th>Lucro/un.</th><th>Estoque</th><th></th></tr></thead><tbody>${ps.map(p=>{
+    const luc=p.preco-p.custo, mg=p.preco>0?Math.round(luc/p.preco*100):0;
+    const est=p.estoque===null?'<span class="td-muted" title="Sem controle de estoque">—</span>'
+      :`<span class="status-badge ${p.estoque<=p.estoque_min?'status-occupied':'status-confirmed'}">${p.estoque} un.</span>`;
+    return `<tr><td class="td-name">${escHtml(p.nome)}</td><td><span class="type-chip">${escHtml(p.categoria)}</span></td>
+      <td style="font-weight:700">${brlR(p.preco)}</td><td class="td-muted">${brlR(p.custo)}</td>
+      <td class="td-muted">${brlR(luc)} <span style="font-size:11px">(${mg}%)</span></td><td>${est}</td>
+      <td style="white-space:nowrap"><button class="btn btn-ghost btn-sm" title="Entrada de estoque" onclick="entradaEstoque(${p.id})">➕</button><button class="btn btn-ghost btn-sm" title="Consumo próprio / perda" onclick="abrirBaixa(${p.id})">📦</button><button class="btn btn-ghost btn-sm" title="Editar" onclick="abrirProduto(${p.id})">✏️</button><button class="btn btn-ghost btn-sm" title="Remover" onclick="removerProduto(${p.id})">🗑</button></td></tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+function periodoCant(){
+  const h=hojeBR();
+  if(cantPeriodo==='hoje') return [h,h,'Hoje'];
+  if(cantPeriodo==='7d') return [somaDias(h,-6),h,'Últimos 7 dias'];
+  if(cantPeriodo==='mes_ant'){ const d=new Date(h.slice(0,7)+'-01T12:00:00'); d.setMonth(d.getMonth()-1); const ini=d.toISOString().slice(0,10); return [ini,somaDias(h.slice(0,7)+'-01',-1),'Mês passado']; }
+  return [h.slice(0,7)+'-01',h,'Este mês'];
+}
+function htmlCantRelatorio(){
+  const [ini,fim]=periodoCant();
+  const vs=cantina.vendas.filter(v=>v.dia>=ini&&v.dia<=fim);
+  const bs=cantina.baixas.filter(b=>b.dia>=ini&&b.dia<=fim);
+  const rec=vs.reduce((s,v)=>s+v.receita,0), cus=vs.reduce((s,v)=>s+v.custo,0), luc=rec-cus;
+  const cp=bs.filter(b=>b.motivo==='consumo_proprio').reduce((s,b)=>s+b.qtd*b.custo_unit,0);
+  const pe=bs.filter(b=>b.motivo==='perda').reduce((s,b)=>s+b.qtd*b.custo_unit,0);
+  const porProd={}; vs.forEach(v=>{ const k=v.produto_id||v.nome; porProd[k]=porProd[k]||{nome:v.nome,qtd:0,rec:0,cus:0}; porProd[k].qtd+=v.qtd; porProd[k].rec+=v.receita; porProd[k].cus+=v.custo; });
+  const top=Object.values(porProd).sort((a,b)=>b.rec-a.rec);
+  const chip=(k,t)=>`<button type="button" class="btn btn-sm ${cantPeriodo===k?'btn-primary':'btn-ghost'}" onclick="cantPeriodo='${k}';renderCantina()">${t}</button>`;
+  const box=(t,v,sub,cor)=>`<div style="flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px"><div class="td-muted" style="font-size:11.5px;font-weight:700;text-transform:uppercase">${t}</div><div style="font-size:19px;font-weight:800;margin-top:4px;${cor?'color:'+cor:''}">${v}</div><div class="td-muted" style="font-size:11.5px">${sub}</div></div>`;
+  return `<div style="padding:14px 20px 0;display:flex;gap:6px;flex-wrap:wrap">${chip('hoje','Hoje')}${chip('7d','7 dias')}${chip('mes','Este mês')}${chip('mes_ant','Mês passado')}</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;padding:14px 20px">
+    ${box('Vendas',brlR(rec),`${vs.reduce((s,v)=>s+v.qtd,0)} itens vendidos`)}
+    ${box('Custo dos produtos',brlR(cus),'do que foi vendido')}
+    ${box('Lucro',brlR(luc),rec>0?`margem ${Math.round(luc/rec*100)}%`:'—',luc>=0?'var(--ok)':'#dc2626')}
+    ${box('Consumo próprio',brlR(cp),pe>0?`+ ${brlR(pe)} em perdas`:'pelo preço de custo','#c2410c')}
+  </div>
+  <div style="padding:0 20px 6px;font-size:12px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em">Mais vendidos</div>
+  <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Qtd.</th><th>Vendas</th><th>Lucro</th></tr></thead><tbody>${top.length?top.map(p=>`<tr><td class="td-name">${escHtml(p.nome)}</td><td class="td-muted">${p.qtd}</td><td style="font-weight:700">${brlR(p.rec)}</td><td class="td-muted">${brlR(p.rec-p.cus)}</td></tr>`).join(''):`<tr><td colspan="4" class="td-muted" style="text-align:center;padding:16px">Sem vendas no período</td></tr>`}</tbody></table></div>
+  <div style="padding:14px 20px 6px;font-size:12px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em">Consumo próprio e perdas</div>
+  <div class="table-wrap" style="padding-bottom:8px"><table><thead><tr><th>Data</th><th>Produto</th><th>Qtd.</th><th>Motivo</th><th>Custo</th><th></th></tr></thead><tbody>${bs.length?bs.map(b=>`<tr><td class="td-muted">${new Date(b.criado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}</td><td class="td-name">${escHtml(b.nome)}${b.obs?`<div class="td-muted" style="font-size:11px">${escHtml(b.obs)}</div>`:''}</td><td class="td-muted">${b.qtd}</td><td><span class="type-chip">${b.motivo==='perda'?'Perda':'Consumo próprio'}</span></td><td class="td-muted">${brlR(b.qtd*b.custo_unit)}</td><td><button class="btn btn-ghost btn-sm" title="Desfazer (devolve ao estoque)" onclick="desfazerBaixa(${b.id})">↩</button></td></tr>`).join(''):`<tr><td colspan="6" class="td-muted" style="text-align:center;padding:16px">Nenhuma baixa no período</td></tr>`}</tbody></table></div>`;
+}
+
+// ── comanda (modal com produtos + itens)
+let cantModal=null;
+function abrirComanda(id){
+  const c=cantina.comandas.find(x=>x.id===id); if(!c) return;
+  if(cantModal) cantModal.fechar();
+  cantComandaId=id; cantBusca=''; cantCat='';
+  const m=criarModal('',860); cantModal=m;
+  const fecharOrig=m.fechar; m.fechar=()=>{ fecharOrig(); cantComandaId=null; cantModal=null; };
+  m.ov.querySelector('[data-x]').onclick=m.fechar; m.ov.onclick=e=>{ if(e.target===m.ov) m.fechar(); };
+  m.corpo.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">
+    <div><input class="form-input" id="cant-busca" placeholder="🔎 Buscar produto…" oninput="cantBusca=this.value;renderCantProdLista()">
+      <div id="cant-cats" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"></div>
+      <div id="cant-prod-lista" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;max-height:46vh;overflow:auto"></div></div>
+    <div><div style="font-size:12px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Consumo</div><div id="cant-itens"></div></div></div>`;
+  m.rodape.innerHTML=`<button type="button" class="btn btn-ghost" onclick="cancelarComanda(${id})" style="margin-right:auto">Cancelar comanda</button><button type="button" class="btn btn-ghost" onclick="cantModal&&cantModal.fechar()">Fechar janela</button><button type="button" class="btn btn-primary" onclick="fecharComandaFluxo(${id}).then(ok=>{ if(ok&&cantModal) cantModal.fechar(); })">💰 Receber e fechar</button>`;
+  renderComandaPartes();
+  setTimeout(()=>{ const b=document.getElementById('cant-busca'); if(b) b.focus(); },30);
+}
+function renderComandaPartes(){
+  const c=cantina.comandas.find(x=>x.id===cantComandaId);
+  if(!cantModal) return;
+  if(!c||c.status!=='aberta'){ cantModal.fechar(); return; }
+  cantModal.ov.querySelector('[data-t]').innerHTML=`🧾 ${escHtml(c.nome)} <span style="margin-left:6px">${tagComanda(c)}</span>`;
+  const cats=[...new Set(cantina.produtos.map(p=>p.categoria))];
+  const ce=document.getElementById('cant-cats');
+  if(ce) ce.innerHTML=[['','Todos'],...cats.map(x=>[x,x])].map(([k,t])=>`<button type="button" class="btn btn-sm ${cantCat===k?'btn-primary':'btn-ghost'}" onclick="cantCat=${JSON.stringify(k).replace(/"/g,'&quot;')};renderComandaPartes()">${escHtml(t)}</button>`).join('');
+  renderCantProdLista();
+  const it=document.getElementById('cant-itens');
+  if(it) it.innerHTML=(c.itens.length?`<div style="display:flex;flex-direction:column;gap:6px">${c.itens.map(i=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:9px">
+      <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">${i.qtd}× ${escHtml(i.nome)}</div><div class="td-muted" style="font-size:11.5px">${brlR(i.preco)} cada · ${new Date(i.criado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}</div></div>
+      <div style="font-weight:700">${brlR(i.qtd*i.preco)}</div><button type="button" class="btn btn-ghost btn-sm" title="Remover (devolve ao estoque)" onclick="removerItem(${i.id})">🗑</button></div>`).join('')}</div>`
+    :`<div class="td-muted" style="text-align:center;padding:24px 8px;border:1.5px dashed var(--border);border-radius:10px">Nenhum item ainda.<br><span style="font-size:12px">Clique nos produtos para lançar.</span></div>`)
+    +`<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><span style="font-weight:700">Total</span><span style="font-size:22px;font-weight:800">${brlR(c.total)}</span></div>`;
+}
+function renderCantProdLista(){
+  const el=document.getElementById('cant-prod-lista'); if(!el) return;
+  const q=cantBusca.trim().toLowerCase();
+  const ps=cantina.produtos.filter(p=>(!cantCat||p.categoria===cantCat)&&(!q||p.nome.toLowerCase().includes(q)));
+  if(!cantina.produtos.length){ el.innerHTML=`<div class="td-muted" style="grid-column:1/-1;text-align:center;padding:20px">Nenhum produto cadastrado.<br><button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="abrirProduto()">+ Cadastrar produto</button></div>`; return; }
+  el.innerHTML=ps.length?ps.map(p=>{
+    const sem=p.estoque!==null&&p.estoque<=0;
+    return `<button type="button" onclick="adicionarItem(${p.id})" style="text-align:left;cursor:pointer;background:var(--bg);border:1.5px solid ${sem?'#fca5a5':'var(--border)'};border-radius:10px;padding:10px;color:var(--fg);font-family:inherit;opacity:${sem?.6:1}">
+      <div style="font-weight:600;font-size:13px;line-height:1.25">${escHtml(p.nome)}</div>
+      <div style="font-weight:800;margin-top:4px">${brlR(p.preco)}</div>
+      ${p.estoque!==null?`<div style="font-size:11px;color:${p.estoque<=p.estoque_min?'#dc2626':'var(--fg-muted)'}">${sem?'sem estoque':p.estoque+' em estoque'}</div>`:''}</button>`;
+  }).join(''):`<div class="td-muted" style="grid-column:1/-1;text-align:center;padding:16px">Nenhum produto encontrado</div>`;
+}
+let cantOcupado=false;
+async function adicionarItem(produtoId){
+  if(cantOcupado||!cantComandaId) return;
+  const p=cantina.produtos.find(x=>x.id===produtoId); if(!p) return;
+  if(p.estoque!==null&&p.estoque<=0){
+    const op=await escolher('Sem estoque',`O estoque de <b>${escHtml(p.nome)}</b> está zerado no sistema. Lançar mesmo assim?`,[{texto:'Lançar mesmo assim',valor:'sim',primario:true},{texto:'Voltar',valor:null}]);
+    if(!op) return;
+  }
+  cantOcupado=true;
+  const d=await cantApi('adicionar_item',{comanda_id:cantComandaId,produto_id:produtoId,qtd:1});
+  if(d) showToast(`${p.nome} lançado`,'🍺');
+  await carregarCantina(true); cantOcupado=false;
+}
+async function removerItem(itemId){
+  const d=await cantApi('remover_item',{item_id:itemId});
+  if(d) showToast('Item removido','🗑'); await carregarCantina(true);
+}
+async function fecharComandaFluxo(id){
+  await carregarCantina(true);
+  const c=cantina.comandas.find(x=>x.id===id&&x.status==='aberta'); if(!c) return false;
+  if(!(c.total>0)){
+    const op=await escolher('Fechar comanda',`A comanda de <b>${escHtml(c.nome)}</b> está vazia. Fechar mesmo assim?`,[{texto:'Fechar comanda',valor:'sim',primario:true},{texto:'Voltar',valor:null}]);
+    if(!op) return false;
+    const d=await cantApi('fechar_comanda',{id,forma:'',valor:0}); await carregarCantina(true); return !!d;
+  }
+  const forma=await escolher('Receber comanda 🍺',`<b>${escHtml(c.nome)}</b> · total <b>${brlR(c.total)}</b><br>Como foi pago?`,[{texto:'Pix',valor:'pix',primario:true},{texto:'Dinheiro',valor:'dinheiro'},{texto:'Cartão',valor:'cartao'},{texto:'Voltar',valor:null}]);
+  if(!forma) return false;
+  const valor=await pedirValor('Valor recebido',`Comanda de <b>${escHtml(c.nome)}</b><br>Total: <b>${brlR(c.total)}</b> · ${FORMAS[forma]}`,brlN(c.total));
+  if(valor===null) return false;
+  const d=await cantApi('fechar_comanda',{id,forma,valor});
+  if(!d) return false;
+  showToast(`Comanda de ${c.nome} fechada · ${brlR(valor)}`,'✅');
+  await carregarCantina(true); return true;
+}
+async function cancelarComanda(id){
+  const c=cantina.comandas.find(x=>x.id===id); if(!c) return;
+  const op=await escolher('Cancelar comanda',`Cancelar a comanda de <b>${escHtml(c.nome)}</b>? Os itens voltam para o estoque e não entram nas vendas.`,[{texto:'Sim, cancelar comanda',valor:'sim',primario:true},{texto:'Voltar',valor:null}]);
+  if(!op) return;
+  const d=await cantApi('cancelar_comanda',{id}); if(d) showToast('Comanda cancelada','✕');
+  await carregarCantina(true);
+}
+function novaComanda(){
+  const semComanda=reservations.filter(r=>['checkin','occupied'].includes(r.status)&&!comandaDaReserva(r.id));
+  const m=criarModal('🧾 Nova comanda',440);
+  m.corpo.innerHTML=`${semComanda.length?`<div class="form-label">Hóspede hospedado sem comanda</div><div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">${semComanda.map(r=>`<button type="button" class="btn btn-ghost" data-r="${escHtml(r.id)}" style="justify-content:flex-start">🏕 ${escHtml(r.nome)} · ${escHtml(r.spot)}</button>`).join('')}</div><div class="form-label" style="margin-bottom:10px">Ou cliente que não é hóspede</div>`:`<div class="td-muted" style="font-size:13px;margin-bottom:14px">Para quem não é hóspede (visitante, day use, vizinho…). A comanda do hóspede abre sozinha no check-in.</div>`}
+    <div class="form-group"><label class="form-label">Nome do cliente</label><input class="form-input" data-n placeholder="ex.: João (visitante)"></div>
+    <div class="form-group" style="margin-bottom:4px"><label class="form-label">Telefone (opcional)</label><input class="form-input" data-tel inputmode="tel" placeholder="(48) 99999-9999"></div>
+    <div data-e style="color:#dc2626;font-size:12px;min-height:16px"></div>`;
+  m.corpo.querySelectorAll('[data-r]').forEach(b=>b.onclick=async()=>{
+    const r=reservations.find(x=>x.id===b.dataset.r); if(!r) return;
+    const d=await cantApi('abrir_comanda',{nome:r.nome,reserva_id:r.id,spot_id:r.spot});
+    if(d){ m.fechar(); await carregarCantina(true); cantTab='comandas'; renderCantina(); abrirComanda(d.id); }
+  });
+  m.rodape.innerHTML=`<button type="button" class="btn btn-ghost" data-c>Cancelar</button><button type="button" class="btn btn-primary" data-ok>Abrir comanda</button>`;
+  m.rodape.querySelector('[data-c]').onclick=m.fechar;
+  const ok=async()=>{
+    const nome=m.corpo.querySelector('[data-n]').value.trim();
+    if(!nome){ m.corpo.querySelector('[data-e]').textContent='Informe o nome do cliente.'; return; }
+    const d=await cantApi('abrir_comanda',{nome,telefone:m.corpo.querySelector('[data-tel]').value});
+    if(d){ m.fechar(); await carregarCantina(true); cantTab='comandas'; renderCantina(); abrirComanda(d.id); }
+  };
+  m.rodape.querySelector('[data-ok]').onclick=ok;
+  m.corpo.querySelector('[data-n]').onkeydown=e=>{ if(e.key==='Enter') ok(); };
+  setTimeout(()=>m.corpo.querySelector('[data-n]').focus(),30);
+}
+function abrirProduto(id){
+  const p=id?cantina.produtos.find(x=>x.id===id):null;
+  const cats=[...new Set([...CANT_CATS,...cantina.produtos.map(x=>x.categoria)])];
+  const m=criarModal(p?'✏️ Editar produto':'+ Novo produto',480);
+  const ctrl=p?p.estoque!==null:true;
+  m.corpo.innerHTML=`<div class="form-group"><label class="form-label">Nome</label><input class="form-input" data-f="nome" value="${p?escHtml(p.nome):''}" placeholder="ex.: Cerveja lata 350ml"></div>
+    <div class="form-group"><label class="form-label">Categoria</label><input class="form-input" data-f="categoria" list="cant-cat-list" value="${p?escHtml(p.categoria):'Bebidas'}"><datalist id="cant-cat-list">${cats.map(c=>`<option value="${escHtml(c)}">`).join('')}</datalist></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Preço de venda (R$)</label><input class="form-input" data-f="preco" inputmode="decimal" value="${p?brlN(p.preco):''}" placeholder="0,00"></div>
+      <div class="form-group"><label class="form-label">Preço de custo (R$)</label><input class="form-input" data-f="custo" inputmode="decimal" value="${p?brlN(p.custo):''}" placeholder="0,00"></div></div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:12px;cursor:pointer"><input type="checkbox" data-f="ctrl" ${ctrl?'checked':''}> Controlar estoque deste produto</label>
+    <div class="form-row" data-est style="${ctrl?'':'display:none'}"><div class="form-group"><label class="form-label">Estoque atual (un.)</label><input class="form-input" data-f="estoque" inputmode="numeric" value="${p&&p.estoque!==null?p.estoque:''}" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Avisar quando chegar em</label><input class="form-input" data-f="estoque_min" inputmode="numeric" value="${p?p.estoque_min:'3'}"></div></div>
+    <div data-e style="color:#dc2626;font-size:12px;min-height:16px"></div>`;
+  const f=k=>m.corpo.querySelector(`[data-f="${k}"]`);
+  f('ctrl').onchange=()=>{ m.corpo.querySelector('[data-est]').style.display=f('ctrl').checked?'':'none'; };
+  m.rodape.innerHTML=`<button type="button" class="btn btn-ghost" data-c>Cancelar</button><button type="button" class="btn btn-primary" data-ok>Salvar</button>`;
+  m.rodape.querySelector('[data-c]').onclick=m.fechar;
+  const n=v=>String(v).replace(/[^\d,.-]/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.');
+  m.rodape.querySelector('[data-ok]').onclick=async()=>{
+    const err=m.corpo.querySelector('[data-e]');
+    const nome=f('nome').value.trim(), preco=parseFloat(n(f('preco').value)), custo=parseFloat(n(f('custo').value||'0'));
+    if(!nome){ err.textContent='Informe o nome do produto.'; return; }
+    if(!(preco>=0)||f('preco').value.trim()===''){ err.textContent='Informe o preço de venda.'; return; }
+    const dados={id:p?p.id:'',nome,categoria:f('categoria').value.trim()||'Outros',preco,custo:isFinite(custo)?custo:0,
+      estoque:f('ctrl').checked?(parseInt(f('estoque').value)||0):'',estoque_min:parseInt(f('estoque_min').value)||0};
+    const d=await cantApi('salvar_produto',dados);
+    if(d){ m.fechar(); showToast(p?'Produto atualizado':'Produto cadastrado','✅'); await carregarCantina(true); }
+  };
+  setTimeout(()=>f('nome').focus(),30);
+}
+async function entradaEstoque(id){
+  const p=cantina.produtos.find(x=>x.id===id); if(!p) return;
+  const q=await pedirNumero('➕ Entrada de estoque',`<b>${escHtml(p.nome)}</b> · estoque atual: <b>${p.estoque??0}</b>`,{label:'Quantidade que chegou',prefixo:'+',inteiro:true});
+  if(q===null) return;
+  const d=await cantApi('entrada_estoque',{id,qtd:q});
+  if(d) showToast(`${p.nome}: estoque agora ${d.estoque}`,'📦'); await carregarCantina(true);
+}
+async function removerProduto(id){
+  const p=cantina.produtos.find(x=>x.id===id); if(!p) return;
+  const op=await escolher('Remover produto',`Remover <b>${escHtml(p.nome)}</b> da cantina? As vendas antigas continuam no relatório.`,[{texto:'Remover',valor:'sim',primario:true},{texto:'Voltar',valor:null}]);
+  if(!op) return;
+  const d=await cantApi('remover_produto',{id}); if(d) showToast('Produto removido','🗑'); await carregarCantina(true);
+}
+function abrirBaixa(produtoId){
+  if(!cantina.produtos.length){ showToast('Cadastre um produto primeiro','⚠️'); return; }
+  const m=criarModal('📦 Consumo próprio / perda',440);
+  let motivo='consumo_proprio';
+  m.corpo.innerHTML=`<div class="td-muted" style="font-size:13px;margin-bottom:14px">Tira do estoque sem contar como venda. Entra no relatório pelo preço de custo.</div>
+    <div class="form-group"><label class="form-label">Produto</label><select class="form-select" data-p>${cantina.produtos.map(p=>`<option value="${p.id}" ${p.id===produtoId?'selected':''}>${escHtml(p.nome)}${p.estoque!==null?' ('+p.estoque+' em estoque)':''}</option>`).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Quantidade</label><input class="form-input" data-q inputmode="numeric" value="1"></div>
+    <div class="form-group"><label class="form-label">Motivo</label><div style="display:flex;gap:8px" data-m>
+      <button type="button" class="btn btn-sm btn-primary" data-v="consumo_proprio">Consumo próprio</button><button type="button" class="btn btn-sm btn-ghost" data-v="perda">Perda / quebra / vencido</button></div></div>
+    <div class="form-group" style="margin-bottom:4px"><label class="form-label">Observação (opcional)</label><input class="form-input" data-o placeholder="ex.: Filippi, equipe, cerveja quebrou…"></div>
+    <div data-e style="color:#dc2626;font-size:12px;min-height:16px"></div>`;
+  m.corpo.querySelectorAll('[data-m] button').forEach(b=>b.onclick=()=>{ motivo=b.dataset.v; m.corpo.querySelectorAll('[data-m] button').forEach(x=>x.className='btn btn-sm '+(x===b?'btn-primary':'btn-ghost')); });
+  m.rodape.innerHTML=`<button type="button" class="btn btn-ghost" data-c>Cancelar</button><button type="button" class="btn btn-primary" data-ok>Dar baixa</button>`;
+  m.rodape.querySelector('[data-c]').onclick=m.fechar;
+  m.rodape.querySelector('[data-ok]').onclick=async()=>{
+    const qtd=parseInt(m.corpo.querySelector('[data-q]').value);
+    if(!(qtd>0)){ m.corpo.querySelector('[data-e]').textContent='Informe uma quantidade maior que zero.'; return; }
+    const pid=parseInt(m.corpo.querySelector('[data-p]').value), p=cantina.produtos.find(x=>x.id===pid);
+    const d=await cantApi('baixa',{produto_id:pid,qtd,motivo,obs:m.corpo.querySelector('[data-o]').value});
+    if(d){ m.fechar(); showToast(`Baixa de ${qtd}× ${p?p.nome:''} registrada`,'📦'); await carregarCantina(true); }
+  };
+}
+async function desfazerBaixa(id){
+  const op=await escolher('Desfazer baixa','Desfazer esta baixa? A quantidade volta para o estoque.',[{texto:'Desfazer',valor:'sim',primario:true},{texto:'Voltar',valor:null}]);
+  if(!op) return;
+  const d=await cantApi('desfazer_baixa',{id}); if(d) showToast('Baixa desfeita','↩'); await carregarCantina(true);
 }
 
 function renderAll(){
