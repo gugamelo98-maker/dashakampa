@@ -425,7 +425,7 @@ tr:hover td{background:rgba(0,0,0,.02)}
     <!-- ══ CLIENTES ══ -->
     <div class="view" id="view-clientes">
       <div class="section-hd" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
-        <div><h2>Clientes</h2><p>Quem já passou pelo camping, para entrar em contato depois</p></div>
+        <div><h2>Clientes</h2><p>Todos que já fizeram reserva, para acompanhar e entrar em contato</p></div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <div style="position:relative">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--fg-muted);font-size:14px">🔍</span>
@@ -435,10 +435,11 @@ tr:hover td{background:rgba(0,0,0,.02)}
         </div>
       </div>
       <div class="card">
+        <div style="padding:16px 20px 0;display:flex;gap:8px;flex-wrap:wrap" id="clientes-filtros"></div>
         <div style="padding-top:14px">
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Hóspede</th><th>Telefone</th><th>E-mail</th><th>Nascimento</th><th>Estadias</th><th>Última visita</th><th>Próxima visita</th></tr></thead>
+              <thead><tr><th>Cliente</th><th>WhatsApp</th><th>E-mail</th><th>Nascimento</th><th>Situação</th><th>Estadias</th><th>Última visita</th><th>Próxima visita</th></tr></thead>
               <tbody id="table-clientes"></tbody>
             </table>
           </div>
@@ -2027,67 +2028,65 @@ function renderHospedes(){
 }
 
 // ── Clientes (base completa de hóspedes)
+let filtroClientes='todos';
+function setFiltroClientes(f){ filtroClientes=f; renderClientes(); }
 function renderClientes(){
   const q=(document.getElementById('clientes-search')?.value||'').toLowerCase().trim();
   const today=todayStr();
 
-  // Agrupa por chave única: normaliza nome + contato
+  // CRM: todo mundo que já fez reserva, agrupado pelo WhatsApp (ou e-mail / nome)
   const map=new Map();
   for(const r of reservations){
-    if(['cancelled','no_show','pending'].includes(r.status)) continue;
     const key=(String(r.whatsapp||'').replace(/\D/g,'')||String(r.email||'').toLowerCase()||r.nome.toLowerCase());
-    if(!map.has(key)){
-      map.set(key,{
-        nome:r.nome, whatsapp:r.whatsapp||'', email:r.email||'',
-        data_nascimento:r.data_nascimento||null,
-        estadias:[], futuras:[]
-      });
-    }
+    if(!map.has(key)) map.set(key,{nome:r.nome,whatsapp:r.whatsapp||'',email:r.email||'',data_nascimento:r.data_nascimento||null,estadias:[],futuras:[],agora:false,pendentes:0,canceladas:0,reservas:0,gasto:0,ultimaRes:''});
     const g=map.get(key);
-    const jaVeio=r.status==='checkout'||(r.checkout<=today&&['confirmed','checkin','occupied'].includes(r.status));
-    if(jaVeio) g.estadias.push(r.checkout);
-    else if(r.checkin>today) g.futuras.push(r.checkin);
+    g.reservas++;
+    if(String(r.checkin)>g.ultimaRes){ g.ultimaRes=String(r.checkin); g.nome=r.nome; }
+    if(['cancelled','no_show'].includes(r.status)) g.canceladas++;
+    else if(r.status==='pending') g.pendentes++;
+    else if(['checkin','occupied'].includes(r.status)){ g.agora=true; g.gasto+=parseFloat(r.sinal_pago||0); }
+    else if(r.status==='checkout'||r.checkout<=today){ g.estadias.push(r.checkout); g.gasto+=parseFloat(r.sinal_pago||0); }
+    else { g.futuras.push(r.checkin); g.gasto+=parseFloat(r.sinal_pago||0); }
     if(!g.whatsapp&&r.whatsapp) g.whatsapp=r.whatsapp; if(!g.email&&r.email) g.email=r.email; if(!g.data_nascimento&&r.data_nascimento) g.data_nascimento=r.data_nascimento;
   }
+  const todos=[...map.values()];
+  const sit=g=>g.agora?'agora':g.futuras.length?'futura':g.estadias.length?'veio':g.pendentes?'pendente':'cancelou';
+  const SIT={agora:['🏕 No camping agora','status-occupied'],futura:['📅 Reserva futura','status-confirmed'],veio:['✓ Já veio','status-checkin'],pendente:['⏳ Pré-reserva','status-pending'],cancelou:['✕ Cancelou','status-pending']};
+  const cont={todos:todos.length,veio:todos.filter(g=>g.estadias.length||g.agora).length,futura:todos.filter(g=>g.futuras.length).length,nunca:todos.filter(g=>!g.estadias.length&&!g.agora).length};
 
-  let lista=[...map.values()].filter(g=>g.estadias.length>0); // só quem já passou pelo camping
-
-  // Filtro de busca
-  if(q) lista=lista.filter(g=>
-    g.nome.toLowerCase().includes(q)||
-    g.whatsapp.includes(q)||
-    g.email.toLowerCase().includes(q)
-  );
-
-  // Ordena: visita mais recente primeiro
-  lista.sort((a,b)=>String(b.estadias.slice().sort().at(-1)).localeCompare(String(a.estadias.slice().sort().at(-1)))||a.nome.localeCompare(b.nome));
+  const fb=document.getElementById('clientes-filtros');
+  if(fb){
+    const chip=(k,t)=>`<button type="button" class="btn btn-sm ${filtroClientes===k?'btn-primary':'btn-ghost'}" onclick="setFiltroClientes('${k}')">${t} <span style="opacity:.75">${cont[k]}</span></button>`;
+    fb.innerHTML=chip('todos','Todos')+chip('veio','Já vieram')+chip('futura','Com reserva futura')+chip('nunca','Ainda não vieram');
+  }
+  let lista=todos.filter(g=>filtroClientes==='veio'?(g.estadias.length||g.agora):filtroClientes==='futura'?g.futuras.length:filtroClientes==='nunca'?(!g.estadias.length&&!g.agora):true);
+  if(q) lista=lista.filter(g=>g.nome.toLowerCase().includes(q)||String(g.whatsapp).includes(q)||String(g.email).toLowerCase().includes(q));
+  lista.sort((a,b)=>b.ultimaRes.localeCompare(a.ultimaRes)||a.nome.localeCompare(b.nome));
 
   const tbody=document.getElementById('table-clientes');
   const countEl=document.getElementById('clientes-count');
   if(!tbody) return;
-
   countEl.textContent=lista.length+' cliente'+(lista.length!==1?'s':'');
-
   if(!lista.length){
-    tbody.innerHTML=`<tr><td colspan="7" class="td-muted" style="text-align:center;padding:20px">${q?'Nenhum cliente encontrado para "'+q+'"':'Ninguém concluiu estadia ainda. Quem fizer check-out aparece aqui.'}</td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="8" class="td-muted" style="text-align:center;padding:20px">${q?'Nenhum cliente encontrado para "'+escHtml(q)+'"':'Nenhum cliente nesse filtro'}</td></tr>`;
     return;
   }
-
   tbody.innerHTML=lista.map(g=>{
     const col=avatarColor(g.nome); const ini=initials(g.nome);
     const nasc=g.data_nascimento?fmtDate(g.data_nascimento):'—';
-    const lastVisit=g.estadias.length?fmtDate(g.estadias.sort().at(-1)):'—';
-    const nextVisit=g.futuras.length?fmtDate(g.futuras.sort()[0]):'—';
-    const totalEstadias=g.estadias.length;
-    const temFutura=g.futuras.length>0;
+    const lastVisit=g.estadias.length?fmtDate(g.estadias.slice().sort().at(-1)):'—';
+    const nextVisit=g.futuras.length?fmtDate(g.futuras.slice().sort()[0]):'';
+    const [sl,sc]=SIT[sit(g)];
+    const est=g.estadias.length+(g.agora?1:0);
     return `<tr>
-      <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><div class="td-name">${escHtml(g.nome)}</div></div></td>
+      <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><div><div class="td-name">${escHtml(g.nome)}</div><div class="td-muted" style="font-size:11px">${g.reservas} reserva${g.reservas!==1?'s':''}${g.canceladas?` · ${g.canceladas} cancelada${g.canceladas!==1?'s':''}`:''}</div></div></div></td>
       <td>${g.whatsapp?`<a href="https://wa.me/${String(g.whatsapp).replace(/\D/g,'')}" target="_blank" rel="noopener" style="color:#15803d;font-weight:600;text-decoration:none;white-space:nowrap">💬 ${escHtml(g.whatsapp)}</a>`:'<span class="td-muted">—</span>'}</td>
-      <td class="td-muted">${g.email||'—'}</td>
+      <td class="td-muted">${escHtml(g.email||'—')}</td>
       <td class="td-muted">${nasc}</td>
-      <td><span style="font-weight:700;color:var(--fg)">${totalEstadias}</span><span class="td-muted"> estadia${totalEstadias!==1?'s':''}</span></td>
+      <td><span class="status-badge ${sc}">${sl}</span></td>
+      <td><span style="font-weight:700;color:var(--fg)">${est}</span><span class="td-muted"> estadia${est!==1?'s':''}</span>${g.gasto>0?`<div class="td-muted" style="font-size:11px">${brlR(g.gasto)} pagos</div>`:''}</td>
       <td class="td-muted">${lastVisit}</td>
-      <td>${temFutura?`<span class="status-badge status-confirmed">${nextVisit}</span>`:'<span class="td-muted">—</span>'}</td>
+      <td>${nextVisit?`<span class="status-badge status-confirmed">${nextVisit}</span>`:'<span class="td-muted">—</span>'}</td>
     </tr>`;
   }).join('');
 }
