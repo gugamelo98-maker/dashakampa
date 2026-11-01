@@ -2355,7 +2355,9 @@ function abrirProduto(id,opts={}){
   const m=criarModal(p?'✏️ Editar produto':(lancar?'+ Cadastrar produto e lançar na comanda':'+ Novo produto'),480);
   const ctrl=p?p.estoque!==null:true;
   m.corpo.innerHTML=`<div class="form-group"><label class="form-label">Nome</label><input class="form-input" data-f="nome" value="${p?escHtml(p.nome):''}" placeholder="ex.: Cerveja lata 350ml"></div>
-    <div class="form-group"><label class="form-label">Categoria</label><input class="form-input" data-f="categoria" list="cant-cat-list" value="${p?escHtml(p.categoria):'Bebidas'}"><datalist id="cant-cat-list">${cats.map(c=>`<option value="${escHtml(c)}">`).join('')}</datalist></div>
+    <div class="form-group"><label class="form-label">Categoria</label>
+      <select class="form-select" data-f="catsel">${cats.map(c=>`<option value="${escHtml(c)}" ${(p?p.categoria:'Bebidas')===c?'selected':''}>${escHtml(c)}</option>`).join('')}<option value="__nova__">+ Criar nova categoria…</option></select>
+      <input class="form-input" data-f="catnova" placeholder="Nome da nova categoria (ex.: Sorvetes)" style="display:none;margin-top:8px"></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Preço de venda (R$)</label><input class="form-input" data-f="preco" inputmode="decimal" value="${p?brlN(p.preco):''}" placeholder="0,00"></div>
       <div class="form-group"><label class="form-label">Preço de custo (R$)</label><input class="form-input" data-f="custo" inputmode="decimal" value="${p?brlN(p.custo):''}" placeholder="0,00"></div></div>
     <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:12px;cursor:pointer"><input type="checkbox" data-f="ctrl" ${ctrl?'checked':''}> Controlar estoque deste produto</label>
@@ -2363,6 +2365,7 @@ function abrirProduto(id,opts={}){
       <div class="form-group"><label class="form-label">Avisar quando chegar em</label><input class="form-input" data-f="estoque_min" inputmode="numeric" value="${p?p.estoque_min:'3'}"></div></div>
     <div data-e style="color:#dc2626;font-size:12px;min-height:16px"></div>`;
   const f=k=>m.corpo.querySelector(`[data-f="${k}"]`);
+  f('catsel').onchange=()=>{ const nova=f('catsel').value==='__nova__'; f('catnova').style.display=nova?'':'none'; if(nova) f('catnova').focus(); };
   f('ctrl').onchange=()=>{ m.corpo.querySelector('[data-est]').style.display=f('ctrl').checked?'':'none'; };
   m.rodape.innerHTML=`<button type="button" class="btn btn-ghost" data-c>Cancelar</button><button type="button" class="btn btn-primary" data-ok>${lancar?'Salvar e lançar':'Salvar'}</button>`;
   m.rodape.querySelector('[data-c]').onclick=m.fechar;
@@ -2372,7 +2375,9 @@ function abrirProduto(id,opts={}){
     const nome=f('nome').value.trim(), preco=parseFloat(n(f('preco').value)), custo=parseFloat(n(f('custo').value||'0'));
     if(!nome){ err.textContent='Informe o nome do produto.'; return; }
     if(!(preco>=0)||f('preco').value.trim()===''){ err.textContent='Informe o preço de venda.'; return; }
-    const dados={id:p?p.id:'',nome,categoria:f('categoria').value.trim()||'Outros',preco,custo:isFinite(custo)?custo:0,
+    const categoria=f('catsel').value==='__nova__'?f('catnova').value.trim():f('catsel').value;
+    if(!categoria){ err.textContent='Digite o nome da nova categoria.'; f('catnova').focus(); return; }
+    const dados={id:p?p.id:'',nome,categoria,preco,custo:isFinite(custo)?custo:0,
       estoque:f('ctrl').checked?(parseInt(f('estoque').value)||0):'',estoque_min:parseInt(f('estoque_min').value)||0};
     const d=await cantApi('salvar_produto',dados);
     if(d){
