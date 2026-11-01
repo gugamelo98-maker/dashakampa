@@ -2521,28 +2521,48 @@ async function cancelarComanda(id){
   await carregarCantina(true);
 }
 function novaComanda(){
-  const semComanda=reservations.filter(r=>['checkin','occupied'].includes(r.status)&&!comandaDaReserva(r.id));
-  const m=criarModal('🧾 Nova comanda',440);
-  m.corpo.innerHTML=`${semComanda.length?`<div class="form-label">Hóspede hospedado sem comanda</div><div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">${semComanda.map(r=>`<button type="button" class="btn btn-ghost" data-r="${escHtml(r.id)}" style="justify-content:flex-start">🏕 ${escHtml(r.nome)} · ${escHtml(r.spot)}</button>`).join('')}</div><div class="form-label" style="margin-bottom:10px">Ou cliente que não é hóspede</div>`:`<div class="td-muted" style="font-size:13px;margin-bottom:14px">Para quem não é hóspede (visitante, day use, vizinho…). A comanda do hóspede abre sozinha no check-in.</div>`}
+  const hosp=reservations.filter(r=>['checkin','occupied'].includes(r.status)).sort((x,y)=>x.spot.localeCompare(y.spot));
+  const m=criarModal('🧾 Nova comanda',460);
+  m.corpo.innerHTML=`<div class="form-label">Hóspedes com check-in feito</div>
+    ${hosp.length?`<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px">${hosp.map(r=>{
+      const c=comandaDaReserva(r.id);
+      return `<button type="button" class="btn btn-ghost" data-r="${escHtml(r.id)}" style="justify-content:space-between;gap:8px;text-align:left">
+        <span>🏕 <b>${escHtml(r.nome)}</b> · ${escHtml(r.spot)}</span>
+        ${c?`<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#fef3c7;color:#b45309;white-space:nowrap">já tem comanda · ${brlR(c.total)}</span>`:`<span style="font-size:11px;font-weight:700;color:var(--accent);white-space:nowrap">+ abrir comanda</span>`}
+      </button>`;}).join('')}</div>`
+    :`<div class="td-muted" style="font-size:13px;margin-bottom:18px">Nenhum hóspede com check-in feito agora.</div>`}
+    <div class="form-label" style="margin-bottom:10px">Cliente que não é hóspede</div>
     <div class="form-group"><label class="form-label">Nome do cliente</label><input class="form-input" data-n placeholder="ex.: João (visitante)"></div>
     <div class="form-group" style="margin-bottom:4px"><label class="form-label">Telefone (opcional)</label><input class="form-input" data-tel inputmode="tel" placeholder="(48) 99999-9999"></div>
     <div data-e style="color:#dc2626;font-size:12px;min-height:16px"></div>`;
   m.corpo.querySelectorAll('[data-r]').forEach(b=>b.onclick=async()=>{
     const r=reservations.find(x=>x.id===b.dataset.r); if(!r) return;
+    const existente=comandaDaReserva(r.id);
+    if(existente){ m.fechar(); showToast(`${r.nome} já tem comanda aberta`,'🧾'); abrirComanda(existente.id); return; }
+    await carregarCantina(true);
+    const ex2=comandaDaReserva(r.id);
+    if(ex2){ m.fechar(); showToast(`${r.nome} já tem comanda aberta`,'🧾'); abrirComanda(ex2.id); return; }
     const d=await cantApi('abrir_comanda',{nome:r.nome,reserva_id:r.id,spot_id:r.spot});
-    if(d){ m.fechar(); await carregarCantina(true); renderCantina(); abrirComanda(d.id); }
+    if(d){ m.fechar(); await carregarCantina(true); abrirComanda(d.id); }
   });
   m.rodape.innerHTML=`<button type="button" class="btn btn-ghost" data-c>Cancelar</button><button type="button" class="btn btn-primary" data-ok>Abrir comanda</button>`;
   m.rodape.querySelector('[data-c]').onclick=m.fechar;
   const ok=async()=>{
+    const err=m.corpo.querySelector('[data-e]');
     const nome=m.corpo.querySelector('[data-n]').value.trim();
-    if(!nome){ m.corpo.querySelector('[data-e]').textContent='Informe o nome do cliente.'; return; }
+    if(!nome){ err.textContent='Escolha um hóspede acima ou informe o nome do cliente.'; return; }
+    const norm=t=>t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+    const igual=cantina.comandas.find(c=>c.status==='aberta'&&norm(c.nome)===norm(nome));
+    if(igual){
+      const op=await escolher('Já existe comanda aberta',`Já tem uma comanda aberta para <b>${escHtml(igual.nome)}</b> (${brlR(igual.total)}). Não é possível abrir outra com o mesmo nome.`,[{texto:'Abrir a comanda existente',valor:'abrir',primario:true},{texto:'Voltar',valor:null}]);
+      if(op){ m.fechar(); abrirComanda(igual.id); }
+      return;
+    }
     const d=await cantApi('abrir_comanda',{nome,telefone:m.corpo.querySelector('[data-tel]').value});
     if(d){ m.fechar(); await carregarCantina(true); abrirComanda(d.id); }
   };
   m.rodape.querySelector('[data-ok]').onclick=ok;
   m.corpo.querySelector('[data-n]').onkeydown=e=>{ if(e.key==='Enter') ok(); };
-  setTimeout(()=>m.corpo.querySelector('[data-n]').focus(),30);
 }
 function abrirProduto(id,opts={}){
   const p=id?cantina.produtos.find(x=>x.id===id):null;
