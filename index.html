@@ -603,8 +603,46 @@ tr:hover td{background:rgba(0,0,0,.02)}
 
     <!-- ══ CONFIGURAÇÕES ══ -->
     <div class="view" id="view-configuracoes">
-      <div class="section-hd"><h2>Configurações</h2></div>
-      <div class="placeholder-view"><div class="ph-icon">⚙️</div><h3>Em breve</h3><p>Configurações do camping disponíveis em breve.</p></div>
+      <div class="section-hd"><h2>Configurações</h2><p>Dados do camping, informações que a IA usa no WhatsApp e acesso ao painel</p></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header"><span class="card-title">🏕 Dados do camping</span></div>
+        <div style="padding:16px 20px 20px">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Nome do camping</label><input class="form-input" id="cfg-nome" placeholder="Akampa Siriú"></div>
+            <div class="form-group"><label class="form-label">Endereço / localização</label><input class="form-input" id="cfg-endereco" placeholder="Garopaba/SC"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Chave Pix (a IA envia para o cliente)</label><input class="form-input" id="cfg-pix" placeholder="CNPJ 38.350.486/0001-60"></div>
+            <div class="form-group"><label class="form-label">CNPJ/CPF que recebe o Pix (a IA confere no comprovante)</label><input class="form-input" id="cfg-cnpj" placeholder="38.350.486/0001-60"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Horário de check-in</label><input class="form-input" id="cfg-checkin" placeholder="ex.: a partir das 14h"></div>
+            <div class="form-group"><label class="form-label">Horário de check-out</label><input class="form-input" id="cfg-checkout" placeholder="ex.: até as 12h"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end"><button class="btn btn-primary" onclick="salvarDadosCamping()">Salvar dados</button></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span class="card-title">🤖 Informações que a IA usa no WhatsApp</span><button class="btn btn-ghost btn-sm" onclick="adicionarInfo()">+ Adicionar informação</button></div>
+        <div style="padding:12px 20px 20px">
+          <p style="font-size:12px;color:var(--fg-muted);margin:0 0 12px">A IA responde as dúvidas dos clientes <b>somente</b> com o que está aqui. O que não estiver na lista, ela responde que vai confirmar com o Filippi. Valores das diárias ficam na aba Preços.</p>
+          <div id="cfg-infos"></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn btn-primary" onclick="salvarInformacoes()">Salvar informações</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">👥 Usuários do painel</span></div>
+        <div style="padding:12px 20px 20px">
+          <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Usuário</th><th>Perfil</th><th>Criado em</th><th></th></tr></thead><tbody id="cfg-usuarios"><tr><td colspan="5" class="td-muted">Carregando…</td></tr></tbody></table></div>
+          <div style="font-size:12px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em;margin:18px 0 8px">Novo usuário</div>
+          <div class="form-row-3">
+            <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="cfg-u-nome" placeholder="Nome da pessoa"></div>
+            <div class="form-group"><label class="form-label">Usuário (login)</label><input class="form-input" id="cfg-u-user" placeholder="ex.: recepcao"></div>
+            <div class="form-group"><label class="form-label">Senha (mín. 6 caracteres)</label><input class="form-input" id="cfg-u-senha" type="password"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end"><button class="btn btn-primary" onclick="criarUsuario()">Criar usuário</button></div>
+        </div>
+      </div>
     </div>
 
   </div><!-- /content -->
@@ -818,6 +856,72 @@ function exportarReservas(){
   setTimeout(()=>URL.revokeObjectURL(url),30000);
   showToast('Planilha de reservas baixada!','⬇');
 }
+let cfgInfos=[];
+async function carregarConfiguracoes(){
+  try{
+    const r=await fetch(`${API_BASE}/akampa/config?_=${Date.now()}`,{signal:AbortSignal.timeout(10000)});
+    const d=await r.json();
+    const c=(d&&d.config)||{}; const camp=c.camping||{};
+    const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v||''; };
+    set('cfg-nome',camp.nome); set('cfg-endereco',camp.endereco); set('cfg-pix',camp.chave_pix); set('cfg-cnpj',camp.cnpj); set('cfg-checkin',camp.checkin); set('cfg-checkout',camp.checkout);
+    cfgInfos=Array.isArray(c.informacoes)?c.informacoes.map(i=>({titulo:i.titulo||'',texto:i.texto||''})):[];
+    renderInfos();
+  }catch(e){ showToast('Erro ao carregar configurações','❌'); }
+  carregarUsuarios();
+}
+function renderInfos(){
+  const el=document.getElementById('cfg-infos'); if(!el) return;
+  if(!cfgInfos.length){ el.innerHTML='<div class="td-muted" style="font-size:13px">Nenhuma informação cadastrada.</div>'; return; }
+  el.innerHTML=cfgInfos.map((i,k)=>`<div style="display:grid;grid-template-columns:minmax(120px,200px) 1fr auto;gap:8px;align-items:start;margin-bottom:8px">
+      <input class="form-input" value="${escHtml(i.titulo)}" placeholder="Assunto (ex.: Wi-Fi)" oninput="cfgInfos[${k}].titulo=this.value">
+      <textarea class="form-input" rows="2" placeholder="O que a IA deve responder" oninput="cfgInfos[${k}].texto=this.value" style="resize:vertical;min-height:40px">${escHtml(i.texto)}</textarea>
+      <button class="btn btn-ghost btn-sm" title="Remover" onclick="cfgInfos.splice(${k},1);renderInfos()">🗑</button>
+    </div>`).join('');
+}
+function adicionarInfo(){ cfgInfos.push({titulo:'',texto:''}); renderInfos(); const el=document.getElementById('cfg-infos'); const ins=el?el.querySelectorAll('input'):[]; if(ins.length) ins[ins.length-1].focus(); }
+async function salvarConfig(chave,valor){
+  const r=await fetch(`${API_BASE}/akampa/config`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chave,valor}),signal:AbortSignal.timeout(10000)});
+  const d=await r.json(); if(!d.ok) throw new Error('falha');
+}
+async function salvarDadosCamping(){
+  const v=id=>(document.getElementById(id).value||'').trim();
+  try{ await salvarConfig('camping',{nome:v('cfg-nome'),endereco:v('cfg-endereco'),chave_pix:v('cfg-pix'),cnpj:v('cfg-cnpj'),checkin:v('cfg-checkin'),checkout:v('cfg-checkout')}); showToast('Dados do camping salvos!','✅'); }
+  catch(e){ showToast('Erro ao salvar dados','❌'); }
+}
+async function salvarInformacoes(){
+  const lista=cfgInfos.map(i=>({titulo:String(i.titulo||'').trim(),texto:String(i.texto||'').trim()})).filter(i=>i.titulo&&i.texto);
+  try{ await salvarConfig('informacoes',lista); cfgInfos=lista; renderInfos(); showToast('Informações da IA salvas!','✅'); }
+  catch(e){ showToast('Erro ao salvar informações','❌'); }
+}
+async function carregarUsuarios(){
+  const tb=document.getElementById('cfg-usuarios'); if(!tb) return;
+  try{
+    const r=await fetch(`${API_BASE}/akampa/usuarios?_=${Date.now()}`,{signal:AbortSignal.timeout(10000)});
+    const d=await r.json(); const us=(d&&d.usuarios)||[];
+    const eu=(getSession()||{}).username;
+    tb.innerHTML=us.length?us.map(u=>`<tr><td>${escHtml(u.nome||'')}</td><td class="td-muted">${escHtml(u.username)}</td><td class="td-muted">${u.role==='admin'?'Administrador':escHtml(u.role||'')}</td><td class="td-muted">${u.criado?new Date(u.criado).toLocaleDateString('pt-BR'):'—'}</td><td style="text-align:right">${u.username===eu?'<span class="td-muted" style="font-size:11px">você</span>':`<button class="btn btn-ghost btn-sm" title="Remover acesso" onclick="removerUsuario(${parseInt(u.id)},'${escHtml(u.username)}')">🗑</button>`}</td></tr>`).join(''):'<tr><td colspan="5" class="td-muted">Nenhum usuário</td></tr>';
+  }catch(e){ tb.innerHTML='<tr><td colspan="5" class="td-muted">Erro ao carregar usuários</td></tr>'; }
+}
+async function criarUsuario(){
+  const nome=document.getElementById('cfg-u-nome').value.trim(), username=document.getElementById('cfg-u-user').value.trim(), password=document.getElementById('cfg-u-senha').value;
+  if(!username||!password){ alert('Informe usuário e senha.'); return; }
+  if(password.length<6){ alert('A senha precisa ter pelo menos 6 caracteres.'); return; }
+  try{
+    const r=await fetch(AUTH_BASE+'/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password,nome:nome||username})});
+    const d=await r.json();
+    if(!d.ok) throw new Error(d.message||'Erro');
+    ['cfg-u-nome','cfg-u-user','cfg-u-senha'].forEach(id=>document.getElementById(id).value='');
+    showToast('Usuário criado!','✅'); carregarUsuarios();
+  }catch(e){ showToast(e.message||'Erro ao criar usuário','❌'); }
+}
+async function removerUsuario(id,username){
+  if(!confirm(`Remover o acesso de "${username}" ao painel?`)) return;
+  try{
+    const r=await fetch(`${API_BASE}/akampa/usuarios`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id}),signal:AbortSignal.timeout(10000)});
+    const d=await r.json(); if(!d.ok) throw new Error(d.message||'Erro');
+    showToast('Usuário removido','🗑'); carregarUsuarios();
+  }catch(e){ showToast(e.message||'Erro ao remover','❌'); }
+}
 function todayStr(){ return TODAY.toISOString().slice(0,10); }
 document.getElementById('today-date').textContent =
   TODAY.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase());
@@ -847,6 +951,7 @@ function navigate(id){
   const ni=document.querySelector(`.nav-item[data-view="${id}"]`);
   if(ni) ni.classList.add('active');
   document.getElementById('page-title').textContent=TITLES[id]||'Painel';
+  if(id==='configuracoes') carregarConfiguracoes();
   if(id==='relatorios'){
     _setRelLabel(); // sempre atualiza label do mês (seguro desde o início)
     const authHidden = document.getElementById('auth-overlay').classList.contains('hidden');
