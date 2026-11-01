@@ -286,6 +286,7 @@ tr:hover td{background:rgba(0,0,0,.02)}
   <div class="nav-section">Gestão</div>
   <a class="nav-item" href="#hospedes"     data-view="hospedes"><span class="icon">👥</span> Hóspedes</a>
   <a class="nav-item" href="#clientes"     data-view="clientes"><span class="icon">🗂</span> Clientes</a>
+  <a class="nav-item" href="#comandas"     data-view="comandas"><span class="icon">🧾</span> Comandas</a>
   <a class="nav-item" href="#cantina"      data-view="cantina"><span class="icon">🍺</span> Cantina</a>
   <a class="nav-item" href="#financeiro"   data-view="financeiro"><span class="icon">💰</span> Financeiro</a>
   <a class="nav-item" href="#precos"       data-view="precos"><span class="icon">🏷</span> Preços</a>
@@ -448,14 +449,19 @@ tr:hover td{background:rgba(0,0,0,.02)}
     <div class="view" id="view-financeiro">
       <div class="section-hd"><h2>Financeiro</h2><p>Receitas, gastos e resultado do período</p></div>
       <div class="stats-grid" style="margin-bottom:20px">
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">Receita confirmada</span><span class="stat-icon green">✓</span></div><div class="stat-value" style="font-size:22px" id="fin-confirmed">R$ 0</div><div class="stat-sub">reservas já pagas</div></div>
-        <div class="stat-card"><div class="stat-header"><span class="stat-label">A receber</span><span class="stat-icon amber">⏳</span></div><div class="stat-value" style="font-size:22px" id="fin-pending">R$ 0</div><div class="stat-sub">saldo pendente</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Receita confirmada</span><span class="stat-icon green">✓</span></div><div class="stat-value" style="font-size:22px" id="fin-confirmed">R$ 0</div><div class="stat-sub" id="fin-confirmed-sub">reservas já pagas</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">A receber</span><span class="stat-icon amber">⏳</span></div><div class="stat-value" style="font-size:22px" id="fin-pending">R$ 0</div><div class="stat-sub" id="fin-pending-sub">saldo pendente</div></div>
         <div class="stat-card"><div class="stat-header"><span class="stat-label">Total gastos</span><span class="stat-icon red">↓</span></div><div class="stat-value" style="font-size:22px;color:var(--danger)" id="fin-gastos">R$ 0</div><div class="stat-sub">despesas registradas</div></div>
         <div class="stat-card"><div class="stat-header"><span class="stat-label">Resultado</span><span class="stat-icon teal">⚖</span></div><div class="stat-value" style="font-size:22px" id="fin-resultado">R$ 0</div><div class="stat-sub">receita − gastos</div></div>
       </div>
       <div class="card" style="margin-bottom:20px">
         <div class="card-header"><span class="card-title">Detalhamento por reserva</span></div>
-        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Tipo</th><th>Temp.</th><th>Noites</th><th>Pessoas</th><th>Base</th><th>Adicionais</th><th>Total</th><th>Pago</th><th>Saldo</th><th>Status</th><th></th></tr></thead><tbody id="table-financeiro"></tbody></table></div></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Tipo</th><th>Temp.</th><th>Noites</th><th>Pessoas</th><th>Base</th><th>Adicionais</th><th>Total</th><th>Pago</th><th>Saldo</th><th>Cantina</th><th>Status</th><th></th></tr></thead><tbody id="table-financeiro"></tbody></table></div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><span class="card-title">🍺 Cantina — não hóspedes</span><span class="td-muted" style="font-size:12px" id="fin-cantina-resumo"></span></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Tipo</th><th>Itens</th><th>Total</th><th>Recebido</th><th>Status</th></tr></thead><tbody id="fin-cantina-body"></tbody></table></div></div>
       </div>
 
       <!-- Gastos -->
@@ -603,14 +609,29 @@ tr:hover td{background:rgba(0,0,0,.02)}
     </div>
 
     <!-- ══ CONFIGURAÇÕES ══ -->
+    <!-- ══ COMANDAS ══ -->
+    <div class="view" id="view-comandas">
+      <div class="section-hd" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div><h2>Comandas</h2><p>Consumo dos hóspedes e de quem não é hóspede</p></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="abrirVendaAvulsa()">🛒 Venda avulsa</button>
+          <button class="btn btn-ghost" onclick="novaComanda()">+ Nova comanda</button>
+        </div>
+      </div>
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Comandas abertas</span><span class="stat-icon amber">🧾</span></div><div class="stat-value" id="com-st-abertas">0</div><div class="stat-sub" id="com-st-receber">R$ 0,00 a receber</div></div>
+        <div class="stat-card"><div class="stat-header"><span class="stat-label">Recebido hoje</span><span class="stat-icon green">💰</span></div><div class="stat-value" id="com-st-hoje">R$ 0</div><div class="stat-sub" id="com-st-hoje-sub">0 vendas</div></div>
+      </div>
+      <div class="card" style="margin-bottom:24px"><div id="com-body"></div></div>
+    </div>
+
     <!-- ══ CANTINA ══ -->
     <div class="view" id="view-cantina">
       <div class="section-hd" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
-        <div><h2>Cantina</h2><p>Comandas, produtos, estoque e vendas</p></div>
+        <div><h2>Cantina</h2><p>Produtos, estoque, consumo próprio e relatório</p></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="novaComanda()">+ Nova comanda</button>
+          <button class="btn btn-primary" onclick="abrirProduto()">+ Produto</button>
           <button class="btn btn-ghost" onclick="abrirBaixa()">📦 Consumo próprio</button>
-          <button class="btn btn-ghost" onclick="abrirProduto()">+ Produto</button>
         </div>
       </div>
       <div class="stats-grid" style="margin-bottom:20px">
@@ -1037,7 +1058,7 @@ function getRelMes(){ const now=new Date(),d=new Date(now.getFullYear(),now.getM
 function _setRelLabel(){ const lbl=document.getElementById('rel-mes-label'); if(lbl){ const{y,m}=getRelMes(); lbl.textContent=MESES_PT_EARLY[m]+' '+y; } }
 
 // ── Navigation
-const TITLES = {painel:'Visão Geral',reservas:'Reservas',ocupacao:'Ocupação',chegadas:'Chegadas',saidas:'Saídas',hospedes:'Hóspedes',clientes:'Clientes',financeiro:'Financeiro',precos:'Tabela de Preços',relatorios:'Relatórios',cantina:'Cantina',configuracoes:'Configurações'};
+const TITLES = {painel:'Visão Geral',reservas:'Reservas',ocupacao:'Ocupação',chegadas:'Chegadas',saidas:'Saídas',hospedes:'Hóspedes',clientes:'Clientes',financeiro:'Financeiro',precos:'Tabela de Preços',relatorios:'Relatórios',cantina:'Cantina',comandas:'Comandas',configuracoes:'Configurações'};
 
 function navigate(id){
   if(!id||!document.getElementById('view-'+id)) id='painel';
@@ -1048,7 +1069,7 @@ function navigate(id){
   if(ni) ni.classList.add('active');
   document.getElementById('page-title').textContent=TITLES[id]||'Painel';
   if(id==='configuracoes') carregarConfiguracoes();
-  if(id==='cantina') carregarCantina();
+  if(id==='cantina'||id==='comandas') carregarCantina();
   if(id==='relatorios'){
     _setRelLabel(); // sempre atualiza label do mês (seguro desde o início)
     const authHidden = document.getElementById('auth-overlay').classList.contains('hidden');
@@ -1552,14 +1573,19 @@ function renderFinanceiro(){
       <td style="font-weight:700;color:var(--fg)">R$ ${brlN(r.total)}</td>
       <td style="color:var(--ok);font-weight:600">R$ ${brlN(sinal)}</td>
       <td style="color:${saldo>0?'var(--warn)':'var(--fg-muted)'};font-weight:${saldo>0?'600':'400'}">R$ ${brlN(saldo)}</td>
+      <td>${finCantinaCell(r)}</td>
       <td>${statusBadge(r.status)}</td>
       <td style="white-space:nowrap">${saldo>0?`<button class="btn-xs" onclick="registrarPagamento('${r.id}')" style="background:var(--accent);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;margin-right:4px">💰 Registrar</button><button class="btn-xs" onclick="confirmarPagamento(${r.id})" style="background:var(--ok);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600">✓ Quitar</button>`:''}</td>
     </tr>`;
-  }).join('')+`<tr style="background:var(--accent-lt)"><td colspan="7" style="font-weight:700;padding:12px 20px;color:var(--fg)">Total geral</td><td style="font-weight:700;font-size:15px;padding:12px 16px;color:var(--accent)">R$ ${brlN((confirmed+pending))}</td><td style="font-weight:700;color:var(--ok)">R$ ${brlN(confirmed)}</td><td style="font-weight:700;color:var(--warn)">R$ ${brlN(pending)}</td><td colspan="2"></td></tr>`;
+  }).join('')+`<tr style="background:var(--accent-lt)"><td colspan="7" style="font-weight:700;padding:12px 20px;color:var(--fg)">Total geral</td><td style="font-weight:700;font-size:15px;padding:12px 16px;color:var(--accent)">R$ ${brlN((confirmed+pending))}</td><td style="font-weight:700;color:var(--ok)">R$ ${brlN(confirmed)}</td><td style="font-weight:700;color:var(--warn)">R$ ${brlN(pending)}</td><td style="font-weight:700">${brlR(cantina.comandas.filter(c=>c.reserva_id&&c.status!=='cancelada').reduce((s,c)=>s+c.total,0))}</td><td colspan="2"></td></tr>`;
 
   // Update tiles
-  document.getElementById('fin-confirmed').textContent='R$ '+brlN(confirmed);
-  document.getElementById('fin-pending').textContent='R$ '+brlN(pending);
+  const cRec=cantinaRecebido(), cAb=cantina.comandas.filter(c=>c.status==='aberta').reduce((s,c)=>s+c.total,0);
+  document.getElementById('fin-confirmed').textContent='R$ '+brlN(confirmed+cRec);
+  document.getElementById('fin-pending').textContent='R$ '+brlN(pending+cAb);
+  const sc=document.getElementById('fin-confirmed-sub'); if(sc) sc.textContent=cRec>0?`hospedagem ${brlR(confirmed)} + cantina ${brlR(cRec)}`:'reservas já pagas';
+  const sp=document.getElementById('fin-pending-sub'); if(sp) sp.textContent=cAb>0?`hospedagem ${brlR(pending)} + comandas ${brlR(cAb)}`:'saldo pendente';
+  renderFinCantina();
   updateFinResultado(confirmed);
 }
 
@@ -1727,8 +1753,30 @@ async function confirmarPagamento(id){
   }catch(e){ showToast('Erro ao confirmar pagamento','❌'); }
 }
 
+function cantinaRecebido(){ return cantina.comandas.filter(c=>c.status==='fechada').reduce((s,c)=>s+(c.pago||0),0); }
+function finCantinaCell(r){
+  const cs=cantina.comandas.filter(c=>String(c.reserva_id)===String(r.id)&&c.status!=='cancelada'&&c.total>0);
+  if(!cs.length) return '<span class="td-muted">—</span>';
+  const tot=cs.reduce((s,c)=>s+c.total,0), aberta=cs.some(c=>c.status==='aberta');
+  return `<span style="font-weight:600">${brlR(tot)}</span><div style="font-size:10px;font-weight:600;color:${aberta?'var(--warn)':'var(--ok)'}">${aberta?'⏳ comanda aberta':'✅ pago'}</div>`;
+}
+function renderFinCantina(){
+  const el=document.getElementById('fin-cantina-body'); if(!el) return;
+  const cs=cantina.comandas.filter(c=>!c.reserva_id&&c.status!=='cancelada'&&c.total>0).sort((a,b)=>String(b.fechada_em||b.aberta_em).localeCompare(String(a.fechada_em||a.aberta_em)));
+  const rec=cs.filter(c=>c.status==='fechada').reduce((s,c)=>s+(c.pago||0),0), ab=cs.filter(c=>c.status==='aberta').reduce((s,c)=>s+c.total,0);
+  const tt=document.getElementById('fin-cantina-resumo'); if(tt) tt.textContent=`Recebido ${brlR(rec)}${ab>0?` · em aberto ${brlR(ab)}`:''}`;
+  el.innerHTML=cs.length?cs.slice(0,60).map(c=>`<tr>
+    <td class="td-muted">${new Date(c.fechada_em||c.aberta_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}</td>
+    <td class="td-name">${escHtml(c.nome)}${c.telefone?`<div class="td-muted" style="font-size:11px;font-weight:400">${escHtml(c.telefone)}</div>`:''}</td>
+    <td>${tagComanda(c)}</td>
+    <td class="td-muted" style="font-size:12px">${c.itens.map(i=>i.qtd+'× '+escHtml(i.nome)).join(', ')}</td>
+    <td style="font-weight:700">${brlR(c.total)}</td>
+    <td class="td-muted">${c.status==='fechada'?brlR(c.pago)+(c.forma_pagamento?' · '+(FORMAS[c.forma_pagamento]||c.forma_pagamento):''):'—'}</td>
+    <td>${c.status==='aberta'?'<span class="status-badge status-pending">⏳ Aberta</span>':'<span class="status-badge status-confirmed">✓ Paga</span>'}</td></tr>`).join('')
+    :`<tr><td colspan="7" class="td-muted" style="text-align:center;padding:16px">Nenhuma venda para não hóspedes ainda</td></tr>`;
+}
 function updateFinResultado(){
-  const receita=reservations.filter(r=>!['cancelled','no_show'].includes(r.status)).reduce((s,r)=>s+(parseFloat(r.sinal_pago)||0),0);
+  const receita=reservations.filter(r=>!['cancelled','no_show'].includes(r.status)).reduce((s,r)=>s+(parseFloat(r.sinal_pago)||0),0)+cantinaRecebido();
   const totalGastos=gastos.reduce((s,g)=>s+parseFloat(g.valor||0),0);
   const resultado=receita-totalGastos;
   const elG=document.getElementById('fin-gastos');
@@ -2094,7 +2142,7 @@ async function doCheckout(id){
 
 // ══ CANTINA ══════════════════════════════════════════════
 let cantina={produtos:[],comandas:[],vendas:[],baixas:[]};
-let cantTab='comandas', cantPeriodo='mes', cantComandaId=null, cantBusca='', cantCat='';
+let cantTab='produtos', cantPeriodo='mes', cantComandaId=null, cantBusca='', cantCat='', cantModo='comanda', vendaCarrinho=[];
 const CANT_CATS=[]; // sem categorias prontas: só as criadas pelos produtos
 const FORMAS={pix:'Pix',dinheiro:'Dinheiro',cartao:'Cartão'};
 function hojeBR(){ return new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'}); }
@@ -2113,8 +2161,10 @@ async function carregarCantina(silencioso=false){
   const d=await cantApi('listar',{},silencioso);
   if(d){ cantina={produtos:d.produtos||[],comandas:d.comandas||[],vendas:d.vendas||[],baixas:d.baixas||[]}; }
   renderCantina();
-  if(cantComandaId) renderComandaPartes();
+  if(cantModal&&cantModo==='comanda'&&cantComandaId) renderComandaPartes();
+  if(cantModal&&cantModo==='venda') renderVendaPartes();
   try{ renderSaidas(); }catch(e){}
+  try{ renderFinanceiro(); }catch(e){}
   return !!d;
 }
 function comandaDaReserva(id){ return cantina.comandas.find(c=>c.status==='aberta'&&String(c.reserva_id)===String(id)); }
@@ -2155,24 +2205,37 @@ function renderCantina(){
   const recM=soma(vm,'receita'), lucM=recM-soma(vm,'custo');
   set('cant-st-lucro',brlR(lucM)); set('cant-st-lucro-sub',recM>0?`margem ${Math.round(lucM/recM*100)}%`:'margem —');
   const baixo=cantina.produtos.filter(p=>p.estoque!==null&&p.estoque<=p.estoque_min).length;
+  renderComandas();
   const tabs=document.getElementById('cant-tabs');
   if(tabs){
     const chip=(k,t)=>`<button type="button" class="btn btn-sm ${cantTab===k?'btn-primary':'btn-ghost'}" onclick="cantTab='${k}';renderCantina()">${t}</button>`;
-    tabs.innerHTML=chip('comandas',`🧾 Comandas <span style="opacity:.75">${abertas.length}</span>`)+chip('produtos',`📦 Produtos e estoque${baixo?` <span style="background:#dc2626;color:#fff;border-radius:99px;padding:0 6px;font-size:11px">${baixo}</span>`:''}`)+chip('relatorio','📊 Relatório');
+    tabs.innerHTML=chip('produtos',`📦 Produtos e estoque${baixo?` <span style="background:#dc2626;color:#fff;border-radius:99px;padding:0 6px;font-size:11px">${baixo}</span>`:''}`)+chip('relatorio','📊 Relatório');
   }
   const body=document.getElementById('cant-body'); if(!body) return;
-  body.innerHTML=cantTab==='produtos'?htmlCantProdutos():cantTab==='relatorio'?htmlCantRelatorio():htmlCantComandas();
+  body.innerHTML=cantTab==='relatorio'?htmlCantRelatorio():htmlCantProdutos();
+}
+function renderComandas(){
+  const body=document.getElementById('com-body'); if(!body) return;
+  const hoje=hojeBR();
+  const abertas=cantina.comandas.filter(c=>c.status==='aberta');
+  const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('com-st-abertas',abertas.length);
+  set('com-st-receber',brlR(abertas.reduce((s,c)=>s+c.total,0))+' a receber');
+  const fHoje=cantina.comandas.filter(c=>c.status==='fechada'&&c.fechada_em&&new Date(c.fechada_em).toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'})===hoje);
+  set('com-st-hoje',brlR(fHoje.reduce((s,c)=>s+(c.pago||0),0))); set('com-st-hoje-sub',`${fHoje.length} venda${fHoje.length===1?'':'s'}/comanda${fHoje.length===1?'':'s'}`);
+  body.innerHTML=htmlCantComandas();
 }
 function tagComanda(c){
+  if(c.balcao) return `<span class="type-chip">🛒 Venda avulsa</span>`;
   return c.tipo==='hospede'
     ?`<span class="type-chip">🏕 Hóspede${c.spot_id?' · '+escHtml(c.spot_id):''}</span>`
     :`<span class="type-chip">👤 Avulsa</span>`;
 }
 function htmlCantComandas(){
   const abertas=cantina.comandas.filter(c=>c.status==='aberta');
-  const fechadas=cantina.comandas.filter(c=>c.status!=='aberta').sort((a,b)=>String(b.fechada_em).localeCompare(String(a.fechada_em))).slice(0,20);
+  const fechadas=cantina.comandas.filter(c=>c.status!=='aberta').sort((a,b)=>String(b.fechada_em).localeCompare(String(a.fechada_em))).slice(0,30);
   let h='';
-  if(!abertas.length) h+=`<div class="td-muted" style="text-align:center;padding:28px 20px">Nenhuma comanda aberta.<br><span style="font-size:12px">A comanda do hóspede abre sozinha no check-in. Para quem não é hóspede, use <b>+ Nova comanda</b>.</span></div>`;
+  if(!abertas.length) h+=`<div class="td-muted" style="text-align:center;padding:28px 20px">Nenhuma comanda aberta.<br><span style="font-size:12px">A comanda do hóspede abre sozinha no check-in. Para quem não é hóspede, use <b>+ Nova comanda</b>. Para vender na hora, use <b>🛒 Venda avulsa</b>.</span></div>`;
   else h+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;padding:16px 20px">${abertas.map(c=>`
     <button type="button" onclick="abrirComanda(${c.id})" style="text-align:left;cursor:pointer;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:14px;color:var(--fg);font-family:inherit">
       <div style="font-weight:700;font-size:14.5px;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(c.nome)}</div>
@@ -2182,7 +2245,7 @@ function htmlCantComandas(){
     </button>`).join('')}</div>`;
   if(fechadas.length) h+=`<div style="padding:4px 20px 6px;font-size:12px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em">Fechadas recentemente</div>
     <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Tipo</th><th>Fechada em</th><th>Total</th><th>Recebido</th><th>Status</th></tr></thead><tbody>${fechadas.map(c=>`<tr>
-      <td class="td-name">${escHtml(c.nome)}</td><td>${tagComanda(c)}</td>
+      <td class="td-name">${escHtml(c.nome)}<div class="td-muted" style="font-size:11px;font-weight:400">${c.itens.map(i=>i.qtd+'× '+escHtml(i.nome)).join(', ')}</div></td><td>${tagComanda(c)}</td>
       <td class="td-muted">${c.fechada_em?new Date(c.fechada_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}):'—'}</td>
       <td style="font-weight:700">${brlR(c.total)}</td>
       <td class="td-muted">${c.status==='cancelada'?'—':brlR(c.pago)+(c.forma_pagamento?' · '+(FORMAS[c.forma_pagamento]||c.forma_pagamento):'')}</td>
@@ -2247,10 +2310,11 @@ function htmlCantRelatorio(){
 
 // ── comanda (modal com produtos + itens)
 let cantModal=null;
+function reservaDaComanda(c){ return c&&c.reserva_id?reservations.find(r=>String(r.id)===String(c.reserva_id)):null; }
 function abrirComanda(id){
   const c=cantina.comandas.find(x=>x.id===id); if(!c) return;
   if(cantModal) cantModal.fechar();
-  cantComandaId=id; cantBusca=''; cantCat='';
+  cantModo='comanda'; cantComandaId=id; cantBusca=''; cantCat='';
   const m=criarModal('',860); cantModal=m;
   const fecharOrig=m.fechar; m.fechar=()=>{ fecharOrig(); cantComandaId=null; cantModal=null; };
   m.ov.querySelector('[data-x]').onclick=m.fechar; m.ov.onclick=e=>{ if(e.target===m.ov) m.fechar(); };
@@ -2282,7 +2346,14 @@ function renderComandaPartes(){
         <button type="button" title="Aumentar" onclick="mudarQtd(${i.id},1)" style="border:0;background:transparent;color:var(--fg);width:30px;height:30px;font-size:16px;font-weight:700;cursor:pointer">+</button>
       </div></div>`).join('')}</div>`
     :`<div class="td-muted" style="text-align:center;padding:24px 8px;border:1.5px dashed var(--border);border-radius:10px">Nenhum item ainda.<br><span style="font-size:12px">Clique nos produtos para lançar.</span></div>`)
-    +`<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><span style="font-weight:700">Total</span><span style="font-size:22px;font-weight:800">${brlR(c.total)}</span></div>`;
+    +(()=>{
+      const r=reservaDaComanda(c), sd=r?saldoDe(r):0;
+      if(!(sd>0)) return `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><span style="font-weight:700">Total</span><span style="font-size:22px;font-weight:800">${brlR(c.total)}</span></div>`;
+      return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between"><span class="td-muted">Cantina</span><b>${brlR(c.total)}</b></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;background:#fef3c7;color:#92400e"><span>🏕 Hospedagem: falta pagar</span><span style="display:flex;align-items:center;gap:8px"><b>${brlR(sd)}</b><button type="button" class="btn btn-ghost btn-sm" onclick="receberHospedagem('${r.id}')">Receber</button></span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700">Total geral</span><span style="font-size:22px;font-weight:800">${brlR(c.total+sd)}</span></div></div>`;
+    })();
 }
 function renderCantProdLista(){
   const el=document.getElementById('cant-prod-lista'); if(!el) return;
@@ -2290,6 +2361,8 @@ function renderCantProdLista(){
   const ps=cantina.produtos.filter(p=>(!cantCat||p.categoria===cantCat)&&(!q||p.nome.toLowerCase().includes(q)));
   if(!cantina.produtos.length){ el.innerHTML=`<div class="td-muted" style="grid-column:1/-1;text-align:center;padding:20px;border:1.5px dashed var(--border);border-radius:10px">Ainda não há produtos cadastrados.<br><span style="font-size:12px">Para lançar agora na conta da pessoa, use <b>✍️ + Item avulso</b>.<br>Os produtos são cadastrados em <b>+ Produto</b>, na aba Cantina.</span><div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px"><button class="btn btn-primary btn-sm" onclick="itemAvulso()">✍️ Item avulso</button></div></div>`; return; }
   el.innerHTML=ps.length?ps.map(p=>{
+    const est=p.estoque===null?null:p.estoque-(cantModo==='venda'?vendaCarrinho.filter(i=>i.produto_id===p.id).reduce((s,i)=>s+i.qtd,0):0);
+    p={...p,estoque:est};
     const sem=p.estoque!==null&&p.estoque<=0;
     return `<button type="button" onclick="adicionarItem(${p.id})" style="text-align:left;cursor:pointer;background:var(--bg);border:1.5px solid ${sem?'#fca5a5':'var(--border)'};border-radius:10px;padding:10px;color:var(--fg);font-family:inherit;opacity:${sem?.6:1}">
       <div style="font-weight:600;font-size:13px;line-height:1.25">${escHtml(p.nome)}</div>
@@ -2297,8 +2370,75 @@ function renderCantProdLista(){
       ${p.estoque!==null?`<div style="font-size:11px;color:${p.estoque<=p.estoque_min?'#dc2626':'var(--fg-muted)'}">${sem?'sem estoque':p.estoque+' em estoque'}</div>`:''}</button>`;
   }).join(''):`<div class="td-muted" style="grid-column:1/-1;text-align:center;padding:16px">Nenhum produto encontrado</div>`;
 }
+function abrirVendaAvulsa(){
+  if(cantModal) cantModal.fechar();
+  cantModo='venda'; cantComandaId=null; cantBusca=''; cantCat=''; vendaCarrinho=[];
+  const m=criarModal('🛒 Venda avulsa',860); cantModal=m;
+  const fecharOrig=m.fechar; m.fechar=()=>{ fecharOrig(); cantModal=null; cantModo='comanda'; vendaCarrinho=[]; };
+  m.ov.querySelector('[data-x]').onclick=m.fechar; m.ov.onclick=e=>{ if(e.target===m.ov) m.fechar(); };
+  m.corpo.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">
+    <div><div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap"><button type="button" class="btn btn-ghost btn-sm" onclick="itemAvulso()">✍️ + Item avulso</button></div>
+      <input class="form-input" id="cant-busca" placeholder="🔎 Buscar produto…" oninput="cantBusca=this.value;renderCantProdLista()">
+      <div id="cant-cats" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"></div>
+      <div id="cant-prod-lista" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;max-height:46vh;overflow:auto"></div></div>
+    <div><div style="font-size:12px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Itens da venda</div><div id="cant-itens"></div>
+      <div class="form-group" style="margin-top:12px;margin-bottom:0"><label class="form-label">Cliente (opcional)</label><input class="form-input" id="venda-nome" placeholder="ex.: Vizinho, day use…"></div></div></div>`;
+  m.rodape.innerHTML=`<button type="button" class="btn btn-ghost" onclick="cantModal&&cantModal.fechar()">Cancelar</button><button type="button" class="btn btn-primary" id="venda-btn" onclick="finalizarVenda()">💰 Receber</button>`;
+  renderVendaPartes();
+  setTimeout(()=>{ const b=document.getElementById('cant-busca'); if(b) b.focus(); },30);
+}
+function vendaTotal(){ return vendaCarrinho.reduce((s,i)=>s+i.qtd*i.preco,0); }
+function renderVendaPartes(){
+  if(!cantModal||cantModo!=='venda') return;
+  const cats=[...new Set(cantina.produtos.map(p=>p.categoria))];
+  const ce=document.getElementById('cant-cats');
+  if(ce) ce.innerHTML=[['','Todos'],...cats.map(x=>[x,x])].map(([k,t])=>`<button type="button" class="btn btn-sm ${cantCat===k?'btn-primary':'btn-ghost'}" onclick="cantCat=${JSON.stringify(k).replace(/"/g,'&quot;')};renderVendaPartes()">${escHtml(t)}</button>`).join('');
+  renderCantProdLista();
+  const it=document.getElementById('cant-itens');
+  if(it) it.innerHTML=(vendaCarrinho.length?`<div style="display:flex;flex-direction:column;gap:6px">${vendaCarrinho.map((i,ix)=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:9px">
+      <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">${escHtml(i.nome)}</div><div class="td-muted" style="font-size:11.5px">${brlR(i.preco)} cada · ${brlR(i.qtd*i.preco)}</div></div>
+      <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden">
+        <button type="button" onclick="vendaQtd(${ix},-1)" style="border:0;background:transparent;color:var(--fg);width:30px;height:30px;font-size:16px;font-weight:700;cursor:pointer">${i.qtd>1?'−':'🗑'}</button>
+        <span style="min-width:26px;text-align:center;font-weight:800">${i.qtd}</span>
+        <button type="button" onclick="vendaQtd(${ix},1)" style="border:0;background:transparent;color:var(--fg);width:30px;height:30px;font-size:16px;font-weight:700;cursor:pointer">+</button>
+      </div></div>`).join('')}</div>`
+    :`<div class="td-muted" style="text-align:center;padding:24px 8px;border:1.5px dashed var(--border);border-radius:10px">Nenhum item ainda.<br><span style="font-size:12px">Clique nos produtos ou use ✍️ Item avulso.</span></div>`)
+    +`<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><span style="font-weight:700">Total</span><span style="font-size:22px;font-weight:800">${brlR(vendaTotal())}</span></div>`;
+  const b=document.getElementById('venda-btn'); if(b) b.textContent=`💰 Receber ${brlR(vendaTotal())}`;
+}
+function vendaQtd(ix,delta){
+  const i=vendaCarrinho[ix]; if(!i) return;
+  i.qtd+=delta; if(i.qtd<1) vendaCarrinho.splice(ix,1);
+  renderVendaPartes();
+}
+async function finalizarVenda(){
+  if(!vendaCarrinho.length){ showToast('Adicione pelo menos um item','⚠️'); return; }
+  const total=vendaTotal();
+  const forma=await escolher('Como foi pago?',`Venda avulsa · <b>${brlR(total)}</b>`,[{texto:'Pix',valor:'pix',primario:true},{texto:'Dinheiro',valor:'dinheiro'},{texto:'Cartão',valor:'cartao'},{texto:'Voltar',valor:null}]);
+  if(!forma) return;
+  const valor=await pedirValor('Valor recebido',`Venda avulsa · total <b>${brlR(total)}</b> · ${FORMAS[forma]}`,brlN(total));
+  if(valor===null) return;
+  const nome=(document.getElementById('venda-nome')||{}).value||'';
+  const itens=vendaCarrinho.map(i=>i.produto_id?{produto_id:i.produto_id,qtd:i.qtd}:{nome:i.nome,preco:i.preco,qtd:i.qtd});
+  const d=await cantApi('venda_rapida',{itens,forma,valor,nome});
+  if(!d) return;
+  showToast(`Venda de ${brlR(valor)} registrada`,'✅');
+  if(cantModal) cantModal.fechar();
+  await carregarCantina(true);
+}
 let cantOcupado=false;
 async function adicionarItem(produtoId){
+  if(cantModo==='venda'){
+    const p=cantina.produtos.find(x=>x.id===produtoId); if(!p) return;
+    const noCarr=vendaCarrinho.filter(i=>i.produto_id===p.id).reduce((s,i)=>s+i.qtd,0);
+    if(p.estoque!==null&&p.estoque-noCarr<=0){
+      const op=await escolher('Sem estoque',`O estoque de <b>${escHtml(p.nome)}</b> está zerado no sistema. Adicionar mesmo assim?`,[{texto:'Adicionar mesmo assim',valor:'sim',primario:true},{texto:'Voltar',valor:null}]);
+      if(!op) return;
+    }
+    const ex=vendaCarrinho.find(i=>i.produto_id===p.id);
+    if(ex) ex.qtd++; else vendaCarrinho.push({produto_id:p.id,nome:p.nome,preco:p.preco,qtd:1});
+    renderVendaPartes(); return;
+  }
   if(cantOcupado||!cantComandaId) return;
   const p=cantina.produtos.find(x=>x.id===produtoId); if(!p) return;
   if(p.estoque!==null&&p.estoque<=0){
@@ -2325,6 +2465,20 @@ function mudarQtd(itemId,delta){
   });
   clearTimeout(mudarQtd._t); mudarQtd._t=setTimeout(()=>cantFila.then(()=>carregarCantina(true)),900);
 }
+async function pagarHospedagem(r,valor){
+  try{
+    const res=await fetch(`${API_BASE}/akampa/pagar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(r.id),valor}),signal:AbortSignal.timeout(8000)});
+    const d=await res.json();
+    if(!d.ok) throw new Error('falha');
+    r.sinal_pago=d.sinal_pago; if(d.status) r.status=d.status; if(d.notas!==undefined) r.notas=d.notas;
+    renderAll(); try{ renderFinanceiro(); }catch(e){}
+    return true;
+  }catch(e){ showToast('Erro ao registrar o pagamento da hospedagem','❌'); return false; }
+}
+async function receberHospedagem(resId){
+  const ok=await registrarPagamento(resId,saldoDe(reservations.find(r=>String(r.id)===String(resId))||{}));
+  if(ok&&cantModal&&cantModo==='comanda') renderComandaPartes();
+}
 async function removerItem(itemId){
   const d=await cantApi('remover_item',{item_id:itemId});
   if(d) showToast('Item removido','🗑'); await carregarCantina(true);
@@ -2337,13 +2491,26 @@ async function fecharComandaFluxo(id){
     if(!op) return false;
     const d=await cantApi('fechar_comanda',{id,forma:'',valor:0}); await carregarCantina(true); return !!d;
   }
-  const forma=await escolher('Receber comanda 🍺',`<b>${escHtml(c.nome)}</b> · total <b>${brlR(c.total)}</b><br>Como foi pago?`,[{texto:'Pix',valor:'pix',primario:true},{texto:'Dinheiro',valor:'dinheiro'},{texto:'Cartão',valor:'cartao'},{texto:'Voltar',valor:null}]);
+  const r=reservaDaComanda(c), sd=r?saldoDe(r):0;
+  let junto=false;
+  if(sd>0){
+    const op=await escolher('Receber 💰',`<b>${escHtml(c.nome)}</b><br>Cantina: <b>${brlR(c.total)}</b><br>Hospedagem (falta): <b>${brlR(sd)}</b>`,[
+      {texto:`Receber tudo · ${brlR(c.total+sd)}`,valor:'tudo',primario:true},
+      {texto:`Só a cantina · ${brlR(c.total)}`,valor:'cantina'},
+      {texto:'Voltar',valor:null}]);
+    if(!op) return false;
+    junto=op==='tudo';
+  }
+  const alvo=junto?c.total+sd:c.total;
+  const forma=await escolher('Como foi pago?',`<b>${escHtml(c.nome)}</b> · <b>${brlR(alvo)}</b>`,[{texto:'Pix',valor:'pix',primario:true},{texto:'Dinheiro',valor:'dinheiro'},{texto:'Cartão',valor:'cartao'},{texto:'Voltar',valor:null}]);
   if(!forma) return false;
-  const valor=await pedirValor('Valor recebido',`Comanda de <b>${escHtml(c.nome)}</b><br>Total: <b>${brlR(c.total)}</b> · ${FORMAS[forma]}`,brlN(c.total));
+  const valor=await pedirValor('Valor recebido',`<b>${escHtml(c.nome)}</b><br>${junto?`Cantina ${brlR(c.total)} + hospedagem ${brlR(sd)} = `:''}<b>${brlR(alvo)}</b> · ${FORMAS[forma]}`,brlN(alvo));
   if(valor===null) return false;
-  const d=await cantApi('fechar_comanda',{id,forma,valor});
+  const vCantina=Math.min(valor,c.total), vHosp=junto?Math.round((valor-vCantina)*100)/100:0;
+  const d=await cantApi('fechar_comanda',{id,forma,valor:vCantina});
   if(!d) return false;
-  showToast(`Comanda de ${c.nome} fechada · ${brlR(valor)}`,'✅');
+  if(vHosp>0&&r){ const okH=await pagarHospedagem(r,vHosp); if(!okH){ await carregarCantina(true); return true; } }
+  showToast(`Recebido ${brlR(valor)} de ${c.nome}${vHosp>0?' (cantina + hospedagem)':''}`,'✅');
   await carregarCantina(true); return true;
 }
 async function cancelarComanda(id){
@@ -2363,7 +2530,7 @@ function novaComanda(){
   m.corpo.querySelectorAll('[data-r]').forEach(b=>b.onclick=async()=>{
     const r=reservations.find(x=>x.id===b.dataset.r); if(!r) return;
     const d=await cantApi('abrir_comanda',{nome:r.nome,reserva_id:r.id,spot_id:r.spot});
-    if(d){ m.fechar(); await carregarCantina(true); cantTab='comandas'; renderCantina(); abrirComanda(d.id); }
+    if(d){ m.fechar(); await carregarCantina(true); renderCantina(); abrirComanda(d.id); }
   });
   m.rodape.innerHTML=`<button type="button" class="btn btn-ghost" data-c>Cancelar</button><button type="button" class="btn btn-primary" data-ok>Abrir comanda</button>`;
   m.rodape.querySelector('[data-c]').onclick=m.fechar;
@@ -2371,7 +2538,7 @@ function novaComanda(){
     const nome=m.corpo.querySelector('[data-n]').value.trim();
     if(!nome){ m.corpo.querySelector('[data-e]').textContent='Informe o nome do cliente.'; return; }
     const d=await cantApi('abrir_comanda',{nome,telefone:m.corpo.querySelector('[data-tel]').value});
-    if(d){ m.fechar(); await carregarCantina(true); cantTab='comandas'; renderCantina(); abrirComanda(d.id); }
+    if(d){ m.fechar(); await carregarCantina(true); abrirComanda(d.id); }
   };
   m.rodape.querySelector('[data-ok]').onclick=ok;
   m.corpo.querySelector('[data-n]').onkeydown=e=>{ if(e.key==='Enter') ok(); };
@@ -2420,14 +2587,15 @@ function abrirProduto(id,opts={}){
   setTimeout(()=>f('nome').focus(),30);
 }
 function itemAvulso(){
-  const c=cantina.comandas.find(x=>x.id===cantComandaId); if(!c) return;
+  const venda=cantModo==='venda';
+  const c=venda?null:cantina.comandas.find(x=>x.id===cantComandaId); if(!venda&&!c) return;
   const m=criarModal('✍️ Item avulso',420);
-  m.corpo.innerHTML=`<div class="td-muted" style="font-size:13px;margin-bottom:14px">Lança na comanda de <b>${escHtml(c.nome)}</b> algo que não está cadastrado. Não mexe no estoque.</div>
+  m.corpo.innerHTML=`<div class="td-muted" style="font-size:13px;margin-bottom:14px">${venda?'Adiciona na venda':`Lança na comanda de <b>${escHtml(c.nome)}</b>`} algo que não está cadastrado. Não mexe no estoque.</div>
     <div class="form-group"><label class="form-label">Descrição</label><input class="form-input" data-n placeholder="ex.: Porção de batata"></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Valor unitário (R$)</label><input class="form-input" data-v inputmode="decimal" placeholder="0,00"></div>
       <div class="form-group"><label class="form-label">Quantidade</label><input class="form-input" data-q inputmode="numeric" value="1"></div></div>
     <div data-e style="color:#dc2626;font-size:12px;min-height:16px"></div>`;
-  m.rodape.innerHTML=`<button type="button" class="btn btn-ghost" data-c>Cancelar</button><button type="button" class="btn btn-primary" data-ok>Lançar na comanda</button>`;
+  m.rodape.innerHTML=`<button type="button" class="btn btn-ghost" data-c>Cancelar</button><button type="button" class="btn btn-primary" data-ok>${venda?'Adicionar na venda':'Lançar na comanda'}</button>`;
   m.rodape.querySelector('[data-c]').onclick=m.fechar;
   const ok=async()=>{
     const err=m.corpo.querySelector('[data-e]'), nome=m.corpo.querySelector('[data-n]').value.trim();
@@ -2436,6 +2604,7 @@ function itemAvulso(){
     if(!nome){ err.textContent='Informe a descrição.'; return; }
     if(!(preco>0)){ err.textContent='Informe o valor (ex.: 30 ou 12,50).'; return; }
     if(!(qtd>0)){ err.textContent='Informe a quantidade.'; return; }
+    if(venda){ vendaCarrinho.push({produto_id:null,nome,preco,qtd}); m.fechar(); renderVendaPartes(); return; }
     const d=await cantApi('item_livre',{comanda_id:c.id,nome,preco,qtd});
     if(d){ m.fechar(); showToast(`${qtd}× ${nome} lançado`,'🍺'); await carregarCantina(true); }
   };
