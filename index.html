@@ -1190,7 +1190,9 @@ function normalizeRes(r){
     source: r.source || 'dashboard',
     notas: r.notas || '',
     expira_em: r.expira_em || null,
-    comprovante: r.comprovante || null
+    comprovante: r.comprovante || null,
+    checkin_at: r.checkin_at || null,
+    checkout_at: r.checkout_at || null
   };
 }
 
@@ -1227,7 +1229,7 @@ function nightsBetween(a,b){ return Math.round((new Date(b)-new Date(a))/(864000
 
 // ── Status label
 function statusBadge(s){
-  const map={occupied:['status-occupied','● Hospedado'],checkin:['status-checkin','⟳ Aguard. check-in'],confirmed:['status-confirmed','✓ Confirmada'],pending:['status-pending','⏳ Pendente pgto.']};
+  const map={occupied:['status-occupied','● Hospedado'],checkin:['status-occupied','● Hospedado'],checkout:['status-checkin','✓ Saiu'],confirmed:['status-confirmed','✓ Confirmada'],pending:['status-pending','⏳ Pendente pgto.']};
   const [cls,label]=map[s]||['status-confirmed',s];
   return `<span class="status-badge ${cls}">${label}</span>`;
 }
@@ -1844,7 +1846,11 @@ function renderChegadas(){
     else lista.innerHTML=`<div class="event-list">${chegadas.map(r=>{
       const cr=r.criancas?.length?`, ${r.criancas.length} cr`:'';
       const n=nightsBetween(r.checkin,r.checkout);
-      return `<div class="event-item"><span class="event-pill pill-in">PENDENTE</span><div class="event-info"><div class="event-name">${escHtml(r.nome)}</div><div class="event-meta">${r.spot} · ${r.adultos} adultos${cr} · ${n} noite${n!==1?'s':''} · saída ${fmtDate(r.checkout)}</div><div style="margin-top:4px">${saldoTag(r)}</div></div><button class="btn btn-primary btn-sm" onclick="doCheckin('${r.id}')">Fazer check-in</button></div>`;
+      const feito=['checkin','occupied','checkout'].includes(r.status);
+      const hora=r.checkin_at?new Date(r.checkin_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}):'';
+      const pill=feito?`<span class="event-pill pill-in">✓ CHEGOU</span>`:`<span class="event-pill pill-out">AGUARDANDO</span>`;
+      const acao=feito?`<span class="td-muted" style="font-size:12px">Check-in feito${hora?' às '+hora:''}</span>`:`<button class="btn btn-primary btn-sm" onclick="doCheckin('${r.id}')">Fazer check-in</button>`;
+      return `<div class="event-item">${pill}<div class="event-info"><div class="event-name">${escHtml(r.nome)}</div><div class="event-meta">${r.spot} · ${r.adultos} adultos${cr} · ${n} noite${n!==1?'s':''} · saída ${fmtDate(r.checkout)}</div><div style="margin-top:4px">${saldoTag(r)}</div></div>${acao}</div>`;
     }).join('')}</div>`;
   }
   if(tbody) tbody.innerHTML=proximas.length?proximas.map(r=>{
@@ -1974,7 +1980,7 @@ async function salvarStatus(numId,status){
 async function doCheckin(id){
   const numId=parseInt(id);
   if(numId && !(await salvarStatus(numId,'checkin'))){ showToast('Não foi possível salvar o check-in. Tente de novo.','⚠️'); return; }
-  const r=reservations.find(x=>x.id===id); if(r) r.status='checkin';
+  const r=reservations.find(x=>x.id===id); if(r){ r.status='checkin'; r.checkin_at=new Date().toISOString(); }
   saveReservations(); renderAll(); showToast('Check-in realizado!','✅');
   if(r&&saldoDe(r)>0){
     const op=await escolher('Check-in feito ✅',`<b>${escHtml(r.nome)}</b> ainda tem <b>R$ ${brlN(saldoDe(r))}</b> a pagar.`,[
