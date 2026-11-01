@@ -357,7 +357,7 @@ tr:hover td{background:rgba(0,0,0,.02)}
 
     <!-- ══ RESERVAS ══ -->
     <div class="view" id="view-reservas">
-      <div class="section-hd"><h2>Reservas</h2><p>Todas as reservas ativas e futuras</p></div>
+      <div class="section-hd"><h2>Reservas</h2><p>Reservas ativas e futuras · use o filtro para ver o histórico</p></div>
       <div class="card" style="margin-bottom:24px">
         <div style="padding:16px 20px 0;display:flex;gap:10px;flex-wrap:wrap" id="filter-badges"></div>
         <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Hóspede</th><th>Tipo</th><th>Spot</th><th>Entrada</th><th>Saída</th><th>Noites</th><th>Pessoas</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody id="table-reservas"></tbody></table></div></div>
@@ -1261,7 +1261,7 @@ function nightsBetween(a,b){ return Math.round((new Date(b)-new Date(a))/(864000
 
 // ── Status label
 function statusBadge(s){
-  const map={occupied:['status-occupied','● Hospedado'],checkin:['status-occupied','● Hospedado'],checkout:['status-checkin','✓ Saiu'],confirmed:['status-confirmed','✓ Confirmada'],pending:['status-pending','⏳ Pendente pgto.']};
+  const map={occupied:['status-occupied','● Hospedado'],checkin:['status-occupied','● Hospedado'],checkout:['status-checkin','✓ Saiu'],cancelled:['status-occupied','✕ Cancelada'],no_show:['status-pending','✕ No-show'],confirmed:['status-confirmed','✓ Confirmada'],pending:['status-pending','⏳ Pendente pgto.']};
   const [cls,label]=map[s]||['status-confirmed',s];
   return `<span class="status-badge ${cls}">${label}</span>`;
 }
@@ -1418,10 +1418,22 @@ function showSpotModal(spotId, emoji){
 }
 
 // ── Render reservations table
+let filtroReservas='ativas';
+const FINALIZADAS=['checkout','cancelled','no_show'];
+function setFiltroReservas(f){ filtroReservas=f; renderReservas(); }
 function renderReservas(){
   const tbody=document.getElementById('table-reservas');
   if(!tbody) return;
-  tbody.innerHTML=reservations.map(r=>{
+  const ativas=reservations.filter(r=>!FINALIZADAS.includes(r.status)).sort((a,b)=>a.checkin.localeCompare(b.checkin));
+  const finalizadas=reservations.filter(r=>FINALIZADAS.includes(r.status)).sort((a,b)=>b.checkout.localeCompare(a.checkout));
+  const lista=filtroReservas==='ativas'?ativas:filtroReservas==='finalizadas'?finalizadas:[...ativas,...finalizadas];
+  const fb=document.getElementById('filter-badges');
+  if(fb){
+    const chip=(k,t,n)=>`<button type="button" class="btn btn-sm ${filtroReservas===k?'btn-primary':'btn-ghost'}" onclick="setFiltroReservas('${k}')">${t} <span style="opacity:.75;font-weight:600">${n}</span></button>`;
+    fb.innerHTML=chip('ativas','Ativas',ativas.length)+chip('finalizadas','Finalizadas',finalizadas.length)+chip('todas','Todas',reservations.length);
+  }
+  if(!lista.length){ tbody.innerHTML=`<tr><td colspan="10" class="td-muted" style="text-align:center;padding:20px">${filtroReservas==='finalizadas'?'Nenhuma reserva finalizada':'Nenhuma reserva ativa'}</td></tr>`; return; }
+  tbody.innerHTML=lista.map(r=>{
     const nights=nightsBetween(r.checkin,r.checkout);
     const totalPeople=r.adultos+(r.criancas?.length||0);
     const childStr=r.criancas?.length?` · ${r.criancas.length} cr`:'';
