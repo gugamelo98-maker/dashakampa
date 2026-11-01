@@ -2264,9 +2264,13 @@ function renderComandaPartes(){
   if(ce) ce.innerHTML=[['','Todos'],...cats.map(x=>[x,x])].map(([k,t])=>`<button type="button" class="btn btn-sm ${cantCat===k?'btn-primary':'btn-ghost'}" onclick="cantCat=${JSON.stringify(k).replace(/"/g,'&quot;')};renderComandaPartes()">${escHtml(t)}</button>`).join('');
   renderCantProdLista();
   const it=document.getElementById('cant-itens');
-  if(it) it.innerHTML=(c.itens.length?`<div style="display:flex;flex-direction:column;gap:6px">${c.itens.map(i=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:9px">
-      <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">${i.qtd}× ${escHtml(i.nome)}</div><div class="td-muted" style="font-size:11.5px">${brlR(i.preco)} cada · ${new Date(i.criado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'})}</div></div>
-      <div style="font-weight:700">${brlR(i.qtd*i.preco)}</div><button type="button" class="btn btn-ghost btn-sm" title="Remover (devolve ao estoque)" onclick="removerItem(${i.id})">🗑</button></div>`).join('')}</div>`
+  if(it) it.innerHTML=(c.itens.length?`<div class="td-muted" style="font-size:11.5px;margin-bottom:6px">Use − e + para ajustar a quantidade.</div>`+`<div style="display:flex;flex-direction:column;gap:6px">${c.itens.map(i=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:9px">
+      <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">${escHtml(i.nome)}</div><div class="td-muted" style="font-size:11.5px">${brlR(i.preco)} cada · ${brlR(i.qtd*i.preco)}</div></div>
+      <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden">
+        <button type="button" title="${i.qtd>1?'Diminuir':'Remover'}" onclick="mudarQtd(${i.id},-1)" style="border:0;background:transparent;color:var(--fg);width:30px;height:30px;font-size:16px;font-weight:700;cursor:pointer">${i.qtd>1?'−':'🗑'}</button>
+        <span style="min-width:26px;text-align:center;font-weight:800">${i.qtd}</span>
+        <button type="button" title="Aumentar" onclick="mudarQtd(${i.id},1)" style="border:0;background:transparent;color:var(--fg);width:30px;height:30px;font-size:16px;font-weight:700;cursor:pointer">+</button>
+      </div></div>`).join('')}</div>`
     :`<div class="td-muted" style="text-align:center;padding:24px 8px;border:1.5px dashed var(--border);border-radius:10px">Nenhum item ainda.<br><span style="font-size:12px">Clique nos produtos para lançar.</span></div>`)
     +`<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><span style="font-weight:700">Total</span><span style="font-size:22px;font-weight:800">${brlR(c.total)}</span></div>`;
 }
@@ -2295,6 +2299,21 @@ async function adicionarItem(produtoId){
   const d=await cantApi('adicionar_item',{comanda_id:cantComandaId,produto_id:produtoId,qtd:1});
   if(d) showToast(`${p.nome} lançado`,'🍺');
   await carregarCantina(true); cantOcupado=false;
+}
+let cantFila=Promise.resolve();
+function mudarQtd(itemId,delta){
+  const c=cantina.comandas.find(x=>x.id===cantComandaId); if(!c) return;
+  const it=c.itens.find(x=>x.id===itemId); if(!it) return;
+  const remover=it.qtd+delta<1;
+  // atualiza na tela na hora, depois sincroniza
+  if(remover) c.itens=c.itens.filter(x=>x.id!==itemId); else it.qtd+=delta;
+  c.total=c.itens.reduce((s,x)=>s+x.qtd*x.preco,0);
+  renderComandaPartes(); renderCantina();
+  cantFila=cantFila.then(async()=>{
+    const d=remover?await cantApi('remover_item',{item_id:itemId}):await cantApi('alterar_qtd',{item_id:itemId,delta});
+    if(!d) await carregarCantina(true);
+  });
+  clearTimeout(mudarQtd._t); mudarQtd._t=setTimeout(()=>cantFila.then(()=>carregarCantina(true)),900);
 }
 async function removerItem(itemId){
   const d=await cantApi('remover_item',{item_id:itemId});
