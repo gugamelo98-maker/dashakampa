@@ -1530,7 +1530,7 @@ function renderChegadas(){
 function renderSaidas(){
   const today=todayStr();
   const saidas=reservations.filter(r=>r.checkout===today&&!['cancelled','no_show'].includes(r.status));
-  const proximas=reservations.filter(r=>r.checkout>today&&r.checkin<=today&&!['cancelled','no_show'].includes(r.status)).sort((a,b)=>a.checkout.localeCompare(b.checkout)).slice(0,10);
+  const proximas=reservations.filter(r=>r.checkout>today&&!['cancelled','no_show','checkout'].includes(r.status)).sort((a,b)=>a.checkout.localeCompare(b.checkout)).slice(0,10);
   const badge=document.getElementById('saidas-badge');
   const lista=document.getElementById('saidas-hoje-list');
   const tbody=document.getElementById('table-saidas-prox');
@@ -1545,7 +1545,7 @@ function renderSaidas(){
   if(tbody) tbody.innerHTML=proximas.length?proximas.map(r=>{
     const cr=r.criancas?.length?` · ${r.criancas.length} cr`:''; const col=avatarColor(r.nome); const ini=initials(r.nome);
     const n=nightsBetween(r.checkin,r.checkout);
-    return `<tr><td class="td-muted">${fmtDate(r.checkout)}</td><td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><span class="td-name">${r.nome}</span></div></td><td class="td-muted">${r.spot}</td><td class="td-muted">${n}</td><td class="td-muted">${r.adultos} ad${cr}</td></tr>`;
+    return `<tr><td class="td-muted">${fmtDate(r.checkout)}</td><td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><span class="td-name">${r.nome}</span>${r.checkin>today?` <span class="status-badge status-checkin" title="Check-in em ${fmtDate(r.checkin)}">Chega ${fmtDate(r.checkin)}</span>`:''}</div></td><td class="td-muted">${r.spot}</td><td class="td-muted">${n}</td><td class="td-muted">${r.adultos} ad${cr}</td></tr>`;
   }).join(''):`<tr><td colspan="5" class="td-muted" style="text-align:center;padding:16px">Sem saídas nos próximos dias</td></tr>`;
 }
 
