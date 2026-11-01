@@ -1025,7 +1025,9 @@ function normalizeRes(r){
     sinal_pago: parseFloat(r.sinal_pago ?? 0),
     forma_pagamento: r.forma_pagamento || '',
     source: r.source || 'dashboard',
-    notas: r.notas || ''
+    notas: r.notas || '',
+    expira_em: r.expira_em || null,
+    comprovante: r.comprovante || null
   };
 }
 
@@ -1324,10 +1326,83 @@ function renderFinanceiro(){
 
 function escHtml(t){ return String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function notaHtml(r){
-  const n=(r.notas||'').trim();
   const zap=r.source==='whatsapp'?'<span style="display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:99px;background:#dcfce7;color:#15803d;margin-right:4px">WhatsApp</span>':'';
-  if(!n&&!zap) return '';
-  return `<div style="font-size:11px;color:var(--fg-muted);margin-top:3px;max-width:320px;white-space:normal;line-height:1.35">${zap}${n?'📝 '+escHtml(n):''}</div>`;
+  const c=r.comprovante;
+  let label='',bg='',fg='';
+  if(c&&c.resultado==='analise'){ label='⚠️ Pagamento em análise'; bg='#fef3c7'; fg='#b45309'; }
+  else if(c&&c.resultado==='confirmado'){ label='🧾 Ver comprovante'; bg='#dcfce7'; fg='#15803d'; }
+  else if(r.status==='pending'&&r.expira_em){
+    const d=new Date(r.expira_em);
+    const prazo=d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    label='⏳ Aguardando comprovante · até '+prazo; bg='#e0e7ff'; fg='#4338ca';
+  }
+  else if((r.notas||'').trim()){ label='📝 Ver anotações'; bg='var(--bg)'; fg='var(--fg-muted)'; }
+  const btn=label?`<button type="button" onclick="abrirPagamento('${r.id}')" style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;border:1px solid transparent;background:${bg};color:${fg};cursor:pointer">${label}</button>`:'';
+  if(!zap&&!btn) return '';
+  return `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center">${zap}${btn}</div>`;
+}
+async function abrirPagamento(id){
+  const r=reservations.find(x=>x.id===id||x.id===String(id));
+  if(!r) return;
+  const totalLiq=Math.max(0,r.total-parseFloat(r.desconto||0));
+  const pago=parseFloat(r.sinal_pago||0);
+  const saldo=Math.max(0,totalLiq-pago);
+  const brl=v=>'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+  ov.innerHTML=`<div style="background:var(--card,var(--bg,#fff));color:var(--fg);border-radius:16px;width:100%;max-width:560px;max-height:88vh;overflow:auto;box-shadow:0 24px 64px rgba(0,0,0,.35)">
+    <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <div><div style="font-weight:700;font-size:16px">${escHtml(r.nome)}</div>
+      <div style="font-size:12px;color:var(--fg-muted);margin-top:2px">${escHtml(r.spot)} · ${fmtDate(r.checkin)} a ${fmtDate(r.checkout)} · ${statusBadge(r.status)}</div></div>
+      <button type="button" class="btn btn-ghost btn-sm" data-fechar>✕</button>
+    </div>
+    <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;border-bottom:1px solid var(--border)">
+      <div><div style="font-size:11px;color:var(--fg-muted)">Total</div><div style="font-weight:700">${brl(totalLiq)}</div></div>
+      <div><div style="font-size:11px;color:var(--fg-muted)">Pago</div><div style="font-weight:700;color:var(--ok)">${brl(pago)}</div></div>
+      <div><div style="font-size:11px;color:var(--fg-muted)">Saldo</div><div style="font-weight:700;color:${saldo>0?'var(--warn)':'var(--fg-muted)'}">${brl(saldo)}</div></div>
+    </div>
+    <div data-corpo style="padding:16px 20px"><div class="td-muted">Carregando…</div></div>
+    <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end">
+      ${saldo>0&&!['cancelled','no_show'].includes(r.status)?'<button type="button" class="btn btn-primary btn-sm" data-pagar>💰 Registrar pagamento</button>':''}
+      <button type="button" class="btn btn-ghost btn-sm" data-fechar>Fechar</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelectorAll('[data-fechar]').forEach(b=>b.onclick=()=>ov.remove());
+  const bp=ov.querySelector('[data-pagar]'); if(bp) bp.onclick=()=>{ ov.remove(); registrarPagamento(r.id); };
+  const corpo=ov.querySelector('[data-corpo]');
+  let dados={comprovantes:[],notas:r.notas||''};
+  try{
+    const res=await fetch(`${API_BASE}/akampa/comprovante?reserva_id=${encodeURIComponent(parseInt(r.id))}&_=${Date.now()}`,{signal:AbortSignal.timeout(10000)});
+    const d=await res.json(); if(d&&d.ok) dados=d;
+  }catch(e){ console.warn('comprovante:',e.message); }
+  const fmtDH=v=>{ if(!v) return '—'; const d=new Date(v); return isNaN(d)?escHtml(v):d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); };
+  let html='';
+  if(r.status==='pending'&&r.expira_em&&!(dados.comprovantes||[]).length) html+=`<div style="padding:10px 12px;border-radius:10px;background:#e0e7ff;color:#4338ca;font-size:13px;margin-bottom:12px">⏳ Aguardando o cliente enviar o comprovante. A pré-reserva é cancelada automaticamente em ${fmtDH(r.expira_em)} se nada chegar.</div>`;
+  (dados.comprovantes||[]).forEach(c=>{
+    const ok=c.resultado==='confirmado';
+    const img=c.imagem_base64?`data:${escHtml(c.mimetype||'image/jpeg')};base64,${c.imagem_base64}`:'';
+    html+=`<div style="border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px">
+      <div style="padding:8px 10px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:10px;background:${ok?'#dcfce7':'#fef3c7'};color:${ok?'#15803d':'#b45309'}">${ok?'✅ Pagamento confirmado pela IA (conferir no extrato)':'⚠️ Pagamento em análise'}${!ok&&c.motivo?`<div style="font-weight:400;margin-top:3px">Motivo: ${escHtml(c.motivo)}</div>`:''}</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        ${img?(String(c.mimetype||'').startsWith('image/')?`<a href="${img}" target="_blank" title="Abrir em tamanho real"><img src="${img}" alt="Comprovante" style="width:160px;max-height:280px;object-fit:contain;border-radius:8px;border:1px solid var(--border);background:#fff"></a>`:`<a href="${img}" download="comprovante.pdf" class="btn btn-ghost btn-sm">📄 Baixar PDF</a>`):'<div class="td-muted" style="font-size:12px">Imagem não disponível</div>'}
+        <div style="font-size:12px;line-height:1.7;flex:1;min-width:180px">
+          <div><b>Valor lido:</b> ${c.valor!=null?brl(c.valor):'—'}</div>
+          <div><b>Data do Pix:</b> ${fmtDH(c.data_hora)}</div>
+          <div><b>Recebedor:</b> ${escHtml(c.recebedor_nome||'—')}${c.recebedor_documento?' · '+escHtml(c.recebedor_documento):''}</div>
+          <div><b>Pagador:</b> ${escHtml(c.pagador_nome||'—')}</div>
+          <div style="word-break:break-all"><b>ID da transação:</b> ${escHtml(c.id_transacao||'—')}</div>
+          <div class="td-muted">Recebido em ${fmtDH(c.criado_em)}</div>
+        </div>
+      </div></div>`;
+  });
+  const notas=String(dados.notas||r.notas||'').trim();
+  if(notas){
+    const linhas=notas.split(/\s*\[/).map(t=>t.replace(/\]\s*$/,'').trim()).filter(Boolean);
+    html+=`<div style="font-size:12px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em;margin:4px 0 6px">Histórico</div><ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.6">${linhas.map(l=>`<li>${escHtml(l)}</li>`).join('')}</ul>`;
+  }
+  if(!html) html='<div class="td-muted">Nenhum comprovante ou anotação para esta reserva.</div>';
+  corpo.innerHTML=html;
 }
 async function registrarPagamento(id){
   const r=reservations.find(x=>x.id===id||x.id===String(id));
