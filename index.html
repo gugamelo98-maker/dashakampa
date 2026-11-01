@@ -1227,7 +1227,7 @@ function renderReservas(){
     const ini=initials(r.nome);
     const typeLabel={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'}[r.tipo]||r.tipo;
     return `<tr>
-      <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><div><div class="td-name">${r.nome}</div><div class="td-muted" style="font-size:11px">${r.contato||''}</div></div></div></td>
+      <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><div><div class="td-name">${escHtml(r.nome)}</div><div class="td-muted" style="font-size:11px">${escHtml(r.contato||'')}</div>${notaHtml(r)}</div></div></td>
       <td><span class="type-chip">${typeLabel}</span></td>
       <td class="td-muted">${r.spot}</td>
       <td class="td-muted">${fmtDate(r.checkin)}</td>
@@ -1254,7 +1254,7 @@ function renderReservas(){
         })()}
       </td>
       <td>${statusBadge(r.status)}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="deleteReservation('${r.id}')">🗑</button></td>
+      <td style="white-space:nowrap">${(!['cancelled','no_show'].includes(r.status)&&Math.max(0,r.total-parseFloat(r.desconto||0))-parseFloat(r.sinal_pago||0)>0)?`<button class="btn btn-ghost btn-sm" title="Registrar pagamento" onclick="registrarPagamento('${r.id}')">💰</button>`:''}<button class="btn btn-ghost btn-sm" onclick="deleteReservation('${r.id}')">🗑</button></td>
     </tr>`;
   }).join('');
 }
@@ -1301,7 +1301,7 @@ function renderFinanceiro(){
     confirmed+=sinal;
     pending+=saldo;
     return `<tr>
-      <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><span class="td-name">${r.nome}</span></div></td>
+      <td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><div><span class="td-name">${escHtml(r.nome)}</span>${notaHtml(r)}</div></div></td>
       <td><span class="type-chip">${typeLabel}</span></td>
       <td class="td-muted">${seasLabel[r.temporada]||r.temporada}</td>
       <td class="td-muted">${nights}</td>
@@ -1312,7 +1312,7 @@ function renderFinanceiro(){
       <td style="color:var(--ok);font-weight:600">R$ ${sinal.toLocaleString('pt-BR')}</td>
       <td style="color:${saldo>0?'var(--warn)':'var(--fg-muted)'};font-weight:${saldo>0?'600':'400'}">R$ ${saldo.toLocaleString('pt-BR')}</td>
       <td>${statusBadge(r.status)}</td>
-      <td>${saldo>0?`<button class="btn-xs" onclick="confirmarPagamento(${r.id})" style="background:var(--ok);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600">✓ Quitar</button>`:''}</td>
+      <td style="white-space:nowrap">${saldo>0?`<button class="btn-xs" onclick="registrarPagamento('${r.id}')" style="background:var(--accent);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;margin-right:4px">💰 Registrar</button><button class="btn-xs" onclick="confirmarPagamento(${r.id})" style="background:var(--ok);color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600">✓ Quitar</button>`:''}</td>
     </tr>`;
   }).join('')+`<tr style="background:var(--accent-lt)"><td colspan="7" style="font-weight:700;padding:12px 20px;color:var(--fg)">Total geral</td><td style="font-weight:700;font-size:15px;padding:12px 16px;color:var(--accent)">R$ ${(confirmed+pending).toLocaleString('pt-BR')}</td><td style="font-weight:700;color:var(--ok)">R$ ${confirmed.toLocaleString('pt-BR')}</td><td style="font-weight:700;color:var(--warn)">R$ ${pending.toLocaleString('pt-BR')}</td><td colspan="2"></td></tr>`;
 
@@ -1322,6 +1322,31 @@ function renderFinanceiro(){
   updateFinResultado(confirmed);
 }
 
+function escHtml(t){ return String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function notaHtml(r){
+  const n=(r.notas||'').trim();
+  const zap=r.source==='whatsapp'?'<span style="display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:99px;background:#dcfce7;color:#15803d;margin-right:4px">WhatsApp</span>':'';
+  if(!n&&!zap) return '';
+  return `<div style="font-size:11px;color:var(--fg-muted);margin-top:3px;max-width:320px;white-space:normal;line-height:1.35">${zap}${n?'📝 '+escHtml(n):''}</div>`;
+}
+async function registrarPagamento(id){
+  const r=reservations.find(x=>x.id===id||x.id===String(id));
+  if(!r) return;
+  const totalLiq=Math.max(0,r.total-parseFloat(r.desconto||0));
+  const saldo=Math.max(0,totalLiq-parseFloat(r.sinal_pago||0));
+  const txt=prompt(`Quanto ${r.nome} pagou agora? (R$)\n\nTotal: R$ ${totalLiq.toLocaleString('pt-BR')} · Já pago: R$ ${parseFloat(r.sinal_pago||0).toLocaleString('pt-BR')} · Saldo: R$ ${saldo.toLocaleString('pt-BR')}`, '');
+  if(txt===null) return;
+  const valor=parseFloat(String(txt).replace(/[^\d,.-]/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.'));
+  if(!(valor>0)){ alert('Informe um valor maior que zero (ex.: 180 ou 1,80).'); return; }
+  try{
+    const res=await fetch(`${API_BASE}/akampa/pagar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(r.id),valor}),signal:AbortSignal.timeout(8000)});
+    const d=await res.json();
+    if(!d.ok) throw new Error('Falha');
+    r.sinal_pago=d.sinal_pago; if(d.status) r.status=d.status; if(d.notas!==undefined) r.notas=d.notas;
+    renderAll(); renderFinanceiro();
+    showToast(`Pagamento de R$ ${valor.toLocaleString('pt-BR')} registrado!`,'💰');
+  }catch(e){ showToast('Erro ao registrar pagamento','❌'); }
+}
 async function confirmarPagamento(id){
   if(!confirm('Confirmar quitação total desta reserva?')) return;
   try{
@@ -1330,8 +1355,8 @@ async function confirmarPagamento(id){
     if(!d.ok) throw new Error('Falha');
     // atualiza local
     const r=reservations.find(x=>x.id===id||x.id===String(id));
-    if(r){ r.sinal_pago=d.sinal_pago; }
-    renderFinanceiro();
+    if(r){ r.sinal_pago=d.sinal_pago; if(d.status) r.status=d.status; if(d.notas!==undefined) r.notas=d.notas; }
+    renderAll(); renderFinanceiro();
     showToast('Pagamento confirmado!','✅');
   }catch(e){ showToast('Erro ao confirmar pagamento','❌'); }
 }
