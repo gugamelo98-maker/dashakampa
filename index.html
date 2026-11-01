@@ -2229,6 +2229,16 @@ function htmlCantRelatorio(){
     ${box('Lucro',brlR(luc),rec>0?`margem ${Math.round(luc/rec*100)}%`:'—',luc>=0?'var(--ok)':'#dc2626')}
     ${box('Consumo próprio',brlR(cp),pe>0?`+ ${brlR(pe)} em perdas`:'pelo preço de custo','#c2410c')}
   </div>
+  ${(()=>{
+    const ce=cantina.produtos.filter(p=>p.estoque!==null&&p.estoque>0);
+    const un=ce.reduce((s,p)=>s+p.estoque,0), vc=ce.reduce((s,p)=>s+p.estoque*p.custo,0), vv=ce.reduce((s,p)=>s+p.estoque*p.preco,0);
+    return `<div style="padding:0 20px 6px;font-size:12px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em">Estoque agora</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;padding:0 20px 14px">
+      ${box('Valor no custo',brlR(vc),`${un} unidades em estoque`)}
+      ${box('Valor na venda',brlR(vv),'se vender tudo')}
+      ${box('Lucro em estoque',brlR(vv-vc),vv>0?`margem ${Math.round((vv-vc)/vv*100)}%`:'—','var(--ok)')}
+    </div>`;
+  })()}
   <div style="padding:0 20px 6px;font-size:12px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em">Mais vendidos</div>
   <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Qtd.</th><th>Vendas</th><th>Lucro</th></tr></thead><tbody>${top.length?top.map(p=>`<tr><td class="td-name">${escHtml(p.nome)}</td><td class="td-muted">${p.qtd}</td><td style="font-weight:700">${brlR(p.rec)}</td><td class="td-muted">${brlR(p.rec-p.cus)}</td></tr>`).join(''):`<tr><td colspan="4" class="td-muted" style="text-align:center;padding:16px">Sem vendas no período</td></tr>`}</tbody></table></div>
   <div style="padding:14px 20px 6px;font-size:12px;font-weight:700;color:var(--fg-muted);text-transform:uppercase;letter-spacing:.04em">Consumo próprio e perdas</div>
