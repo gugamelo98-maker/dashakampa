@@ -1964,9 +1964,16 @@ function renderClientes(){
 }
 
 // ── Check-in / Checkout buttons
+async function salvarStatus(numId,status){
+  try{
+    const res=await fetch(`${API_BASE}/akampa/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:numId,status}),signal:AbortSignal.timeout(8000)});
+    const d=await res.json().catch(()=>({}));
+    return res.ok && d.ok!==false;
+  }catch(e){ console.warn('status API:',e.message); return false; }
+}
 async function doCheckin(id){
   const numId=parseInt(id);
-  if(numId){ try{ await fetch(`${API_BASE}/akampa/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:numId,status:'checkin'}),signal:AbortSignal.timeout(6000)}); }catch(e){ console.warn('check-in API:',e.message); } }
+  if(numId && !(await salvarStatus(numId,'checkin'))){ showToast('Não foi possível salvar o check-in. Tente de novo.','⚠️'); return; }
   const r=reservations.find(x=>x.id===id); if(r) r.status='checkin';
   saveReservations(); renderAll(); showToast('Check-in realizado!','✅');
   if(r&&saldoDe(r)>0){
@@ -1988,7 +1995,7 @@ async function doCheckout(id){
     if(op==='pagar'){ const ok=await registrarPagamento(rr.id,saldoDe(rr)); if(!ok) return; }
   }
   const numId=parseInt(id);
-  if(numId){ try{ await fetch(`${API_BASE}/akampa/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:numId,status:'checkout'}),signal:AbortSignal.timeout(6000)}); }catch(e){ console.warn('checkout API:',e.message); } }
+  if(numId && !(await salvarStatus(numId,'checkout'))){ showToast('Não foi possível salvar o check-out. Tente de novo.','⚠️'); return; }
   const r=reservations.find(x=>x.id===id); if(r) r.status='checkout';
   saveReservations(); renderAll(); showToast('Checkout confirmado!','👋');
 }
