@@ -394,7 +394,7 @@ tr:hover td{background:rgba(0,0,0,.02)}
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">Próximos dias</span></div>
-        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Data</th><th>Hóspede</th><th>Tipo</th><th>Spot</th><th>Pessoas</th></tr></thead><tbody id="table-chegadas-prox"></tbody></table></div></div>
+        <div style="padding-top:14px"><div class="table-wrap"><table><thead><tr><th>Data</th><th>Hóspede</th><th>Tipo</th><th>Spot</th><th>Pessoas</th><th>Saldo</th></tr></thead><tbody id="table-chegadas-prox"></tbody></table></div></div>
       </div>
     </div>
 
@@ -938,6 +938,14 @@ async function removerUsuario(id,username){
     const d=await r.json(); if(!d.ok) throw new Error(d.message||'Erro');
     showToast('Usuário removido','🗑'); carregarUsuarios();
   }catch(e){ showToast(e.message||'Erro ao remover','❌'); }
+}
+function saldoDe(r){ return Math.max(0,Math.round(((r.total||0)-(parseFloat(r.desconto)||0)-(parseFloat(r.sinal_pago)||0))*100)/100); }
+function saldoTag(r){
+  if(['cancelled','no_show'].includes(r.status)) return '';
+  const sd=saldoDe(r);
+  return sd>0
+    ?`<span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#fef3c7;color:#b45309;white-space:nowrap">💰 Receber R$ ${brlN(sd)}</span>`
+    :`<span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#dcfce7;color:#15803d;white-space:nowrap">✅ Pago</span>`;
 }
 function todayStr(){ return TODAY.toISOString().slice(0,10); }
 document.getElementById('today-date').textContent =
@@ -1598,12 +1606,12 @@ async function abrirPagamento(id){
   if(!html) html='<div class="td-muted">Nenhum comprovante ou anotação para esta reserva.</div>';
   corpo.innerHTML=html;
 }
-async function registrarPagamento(id){
+async function registrarPagamento(id,sugestao){
   const r=reservations.find(x=>x.id===id||x.id===String(id));
   if(!r) return;
   const totalLiq=Math.max(0,r.total-parseFloat(r.desconto||0));
   const saldo=Math.max(0,totalLiq-parseFloat(r.sinal_pago||0));
-  const txt=prompt(`Quanto ${r.nome} pagou agora? (R$)\n\nTotal: R$ ${brlN(totalLiq)} · Já pago: R$ ${brlN(parseFloat(r.sinal_pago||0))} · Saldo: R$ ${brlN(saldo)}`, '');
+  const txt=prompt(`Quanto ${r.nome} pagou agora? (R$)\n\nTotal: R$ ${brlN(totalLiq)} · Já pago: R$ ${brlN(parseFloat(r.sinal_pago||0))} · Saldo: R$ ${brlN(saldo)}`, sugestao?String(brlN(sugestao)).replace(/\./g,''):'');
   if(txt===null) return;
   const valor=parseFloat(String(txt).replace(/[^\d,.-]/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.'));
   if(!(valor>0)){ alert('Informe um valor maior que zero (ex.: 180 ou 1,80).'); return; }
@@ -1778,7 +1786,7 @@ function renderPainelStats(){
   if(mb){ const tot=chegadas.length+saidas.length; mb.textContent=tot?`${tot} evento${tot!==1?'s':''}`:'Sem movimento'; }
   if(mv){
     const chHtml=chegadas.length
-      ?chegadas.map(r=>`<div class="event-item"><span class="event-pill pill-in">CHECK-IN</span><div class="event-info"><div class="event-name">${r.nome}</div><div class="event-meta">${r.adultos} adultos${r.criancas?.length?`, ${r.criancas.length} cr`:''} · ${nightsBetween(r.checkin,r.checkout)} noites</div></div><span class="event-spot">${r.spot}</span></div>`).join('')
+      ?chegadas.map(r=>`<div class="event-item"><span class="event-pill pill-in">CHECK-IN</span><div class="event-info"><div class="event-name">${escHtml(r.nome)}</div><div class="event-meta">${r.adultos} adultos${r.criancas?.length?`, ${r.criancas.length} cr`:''} · ${nightsBetween(r.checkin,r.checkout)} noites</div><div style="margin-top:4px">${saldoTag(r)}</div></div><span class="event-spot">${r.spot}</span></div>`).join('')
       :`<div class="td-muted" style="font-size:12px;padding:4px 0">Sem chegadas hoje</div>`;
     const saHtml=saidas.length
       ?saidas.map(r=>`<div class="event-item"><span class="event-pill pill-out">CHECKOUT</span><div class="event-info"><div class="event-name">${r.nome}</div><div class="event-meta">${r.adultos} adultos${r.criancas?.length?`, ${r.criancas.length} cr`:''}</div></div><span class="event-spot">${r.spot}</span></div>`).join('')
@@ -1821,14 +1829,14 @@ function renderChegadas(){
     else lista.innerHTML=`<div class="event-list">${chegadas.map(r=>{
       const cr=r.criancas?.length?`, ${r.criancas.length} cr`:'';
       const n=nightsBetween(r.checkin,r.checkout);
-      return `<div class="event-item"><span class="event-pill pill-in">PENDENTE</span><div class="event-info"><div class="event-name">${r.nome}</div><div class="event-meta">${r.spot} · ${r.adultos} adultos${cr} · ${n} noite${n!==1?'s':''} · saída ${fmtDate(r.checkout)}</div></div><button class="btn btn-primary btn-sm" onclick="doCheckin('${r.id}')">Fazer check-in</button></div>`;
+      return `<div class="event-item"><span class="event-pill pill-in">PENDENTE</span><div class="event-info"><div class="event-name">${escHtml(r.nome)}</div><div class="event-meta">${r.spot} · ${r.adultos} adultos${cr} · ${n} noite${n!==1?'s':''} · saída ${fmtDate(r.checkout)}</div><div style="margin-top:4px">${saldoTag(r)}</div></div><button class="btn btn-primary btn-sm" onclick="doCheckin('${r.id}')">Fazer check-in</button></div>`;
     }).join('')}</div>`;
   }
   if(tbody) tbody.innerHTML=proximas.length?proximas.map(r=>{
     const cr=r.criancas?.length?` · ${r.criancas.length} cr`:''; const col=avatarColor(r.nome); const ini=initials(r.nome);
     const tl={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome'}[r.tipo]||r.tipo;
-    return `<tr><td class="td-muted">${fmtDate(r.checkin)}</td><td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><span class="td-name">${r.nome}</span></div></td><td><span class="type-chip">${tl}</span></td><td class="td-muted">${r.spot}</td><td class="td-muted">${r.adultos} ad${cr}</td></tr>`;
-  }).join(''):`<tr><td colspan="5" class="td-muted" style="text-align:center;padding:16px">Sem chegadas nos próximos dias</td></tr>`;
+    return `<tr><td class="td-muted">${fmtDate(r.checkin)}</td><td><div class="td-guest"><div class="avatar-initials" style="background:${col}">${ini}</div><span class="td-name">${escHtml(r.nome)}</span></div></td><td><span class="type-chip">${tl}</span></td><td class="td-muted">${r.spot}</td><td class="td-muted">${r.adultos} ad${cr}</td><td>${saldoTag(r)}</td></tr>`;
+  }).join(''):`<tr><td colspan="6" class="td-muted" style="text-align:center;padding:16px">Sem chegadas nos próximos dias</td></tr>`;
 }
 
 // ── Saídas view
@@ -1946,6 +1954,7 @@ async function doCheckin(id){
   if(numId){ try{ await fetch(`${API_BASE}/akampa/status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:numId,status:'checkin'}),signal:AbortSignal.timeout(6000)}); }catch(e){ console.warn('check-in API:',e.message); } }
   const r=reservations.find(x=>x.id===id); if(r) r.status='checkin';
   saveReservations(); renderAll(); showToast('Check-in realizado!','✅');
+  if(r&&saldoDe(r)>0&&confirm(`${r.nome} ainda tem R$ ${brlN(saldoDe(r))} a pagar.\n\nRegistrar o pagamento agora?`)) registrarPagamento(r.id,saldoDe(r));
 }
 async function doCheckout(id){
   const numId=parseInt(id);
