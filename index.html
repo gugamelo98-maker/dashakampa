@@ -1281,15 +1281,18 @@ function calcReservationPrice(tipo,temporada,nights,adults,criancas,diariaCustom
 // ── Spot status map
 function getSpotStatus(spotId){
   const today=todayStr();
+  let achado=null;
   for(const r of reservations){
     if(r.spot!==spotId) continue;
+    if(['cancelled','no_show','checkout'].includes(r.status)) continue;
+    const dentro=['checkin','occupied'].includes(r.status);
+    if(dentro && r.checkout<=today) return {status:'checkout',label:r.nome};   // hospedado e sai hoje (ou atrasado)
     if(r.checkin<=today && r.checkout>today){
-      if(r.checkin===today) return {status:'arriving',label:r.nome};
-      if(r.checkout===today) return {status:'checkout',label:r.nome};
-      return {status:'occupied',label:r.nome};
+      if(dentro) return {status:'occupied',label:r.nome};                     // check-in feito
+      achado={status:'arriving',label:r.nome};                                // reservado, ainda não chegou
     }
   }
-  return {status:'available',label:'Livre'};
+  return achado||{status:'available',label:'Livre'};
 }
 
 // ── Render spot maps
