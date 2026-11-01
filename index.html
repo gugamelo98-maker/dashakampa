@@ -2095,7 +2095,7 @@ async function doCheckout(id){
 // ══ CANTINA ══════════════════════════════════════════════
 let cantina={produtos:[],comandas:[],vendas:[],baixas:[]};
 let cantTab='comandas', cantPeriodo='mes', cantComandaId=null, cantBusca='', cantCat='';
-const CANT_CATS=['Bebidas','Lanches','Doces','Gelo e lenha','Higiene','Outros'];
+const CANT_CATS=[]; // sem categorias prontas: só as criadas pelos produtos
 const FORMAS={pix:'Pix',dinheiro:'Dinheiro',cartao:'Cartão'};
 function hojeBR(){ return new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'}); }
 function somaDias(iso,n){ const d=new Date(iso+'T12:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
@@ -2354,10 +2354,11 @@ function abrirProduto(id,opts={}){
   const lancar=!!(opts.lancar&&cantComandaId);
   const m=criarModal(p?'✏️ Editar produto':(lancar?'+ Cadastrar produto e lançar na comanda':'+ Novo produto'),480);
   const ctrl=p?p.estoque!==null:true;
+  const catIni=p?p.categoria:(cats[0]||'__nova__');
   m.corpo.innerHTML=`<div class="form-group"><label class="form-label">Nome</label><input class="form-input" data-f="nome" value="${p?escHtml(p.nome):''}" placeholder="ex.: Cerveja lata 350ml"></div>
     <div class="form-group"><label class="form-label">Categoria</label>
-      <select class="form-select" data-f="catsel">${cats.map(c=>`<option value="${escHtml(c)}" ${(p?p.categoria:'Bebidas')===c?'selected':''}>${escHtml(c)}</option>`).join('')}<option value="__nova__">+ Criar nova categoria…</option></select>
-      <input class="form-input" data-f="catnova" placeholder="Nome da nova categoria (ex.: Sorvetes)" style="display:none;margin-top:8px"></div>
+      <select class="form-select" data-f="catsel">${cats.map(c=>`<option value="${escHtml(c)}" ${catIni===c?'selected':''}>${escHtml(c)}</option>`).join('')}<option value="__nova__" ${catIni==='__nova__'?'selected':''}>+ Criar nova categoria…</option></select>
+      <input class="form-input" data-f="catnova" placeholder="Nome da nova categoria (ex.: Bebidas)" style="${catIni==='__nova__'?'':'display:none;'}margin-top:8px"></div>
     <div class="form-row"><div class="form-group"><label class="form-label">Preço de venda (R$)</label><input class="form-input" data-f="preco" inputmode="decimal" value="${p?brlN(p.preco):''}" placeholder="0,00"></div>
       <div class="form-group"><label class="form-label">Preço de custo (R$)</label><input class="form-input" data-f="custo" inputmode="decimal" value="${p?brlN(p.custo):''}" placeholder="0,00"></div></div>
     <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:12px;cursor:pointer"><input type="checkbox" data-f="ctrl" ${ctrl?'checked':''}> Controlar estoque deste produto</label>
