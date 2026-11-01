@@ -2245,7 +2245,7 @@ function abrirComanda(id){
   const fecharOrig=m.fechar; m.fechar=()=>{ fecharOrig(); cantComandaId=null; cantModal=null; };
   m.ov.querySelector('[data-x]').onclick=m.fechar; m.ov.onclick=e=>{ if(e.target===m.ov) m.fechar(); };
   m.corpo.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">
-    <div><div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap"><button type="button" class="btn btn-ghost btn-sm" onclick="itemAvulso()">✍️ + Item avulso</button><button type="button" class="btn btn-ghost btn-sm" onclick="abrirProduto(null,{lancar:true})">+ Cadastrar produto e lançar</button></div>
+    <div><div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap"><button type="button" class="btn btn-ghost btn-sm" onclick="itemAvulso()">✍️ + Item avulso</button></div>
       <input class="form-input" id="cant-busca" placeholder="🔎 Buscar produto…" oninput="cantBusca=this.value;renderCantProdLista()">
       <div id="cant-cats" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"></div>
       <div id="cant-prod-lista" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;max-height:46vh;overflow:auto"></div></div>
@@ -2274,7 +2274,7 @@ function renderCantProdLista(){
   const el=document.getElementById('cant-prod-lista'); if(!el) return;
   const q=cantBusca.trim().toLowerCase();
   const ps=cantina.produtos.filter(p=>(!cantCat||p.categoria===cantCat)&&(!q||p.nome.toLowerCase().includes(q)));
-  if(!cantina.produtos.length){ el.innerHTML=`<div class="td-muted" style="grid-column:1/-1;text-align:center;padding:20px;border:1.5px dashed var(--border);border-radius:10px">Ainda não há produtos cadastrados.<br><span style="font-size:12px">Para lançar agora na conta da pessoa, use <b>✍️ + Item avulso</b>.<br>Ou cadastre o produto e ele já entra na comanda.</span><div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px"><button class="btn btn-primary btn-sm" onclick="itemAvulso()">✍️ Item avulso</button><button class="btn btn-ghost btn-sm" onclick="abrirProduto(null,{lancar:true})">+ Cadastrar e lançar</button></div></div>`; return; }
+  if(!cantina.produtos.length){ el.innerHTML=`<div class="td-muted" style="grid-column:1/-1;text-align:center;padding:20px;border:1.5px dashed var(--border);border-radius:10px">Ainda não há produtos cadastrados.<br><span style="font-size:12px">Para lançar agora na conta da pessoa, use <b>✍️ + Item avulso</b>.<br>Os produtos são cadastrados em <b>+ Produto</b>, na aba Cantina.</span><div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px"><button class="btn btn-primary btn-sm" onclick="itemAvulso()">✍️ Item avulso</button></div></div>`; return; }
   el.innerHTML=ps.length?ps.map(p=>{
     const sem=p.estoque!==null&&p.estoque<=0;
     return `<button type="button" onclick="adicionarItem(${p.id})" style="text-align:left;cursor:pointer;background:var(--bg);border:1.5px solid ${sem?'#fca5a5':'var(--border)'};border-radius:10px;padding:10px;color:var(--fg);font-family:inherit;opacity:${sem?.6:1}">
