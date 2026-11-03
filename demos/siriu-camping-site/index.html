@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Siriú Camping — Camping na Praia do Siriú, Garopaba/SC</title>
+<meta name="description" content="Camping arborizado de 8 mil m² a 700 m da Praia do Siriú, em Garopaba/SC. Espaço para barracas com energia, duchas quentes, cozinhas comunitárias, churrasqueiras, cabanas térmicas e apartamentos. Reserve pelo WhatsApp.">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="Siriú Camping — Lazer junto à natureza">
+<meta property="og:description" content="Acampe entre o mar, o rio e a cachoeira, na Praia do Siriú em Garopaba/SC.">
+<meta property="og:image" content="img/hero.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --verde:#1f5b3a; --verde-esc:#123826; --folha:#7dbb2f; --laranja:#ee7a1b; --laranja-esc:#c95f08;
+  --mar:#0d6b86; --areia:#f7f1e6; --areia-2:#efe5d3; --tinta:#1b2a22; --suave:#5c6a62; --linha:#e3d9c6; --branco:#fff;
+  --raio:18px; --sombra:0 10px 30px rgba(18,56,38,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--tinta);background:var(--areia);line-height:1.6;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+a{color:inherit}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;line-height:1.12;letter-spacing:-.01em}
+.wrap{width:min(1160px,100% - 32px);margin-inline:auto}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--laranja-esc)}
+.secao{padding:84px 0}
+.secao h2{font-size:clamp(1.9rem,4vw,2.8rem);margin:.4rem 0 .9rem;color:var(--verde-esc)}
+.lead{font-size:1.08rem;color:var(--suave);max-width:640px}
+.btn{display:inline-flex;align-items:center;gap:.55rem;padding:.9rem 1.35rem;border-radius:999px;font-weight:700;text-decoration:none;font-size:.98rem;transition:transform .15s,box-shadow .15s,background .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn-zap{background:#25d366;color:#05371b;box-shadow:0 8px 20px rgba(37,211,102,.35)}
+.btn-zap:hover{background:#2be070}
+.btn-claro{background:rgba(255,255,255,.14);color:#fff;border:1.5px solid rgba(255,255,255,.55);backdrop-filter:blur(4px)}
+.btn-escuro{background:var(--verde);color:#fff}
+.ico{width:1.15em;height:1.15em;flex:none}
+
+/* topo */
+.topo{position:fixed;inset:0 0 auto 0;z-index:50;transition:background .25s,box-shadow .25s}
+.topo .wrap{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+.topo .logo img{height:44px;width:auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+.topo nav{display:flex;gap:22px;align-items:center}
+.topo nav a{text-decoration:none;color:#fff;font-weight:600;font-size:.92rem;opacity:.92}
+.topo nav a:hover{opacity:1}
+.topo.solido{background:rgba(255,255,255,.97);box-shadow:0 2px 16px rgba(0,0,0,.08)}
+.topo.solido nav a{color:var(--tinta)}
+.topo.solido .logo img{filter:none}
+.topo .btn{padding:.6rem 1rem;font-size:.88rem}
+.menu-btn{display:none;background:none;border:0;color:#fff;cursor:pointer}
+.topo.solido .menu-btn{color:var(--tinta)}
+
+/* capa */
+.capa{position:relative;min-height:100svh;display:flex;align-items:flex-end;color:#fff;overflow:hidden}
+.capa>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.03)}
+.capa::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,30,22,.55) 0%,rgba(8,30,22,.15) 35%,rgba(8,30,22,.82) 100%)}
+.capa .wrap{position:relative;z-index:1;padding:140px 0 72px}
+.capa h1{font-size:clamp(2.4rem,6.4vw,4.6rem);max-width:820px;margin:.5rem 0 1rem}
+.capa p{font-size:clamp(1.02rem,2vw,1.2rem);max-width:600px;color:#e7f1ea}
+.capa .acoes{display:flex;flex-wrap:wrap;gap:12px;margin-top:1.8rem}
+.selos{display:flex;flex-wrap:wrap;gap:10px;margin-top:2.4rem}
+.selos span{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(6px);padding:.5rem .85rem;border-radius:999px;font-size:.86rem;font-weight:600}
+.capa .eyebrow{color:#ffc58f}
+
+/* números */
+.numeros{background:var(--verde-esc);color:#fff}
+.numeros .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:34px 0}
+.numeros div{text-align:center;padding:6px}
+.numeros b{display:block;font-family:Fraunces,serif;font-size:2.2rem;color:var(--folha);line-height:1.1}
+.numeros small{font-size:.9rem;color:#cfe0d5}
+
+/* sobre */
+.duas{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.mosaico{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:200px 200px;gap:12px}
+.mosaico img{width:100%;height:100%;object-fit:cover;border-radius:var(--raio);box-shadow:var(--sombra)}
+.mosaico img:first-child{grid-row:span 2}
+.lista-check{list-style:none;margin-top:1.4rem;display:grid;gap:.7rem}
+.lista-check li{display:flex;gap:.7rem;align-items:flex-start}
+.lista-check li::before{content:"";flex:none;width:22px;height:22px;margin-top:2px;border-radius:50%;background:var(--folha) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.2 4.2L19 7'/%3E%3C/svg%3E") center/14px no-repeat}
+
+/* hospedagem */
+.cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:2.4rem}
+.card{background:#fff;border-radius:var(--raio);overflow:hidden;box-shadow:var(--sombra);display:flex;flex-direction:column}
+.card img{height:230px;width:100%;object-fit:cover}
+.card .corpo{padding:22px 22px 24px;display:flex;flex-direction:column;gap:.55rem;flex:1}
+.card h3{font-size:1.4rem;color:var(--verde-esc)}
+.card p{color:var(--suave);font-size:.96rem}
+.card .tag{align-self:flex-start;font-size:.75rem;font-weight:700;padding:.25rem .65rem;border-radius:999px;background:#eaf5dc;color:#3f6b10}
+.card .mais{margin-top:auto;padding-top:.6rem;font-weight:700;color:var(--laranja-esc);text-decoration:none;font-size:.95rem}
+
+/* estrutura */
+.estrutura{background:#fff}
+.grade-estr{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:2.2rem}
+.item-estr{border:1px solid var(--linha);border-radius:var(--raio);padding:22px;background:var(--areia)}
+.item-estr .ic{width:44px;height:44px;border-radius:12px;background:var(--verde);color:#fff;display:grid;place-items:center;margin-bottom:12px}
+.item-estr h3{font-family:Inter,sans-serif;font-size:1.02rem;font-weight:700;margin-bottom:.3rem}
+.item-estr p{font-size:.92rem;color:var(--suave)}
+.destaque-seg{margin-top:22px;display:flex;gap:18px;align-items:center;background:var(--verde-esc);color:#fff;border-radius:var(--raio);padding:24px 28px}
+.destaque-seg .ic{flex:none;width:54px;height:54px;border-radius:14px;background:var(--laranja);display:grid;place-items:center}
+.destaque-seg b{font-size:1.1rem}
+.destaque-seg p{color:#cfe0d5;font-size:.95rem}
+
+/* galeria */
+.galeria{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:190px;grid-auto-flow:dense;gap:10px;margin-top:2.2rem}
+.galeria button{all:unset;cursor:zoom-in;border-radius:14px;overflow:hidden;position:relative;display:block}
+.galeria button img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.galeria button:hover img{transform:scale(1.05)}
+.galeria button span{position:absolute;left:10px;bottom:10px;background:rgba(10,30,22,.72);color:#fff;font-size:.78rem;font-weight:600;padding:.25rem .6rem;border-radius:999px}
+.galeria .alto{grid-row:span 2}
+.galeria .largo{grid-column:span 2}
+.lightbox{position:fixed;inset:0;background:rgba(5,15,10,.92);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.lightbox.on{display:flex}
+.lightbox img{max-width:min(1100px,100%);max-height:84vh;border-radius:12px}
+.lightbox p{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#fff;font-weight:600}
+.lightbox button{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);color:#fff;border:0;width:46px;height:46px;border-radius:50%;font-size:1.5rem;cursor:pointer}
+.lightbox .nav{top:50%;transform:translateY(-50%)}
+.lightbox .ant{left:14px;right:auto}
+
+/* natureza */
+.natureza{background:linear-gradient(180deg,var(--areia) 0%,var(--areia-2) 100%)}
+.cards-nat{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:2.2rem}
+.nat{position:relative;border-radius:var(--raio);overflow:hidden;min-height:340px;color:#fff;display:flex;align-items:flex-end;box-shadow:var(--sombra)}
+.nat img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.nat::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(6,25,18,.88))}
+.nat div{position:relative;z-index:1;padding:22px}
+.nat h3{font-size:1.45rem}
+.nat p{font-size:.93rem;color:#e3eee7}
+.nat .dist{display:inline-block;margin-bottom:.4rem;font-size:.78rem;font-weight:700;background:var(--laranja);padding:.2rem .6rem;border-radius:999px}
+
+/* valores */
+.valores{background:var(--verde);color:#fff}
+.valores h2{color:#fff}
+.valores .lead{color:#d6e7dc}
+.grade-val{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:22px;margin-top:2.4rem}
+.preco{background:#fff;color:var(--tinta);border-radius:var(--raio);padding:28px}
+.preco .periodo{font-size:.85rem;font-weight:700;color:var(--laranja-esc);text-transform:uppercase;letter-spacing:.06em}
+.preco h3{font-size:1.35rem;margin:.35rem 0 1rem;color:var(--verde-esc)}
+.preco .valor{font-family:Fraunces,serif;font-size:3rem;font-weight:700;color:var(--verde-esc);line-height:1}
+.preco .valor small{font-family:Inter,sans-serif;font-size:.95rem;font-weight:600;color:var(--suave)}
+.preco ul{list-style:none;margin-top:1rem;display:grid;gap:.45rem;font-size:.93rem;color:var(--suave)}
+.preco.reveillon{background:linear-gradient(160deg,#fff7ee,#fff)}
+.preco table{width:100%;border-collapse:collapse;margin-top:.4rem}
+.preco td{padding:.55rem 0;border-bottom:1px dashed var(--linha);font-size:.98rem}
+.preco td:last-child{text-align:right;font-weight:700;color:var(--verde-esc)}
+.preco .selo-r{display:inline-block;background:var(--laranja);color:#fff;font-size:.75rem;font-weight:700;padding:.2rem .6rem;border-radius:999px}
+.info-val{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:22px}
+.info-val div{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:var(--raio);padding:20px 22px;font-size:.95rem;color:#e3efe7}
+.info-val b{display:block;color:#fff;margin-bottom:.25rem;font-size:1rem}
+
+/* eventos */
+.eventos .duas{grid-template-columns:.95fr 1.05fr}
+.foto-dupla{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.foto-dupla img{height:300px;width:100%;object-fit:cover;border-radius:var(--raio);box-shadow:var(--sombra)}
+.foto-dupla img:last-child{margin-top:40px}
+
+/* regulamento */
+.regras{background:#fff}
+.lista-regras{display:grid;grid-template-columns:1fr 1fr;gap:14px 28px;margin-top:2rem;counter-reset:r}
+.lista-regras details{border:1px solid var(--linha);border-radius:14px;background:var(--areia);padding:0 18px}
+.lista-regras summary{cursor:pointer;list-style:none;padding:16px 0;font-weight:700;display:flex;justify-content:space-between;gap:12px}
+.lista-regras summary::-webkit-details-marker{display:none}
+.lista-regras summary::after{content:"+";font-size:1.3rem;color:var(--laranja-esc);line-height:1}
+.lista-regras details[open] summary::after{content:"–"}
+.lista-regras details p,.lista-regras details ul{padding:0 0 16px;color:var(--suave);font-size:.95rem}
+.lista-regras ul{padding-left:18px!important}
+.aviso-pet{margin-top:22px;padding:16px 20px;border-radius:14px;background:#fff4e8;border:1px solid #f6cfa4;color:#7a3e07;font-size:.95rem}
+
+/* como chegar */
+.chegar .duas{align-items:start}
+.mapa-img{border-radius:var(--raio);box-shadow:var(--sombra);background:#fff;padding:10px}
+.distancias{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1.6rem 0}
+.distancias div{background:#fff;border-radius:14px;padding:16px;border:1px solid var(--linha)}
+.distancias b{font-family:Fraunces,serif;font-size:1.7rem;color:var(--verde-esc);display:block;line-height:1.1}
+.distancias span{font-size:.88rem;color:var(--suave)}
+
+/* quem somos */
+.equipe{display:flex;flex-wrap:wrap;gap:10px;margin-top:1.2rem}
+.equipe span{background:#fff;border:1px solid var(--linha);border-radius:999px;padding:.45rem .9rem;font-size:.9rem}
+.equipe b{color:var(--verde)}
+
+/* cta final */
+.cta{background:linear-gradient(120deg,var(--verde-esc),var(--mar));color:#fff;text-align:center}
+.cta h2{color:#fff;margin-inline:auto;max-width:720px}
+.cta p{color:#d9ebe4;max-width:560px;margin:0 auto 1.8rem}
+
+/* rodapé */
+footer{background:#0c241a;color:#b9cdc1;padding:56px 0 28px;font-size:.95rem}
+footer .grade{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:32px}
+footer img{height:52px;width:auto;margin-bottom:14px}
+footer h4{color:#fff;font-size:1rem;margin-bottom:.7rem}
+footer a{text-decoration:none}
+footer a:hover{color:#fff}
+footer .linha{display:flex;gap:.55rem;align-items:center;margin-bottom:.5rem}
+footer .copy{border-top:1px solid rgba(255,255,255,.08);margin-top:36px;padding-top:20px;font-size:.84rem;text-align:center}
+
+/* whatsapp flutuante */
+.zap-flutuante{position:fixed;right:18px;bottom:18px;z-index:60;width:60px;height:60px;border-radius:50%;background:#25d366;display:grid;place-items:center;box-shadow:0 10px 26px rgba(0,0,0,.25);transition:transform .15s}
+.zap-flutuante:hover{transform:scale(1.06)}
+.zap-flutuante svg{width:32px;height:32px;fill:#fff}
+
+/* responsivo */
+@media (max-width:980px){
+  .topo nav{display:none}
+  .topo nav.aberto{display:flex;position:absolute;top:72px;left:0;right:0;flex-direction:column;align-items:flex-start;gap:0;background:#fff;padding:8px 16px 16px;box-shadow:0 10px 24px rgba(0,0,0,.12)}
+  .topo nav.aberto a{color:var(--tinta);padding:12px 0;width:100%;border-bottom:1px solid var(--linha)}
+  .menu-btn{display:block}
+  .duas,.eventos .duas{grid-template-columns:1fr;gap:34px}
+  .cards3,.cards-nat,.grade-val,.info-val{grid-template-columns:1fr}
+  .grade-estr{grid-template-columns:1fr 1fr}
+  .galeria{grid-template-columns:1fr 1fr;grid-auto-rows:150px}
+  .lista-regras{grid-template-columns:1fr}
+  footer .grade{grid-template-columns:1fr}
+  .numeros .wrap{grid-template-columns:1fr 1fr}
+}
+@media (max-width:560px){
+  .secao{padding:64px 0}
+  .grade-estr{grid-template-columns:1fr}
+  .mosaico{grid-template-rows:150px 150px}
+  .foto-dupla img{height:210px}
+  .topo .btn span{display:none}
+  .topo .logo img{height:34px}
+  .destaque-seg{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<header class="topo" id="topo">
+  <div class="wrap">
+    <a href="#inicio" class="logo" aria-label="Siriú Camping — início"><img src="img/logo.png" alt="Siriú Camping — Lazer junto à natureza"></a>
+    <nav id="menu">
+      <a href="#hospedagem">Hospedagem</a>
+      <a href="#estrutura">Estrutura</a>
+      <a href="#valores">Valores</a>
+      <a href="#regulamento">Regulamento</a>
+      <a href="#como-chegar">Como chegar</a>
+    </nav>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a class="btn btn-zap" href="https://wa.me/5548999039465?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20uma%20reserva%20no%20Siri%C3%BA%20Camping." target="_blank" rel="noopener">
+        <svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2zm5.8 14.13c-.24.68-1.42 1.3-1.95 1.34-.5.05-.97.23-3.26-.68-2.75-1.08-4.49-3.9-4.62-4.08-.13-.18-1.1-1.47-1.1-2.8 0-1.33.7-1.99.95-2.26.24-.27.53-.34.71-.34l.51.01c.16 0 .38-.06.6.46.24.55.8 1.9.87 2.04.07.14.12.3.02.48-.09.18-.14.3-.27.46-.14.16-.29.36-.41.48-.14.14-.28.29-.12.56.16.27.71 1.17 1.52 1.9 1.05.93 1.93 1.22 2.2 1.36.27.14.43.11.59-.07.16-.18.68-.79.86-1.06.18-.27.36-.22.61-.13.25.09 1.59.75 1.86.89.27.14.45.2.52.32.07.11.07.66-.17 1.34z"/></svg>
+        <span>Reservar</span></a>
+      <button class="menu-btn" aria-label="Abrir menu" onclick="document.getElementById('menu').classList.toggle('aberto')">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="capa" id="inicio">
+  <img src="img/hero.jpg" alt="Vista da Praia do Siriú, das dunas e do rio, vistas do alto do morro">
+  <div class="wrap">
+    <div class="eyebrow">Praia do Siriú · Garopaba/SC · desde 2008</div>
+    <h1>Acampe entre o mar, o rio e a cachoeira.</h1>
+    <p>Um camping cercado e arborizado, a poucos passos de uma das praias mais bonitas de Santa Catarina. Montanhas, dunas, rio e cachoeira, com toda a estrutura para você só curtir.</p>
+    <div class="acoes">
+      <a class="btn btn-zap" href="https://wa.me/5548999039465?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20uma%20reserva%20no%20Siri%C3%BA%20Camping." target="_blank" rel="noopener">
+        <svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2z"/></svg>
+        Reservar pelo WhatsApp</a>
+      <a class="btn btn-claro" href="#valores">Ver valores</a>
+    </div>
+    <div class="selos">
+      <span>🌊 Praia a 700 m</span><span>💧 Cachoeira a 300 m</span><span>🌳 8 mil m² arborizados</span><span>🔒 Pulseiras de segurança</span>
+    </div>
+  </div>
+</section>
+
+<div class="numeros">
+  <div class="wrap">
+    <div><b>250</b><small>espaços para barracas</small></div>
+    <div><b>10</b><small>duchas quentes</small></div>
+    <div><b>8 mil m²</b><small>de área cercada e arborizada</small></div>
+    <div><b>2008</b><small>recebendo campistas</small></div>
+  </div>
+</div>
+
+<section class="secao" id="sobre">
+  <div class="wrap duas">
+    <div>
+      <div class="eyebrow">Sejam bem-vindos</div>
+      <h2>Sombra, água fresca, rede e caldo de cana</h2>
+      <p class="lead">O Siriú Camping fica no bairro Siriú, ao norte de Garopaba. É uma área cercada e arborizada com pontos de energia distribuídos por todo o local, para você armar sua barraca e aproveitar as belezas naturais da região: montanhas, cachoeiras, rios, dunas e belas praias.</p>
+      <ul class="lista-check">
+        <li>Área de camping cercada, arborizada e iluminada</li>
+        <li>Pontos de energia distribuídos por todo o camping</li>
+        <li>Recepção durante a temporada e estacionamento livre</li>
+        <li>Lanchonete, churrasqueiras e cozinhas comunitárias</li>
+      </ul>
+    </div>
+    <div class="mosaico">
+      <img src="img/area-arborizada.jpg" alt="Área arborizada do camping" loading="lazy">
+      <img src="img/barracas.jpg" alt="Barracas montadas entre as árvores" loading="lazy">
+      <img src="img/entrada.jpg" alt="Entrada do Siriú Camping" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section class="secao" id="hospedagem" style="padding-top:0">
+  <div class="wrap">
+    <div class="eyebrow">Hospedagem</div>
+    <h2>Escolha o seu jeito de ficar</h2>
+    <p class="lead">Traga sua barraca ou fique com mais conforto numa cabana térmica ou num apartamento.</p>
+    <div class="cards3">
+      <article class="card">
+        <img src="img/barracas-2.jpg" alt="Espaço para barracas" loading="lazy">
+        <div class="corpo"><span class="tag">Mais procurado</span><h3>Área de camping</h3>
+          <p>Espaço ao ar livre, gramado e com sombra, para armar sua barraca. Pontos de energia, iluminação e banheiros com duchas quentes.</p>
+          <a class="mais" href="#valores">Ver valores →</a></div>
+      </article>
+      <article class="card">
+        <img src="img/cabana.jpg" alt="Cabana térmica" loading="lazy">
+        <div class="corpo"><span class="tag">Ideal para 2 pessoas</span><h3>Cabana térmica</h3>
+          <p>Cabana de um quarto com colchão de casal e energia elétrica. Mais conforto, sem precisar montar barraca.</p>
+          <a class="mais" href="https://wa.me/5548999039465?text=Ol%C3%A1!%20Quero%20saber%20sobre%20a%20cabana%20t%C3%A9rmica." target="_blank" rel="noopener">Consultar disponibilidade →</a></div>
+      </article>
+      <article class="card">
+        <img src="img/apto-quarto.jpg" alt="Apartamento" loading="lazy">
+        <div class="corpo"><span class="tag">Ideal para 6 pessoas</span><h3>Apartamentos</h3>
+          <p>Para famílias e grupos, com quarto, cozinha e banheiro privativo. Valores e disponibilidade pelo WhatsApp.</p>
+          <a class="mais" href="https://wa.me/5548999039465?text=Ol%C3%A1!%20Quero%20saber%20sobre%20o%20aluguel%20de%20apartamento." target="_blank" rel="noopener">Consultar disponibilidade →</a></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="secao estrutura" id="estrutura">
+  <div class="wrap">
+    <div class="eyebrow">Estrutura</div>
+    <h2>Tudo o que você precisa para acampar bem</h2>
+    <div class="grade-estr">
+      <div class="item-estr"><div class="ic">🚿</div><h3>Banheiros</h3><p>10 duchas quentes (masculino e feminino), 8 duchas frias ao ar livre e 10 vasos sanitários, com manutenção permanente.</p></div>
+      <div class="item-estr"><div class="ic">🍳</div><h3>Cozinhas comunitárias</h3><p>Cozinhas cobertas, com pias, mesas e bancos para preparar e fazer as refeições.</p></div>
+      <div class="item-estr"><div class="ic">🔥</div><h3>Churrasqueiras</h3><p>Churrasqueiras de uso coletivo, sem necessidade de reserva.</p></div>
+      <div class="item-estr"><div class="ic">🥥</div><h3>Lanchonete</h3><p>Para o lanche, a bebida gelada e aquele caldo de cana depois da praia.</p></div>
+      <div class="item-estr"><div class="ic">🧺</div><h3>Lavatórios e varais</h3><p>Tanques para lavar roupas e varais para secar.</p></div>
+      <div class="item-estr"><div class="ic">⚡</div><h3>Energia e iluminação</h3><p>Pontos de energia distribuídos por todo o camping e área iluminada.</p></div>
+      <div class="item-estr"><div class="ic">🚗</div><h3>Estacionamento livre</h3><p>Estacionamento dentro do camping, sem custo adicional.</p></div>
+      <div class="item-estr"><div class="ic">🛎️</div><h3>Recepção</h3><p>Recepção durante a temporada para receber e orientar os campistas.</p></div>
+    </div>
+    <div class="destaque-seg">
+      <div class="ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+      <div><b>Segurança com pulseiras invioláveis</b>
+        <p>Só os campistas autorizados, identificados com a pulseira do camping, têm acesso livre para entrar e sair. Mais tranquilidade para você e sua família.</p></div>
+    </div>
+
+    <div class="galeria" id="galeria">
+      <button class="alto" data-cap="Banheiros"><img src="img/banheiros.jpg" alt="Banheiros" loading="lazy"><span>Banheiros</span></button>
+      <button data-cap="Duchas quentes"><img src="img/duchas.jpg" alt="Duchas quentes" loading="lazy"><span>Duchas quentes</span></button>
+      <button data-cap="Cozinha comunitária"><img src="img/cozinha.jpg" alt="Cozinha comunitária" loading="lazy"><span>Cozinha</span></button>
+      <button class="alto" data-cap="Lanchonete"><img src="img/lanchonete.jpg" alt="Lanchonete" loading="lazy"><span>Lanchonete</span></button>
+      <button class="largo" data-cap="Área arborizada"><img src="img/caminho.jpg" alt="Área arborizada" loading="lazy"><span>Área de camping</span></button>
+      <button data-cap="Churrasqueira"><img src="img/churrasqueira.jpg" alt="Churrasqueira" loading="lazy"><span>Churrasqueira</span></button>
+      <button data-cap="Cozinha coberta"><img src="img/cozinha-externa.jpg" alt="Cozinha coberta" loading="lazy"><span>Cozinha coberta</span></button>
+      <button data-cap="Lavatório de roupas"><img src="img/lavatorio.jpg" alt="Lavatório de roupas" loading="lazy"><span>Lavatório</span></button>
+      <button data-cap="Cabana térmica"><img src="img/cabana-2.jpg" alt="Cabana térmica" loading="lazy"><span>Cabana térmica</span></button>
+      <button data-cap="Apartamento — cozinha"><img src="img/apto-cozinha.jpg" alt="Apartamento" loading="lazy"><span>Apartamento</span></button>
+      <button data-cap="Recepção"><img src="img/recepcao.jpg" alt="Recepção" loading="lazy"><span>Recepção</span></button>
+      <button data-cap="Pias dos banheiros"><img src="img/pias.jpg" alt="Pias dos banheiros" loading="lazy"><span>Pias</span></button>
+      <button data-cap="Ruas internas do camping"><img src="img/ruas-internas.jpg" alt="Ruas internas do camping" loading="lazy"><span>Ruas internas</span></button>
+    </div>
+  </div>
+</section>
+
+<section class="secao natureza" id="natureza">
+  <div class="wrap">
+    <div class="eyebrow">Natureza ao redor</div>
+    <h2>Praia, rio, dunas e cachoeira</h2>
+    <p class="lead">A Praia do Siriú tem águas transparentes, próprias para banho, uma extensa faixa de areia e um rio que desemboca no mar.</p>
+    <div class="cards-nat">
+      <div class="nat"><img src="img/praia.jpg" alt="Praia do Siriú" loading="lazy"><div><span class="dist">700 m</span><h3>Praia do Siriú</h3><p>Uma das praias mais bonitas de Santa Catarina, com o rio e as dunas ao lado.</p></div></div>
+      <div class="nat"><img src="img/cachoeira.jpg" alt="Cachoeira do Siriú" loading="lazy"><div><span class="dist">300 m</span><h3>Cachoeira do Siriú</h3><p>Uma das cachoeiras mais bonitas do Siriú, pertinho do camping.</p></div></div>
+      <div class="nat"><img src="img/vista-morro.jpg" alt="Vista da praia do alto do morro" loading="lazy"><div><span class="dist">Mirante</span><h3>Alto do Morro e Canto Norte</h3><p>A vista da praia do alto do morro e o canto norte, um dos pontos mais procurados de Garopaba.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="secao valores" id="valores">
+  <div class="wrap">
+    <div class="eyebrow" style="color:#ffc58f">Valores</div>
+    <h2>Diária por pessoa</h2>
+    <p class="lead">Valores para a área de camping. Para cabanas térmicas e apartamentos, consulte pelo WhatsApp.</p>
+    <div class="grade-val">
+      <div class="preco">
+        <div class="periodo">01/04/26 a 31/10/26</div>
+        <h3>Baixa temporada</h3>
+        <div class="valor">R$ 50<small> /pessoa · diária</small></div>
+        <ul><li>Crianças de 5 a 9 anos: R$ 40 (com documento)</li></ul>
+      </div>
+      <div class="preco">
+        <div class="periodo">01/11/26 a 28/02/27</div>
+        <h3>Temporada de verão</h3>
+        <div class="valor">R$ 70<small> /pessoa · diária</small></div>
+        <ul><li>Exceto Réveillon e Carnaval</li><li>Crianças de 5 a 9 anos: R$ 40 (com documento)</li></ul>
+      </div>
+      <div class="preco reveillon">
+        <span class="selo-r">Réveillon · 30/12/26 a 04/01/27</span>
+        <h3 style="margin-top:.6rem">Pacotes por pessoa</h3>
+        <table>
+          <tr><td>1 diária</td><td>R$ 150</td></tr>
+          <tr><td>2 diárias</td><td>R$ 280</td></tr>
+          <tr><td>3 diárias</td><td>R$ 390</td></tr>
+          <tr><td>4 diárias</td><td>R$ 440</td></tr>
+          <tr><td>5 diárias</td><td>R$ 500</td></tr>
+        </table>
+        <ul><li>Crianças de 5 a 9 anos no Réveillon e no Carnaval: R$ 70</li></ul>
+      </div>
+    </div>
+    <div class="info-val">
+      <div><b>Check-in e check-out</b>Check-in a partir das 8h. Check-out às 10h do dia seguinte, podendo sair até o meio-dia.</div>
+      <div><b>Como reservar</b>Sinal de 50% do valor do pacote por Pix ou depósito, e os outros 50% na entrada no camping. Envie o comprovante pelo WhatsApp.</div>
+      <div><b>Dúvidas e grupos</b>Carnaval, grupos, cabanas e apartamentos: fale com a gente pelo WhatsApp que passamos os valores.</div>
+    </div>
+    <div style="margin-top:28px"><a class="btn btn-zap" href="https://wa.me/5548999039465?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20uma%20reserva%20no%20Siri%C3%BA%20Camping." target="_blank" rel="noopener">Reservar pelo WhatsApp</a></div>
+  </div>
+</section>
+
+<section class="secao eventos" id="eventos">
+  <div class="wrap duas">
+    <div class="foto-dupla">
+      <img src="img/eventos.jpg" alt="Espaço para eventos" loading="lazy">
+      <img src="img/eventos-noite.jpg" alt="Confraternização no camping" loading="lazy">
+    </div>
+    <div>
+      <div class="eyebrow">Eventos</div>
+      <h2>Espaço para o seu evento junto à natureza</h2>
+      <p class="lead">Casamentos, aniversários, encontros, confraternizações e congressos, num espaço ao ar livre com estrutura de apoio. Conte para a gente a sua ideia.</p>
+      <div style="margin-top:1.6rem"><a class="btn btn-escuro" href="https://wa.me/5548999039465?text=Ol%C3%A1!%20Quero%20fazer%20um%20evento%20no%20Siri%C3%BA%20Camping." target="_blank" rel="noopener">Pedir orçamento de evento</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="secao regras" id="regulamento">
+  <div class="wrap">
+    <div class="eyebrow">Regulamento</div>
+    <h2>Boas regras para uma boa convivência</h2>
+    <p class="lead">Para que todos aproveitem com tranquilidade, pedimos atenção a estes pontos.</p>
+    <div class="lista-regras">
+      <details open><summary>Horário de silêncio</summary><p>Das 23h às 7h é proibido qualquer ruído ou som. Colabore!</p></details>
+      <details><summary>Check-in, check-out e diárias</summary><p>Check-in a partir das 8h e check-out às 10h, podendo sair até as 12h. As diárias vencem todos os dias às 10h. A diária é cobrada por pessoa.</p></details>
+      <details><summary>Veículos</summary><p>Velocidade máxima de 10 km/h dentro do camping. Você tem até 1 hora para montar a barraca com o carro ao lado; depois, o veículo vai para o estacionamento. Entrada de veículos permitida até 24h; depois disso, o carro fica estacionado no local indicado pela administração. Proibido o uso de motocicletas para lazer no interior do camping.</p></details>
+      <details><summary>Pulseira de identificação</summary><p>A pulseira fornecida pelo camping deve ser usada durante toda a permanência. Quem estiver sem ela é encaminhado à recepção, e a reposição custa uma pequena taxa de R$ 5.</p></details>
+      <details><summary>Visitantes</summary><p>Visitas são permitidas para convidados dos campistas, com identificação na recepção, por no máximo 1 hora, com direito ao uso das instalações sanitárias. Após esse tempo, é cobrada uma diária.</p></details>
+      <details><summary>É proibido no interior do camping</summary><ul>
+        <li>Montar e desmontar barracas no horário de silêncio (exceto próximo à recepção)</li>
+        <li>Lavar veículos ou colocá-los nas áreas das barracas</li>
+        <li>Pendurar redes e balanços em árvores novas</li>
+        <li>Cavar valetas ao redor das barracas (exceto em caso de invasão de água)</li>
+        <li>Manter animais no camping</li>
+        <li>Usar micro-ondas, forno elétrico ou frigobar</li>
+        <li>Jogos que prejudiquem os demais campistas</li></ul></details>
+      <details><summary>Limpeza</summary><p>Mantenha o local limpo: recolha o lixo em recipientes próprios e coloque nas lixeiras distribuídas pelo camping. As churrasqueiras são de uso coletivo e não há reserva.</p></details>
+      <details><summary>Objetos e responsabilidade</summary><p>A administração não se responsabiliza por extravio de objetos e valores deixados nas barracas e instalações, nem por acidentes dentro da área de acampamento. Os responsáveis respondem pelos atos de quem os acompanha.</p></details>
+    </div>
+    <div class="aviso-pet">🐾 <b>Não aceitamos animais</b> no interior do camping, conforme o regulamento.</div>
+  </div>
+</section>
+
+<section class="secao chegar" id="como-chegar">
+  <div class="wrap duas">
+    <div>
+      <div class="eyebrow">Como chegar</div>
+      <h2>No Siriú, ao norte de Garopaba</h2>
+      <p class="lead">Pela BR-101, saia no trevo de Paulo Lopes (km 252) ou no trevo de Garopaba (km 273) e siga as placas para a Praia do Siriú.</p>
+      <div class="distancias">
+        <div><b>65 km</b><span>de Florianópolis</span></div>
+        <div><b>9 km</b><span>do trevo de Paulo Lopes</span></div>
+        <div><b>22 km</b><span>do trevo de Garopaba</span></div>
+        <div><b>700 m</b><span>da praia</span></div>
+      </div>
+      <p style="color:var(--suave);font-size:.95rem">Rod. GRP 010, caixa postal 220 · Siriú, Garopaba/SC · CEP 88495-000</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:1.2rem">
+        <a class="btn btn-escuro" href="https://www.google.com/maps/search/?api=1&query=Siri%C3%BA%20Camping%20Garopaba%20SC" target="_blank" rel="noopener">Abrir no Google Maps</a>
+        <a class="btn btn-zap" href="https://wa.me/5548999039465?text=Ol%C3%A1!%20Pode%20me%20mandar%20a%20localiza%C3%A7%C3%A3o%20do%20camping%3F" target="_blank" rel="noopener">Pedir localização</a>
+      </div>
+    </div>
+    <img class="mapa-img" src="img/mapa.jpg" alt="Mapa de como chegar ao Siriú Camping" loading="lazy">
+  </div>
+</section>
+
+<section class="secao" id="quem-somos" style="padding-top:0">
+  <div class="wrap">
+    <div class="eyebrow">Quem somos</div>
+    <h2>Uma empresa familiar do Siriú</h2>
+    <p class="lead">Somos uma microempresa de turismo fundada em 2008, no bairro Siriú, ao norte de Garopaba. Oferecemos espaços arborizados com pontos de energia para armar barracas e a estrutura para uma estadia tranquila.</p>
+    <div class="equipe">
+      <span><b>Marcelo</b> · Administrador</span><span><b>Vanuza</b> · Gerente</span><span><b>Marla e Thiago</b> · Recepção</span>
+    </div>
+  </div>
+</section>
+
+<section class="secao cta">
+  <div class="wrap">
+    <h2>Bora acampar no Siriú?</h2>
+    <p>Chame no WhatsApp, diga as datas e quantas pessoas vêm, e a gente te passa tudo.</p>
+    <a class="btn btn-zap" href="https://wa.me/5548999039465?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20uma%20reserva%20no%20Siri%C3%BA%20Camping." target="_blank" rel="noopener">Chamar no WhatsApp · (48) 99903-9465</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="grade">
+      <div><img src="img/logo.png" alt="Siriú Camping"><p>Camping arborizado a 700 m da Praia do Siriú, em Garopaba/SC. Lazer junto à natureza desde 2008.</p></div>
+      <div><h4>Contato</h4>
+        <div class="linha">💬 <a href="https://wa.me/5548999039465" target="_blank" rel="noopener">(48) 99903-9465</a></div>
+        <div class="linha">📞 <a href="tel:+554839131008">(48) 3913-1008</a></div>
+        <div class="linha">✉️ <a href="mailto:siriucamping@gmail.com">siriucamping@gmail.com</a></div></div>
+      <div><h4>Endereço</h4><p>Rod. GRP 010, caixa postal 220<br>Siriú · Garopaba/SC<br>CEP 88495-000</p></div>
+    </div>
+    <div class="copy">© Siriú Camping · Lazer junto à natureza</div>
+  </div>
+</footer>
+
+<a class="zap-flutuante" href="https://wa.me/5548999039465?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20uma%20reserva%20no%20Siri%C3%BA%20Camping." target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2zm5.8 14.13c-.24.68-1.42 1.3-1.95 1.34-.5.05-.97.23-3.26-.68-2.75-1.08-4.49-3.9-4.62-4.08-.13-.18-1.1-1.47-1.1-2.8 0-1.33.7-1.99.95-2.26.24-.27.53-.34.71-.34l.51.01c.16 0 .38-.06.6.46.24.55.8 1.9.87 2.04.07.14.12.3.02.48-.09.18-.14.3-.27.46-.14.16-.29.36-.41.48-.14.14-.28.29-.12.56.16.27.71 1.17 1.52 1.9 1.05.93 1.93 1.22 2.2 1.36.27.14.43.11.59-.07.16-.18.68-.79.86-1.06.18-.27.36-.22.61-.13.25.09 1.59.75 1.86.89.27.14.45.2.52.32.07.11.07.66-.17 1.34z"/></svg>
+</a>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+  <button onclick="fecharLB()" aria-label="Fechar">×</button>
+  <button class="nav ant" onclick="moverLB(-1)" aria-label="Anterior">‹</button>
+  <button class="nav" style="right:14px" onclick="moverLB(1)" aria-label="Próxima">›</button>
+  <img id="lb-img" alt=""><p id="lb-cap"></p>
+</div>
+
+<script>
+const topo=document.getElementById('topo');
+const ajustarTopo=()=>topo.classList.toggle('solido',window.scrollY>60);
+window.addEventListener('scroll',ajustarTopo,{passive:true}); ajustarTopo();
+document.querySelectorAll('#menu a').forEach(a=>a.addEventListener('click',()=>document.getElementById('menu').classList.remove('aberto')));
+const fotos=[...document.querySelectorAll('#galeria button')]; let atual=0;
+const lb=document.getElementById('lightbox');
+function abrirLB(i){ atual=(i+fotos.length)%fotos.length; const b=fotos[atual]; document.getElementById('lb-img').src=b.querySelector('img').src; document.getElementById('lb-cap').textContent=b.dataset.cap; lb.classList.add('on'); }
+function fecharLB(){ lb.classList.remove('on'); }
+function moverLB(d){ abrirLB(atual+d); }
+fotos.forEach((b,i)=>b.addEventListener('click',()=>abrirLB(i)));
+lb.addEventListener('click',e=>{ if(e.target===lb) fecharLB(); });
+document.addEventListener('keydown',e=>{ if(!lb.classList.contains('on')) return; if(e.key==='Escape') fecharLB(); if(e.key==='ArrowRight') moverLB(1); if(e.key==='ArrowLeft') moverLB(-1); });
+</script>
+</body>
+</html>
