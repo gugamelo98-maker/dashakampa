@@ -3072,8 +3072,9 @@ function updateRelatorios(){
     const noites=Math.max(0,Math.round((cout-cin)/(864e5)));
     diarias+=noites;
     hospedes+=(r.adultos||1)+(r.criancas||[]).length;
-    const sid=(r.spot_tipo||r.spot_id||'').toLowerCase();
-    const t=sid.includes('glamping')||sid.includes('glm')?'glamping':sid.includes('barraca')||sid.includes('bar')?'barraca':sid.includes('motorhome')||sid.includes('mth')?'motorhome':'glamping';
+    // r.tipo vem da reserva normalizada; o código do spot é só um plano B
+    const sid=String(r.spot||r.spot_id||'').toLowerCase();
+    const t=['glamping','barraca','motorhome'].includes(r.tipo)?r.tipo:(sid.startsWith('bar')?'barraca':sid.startsWith('mh')?'motorhome':'glamping');
     const totalNoites=Math.max(1,nightsBetween(r.checkin,r.checkout));
     const rec=Math.round(Math.max(0,(r.total||0)-(parseFloat(r.desconto)||0))*Math.min(1,noites/totalNoites)*100)/100;
     tipoStats[t].res++;
