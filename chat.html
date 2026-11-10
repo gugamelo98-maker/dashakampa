@@ -78,6 +78,27 @@ a{color:inherit}
   .lado{max-height:none}
   .topo .num{display:none}
 }
+/* mídia */
+.entrada .icone{width:42px;height:46px;border-radius:50%;background:transparent;color:#54656f;border:0;cursor:pointer;display:grid;place-items:center;flex:none}
+.entrada .icone:hover{background:#e3e6e8}
+.entrada button.gravando{background:var(--perigo)!important;animation:pulsa 1.2s infinite}
+@keyframes pulsa{50%{box-shadow:0 0 0 6px rgba(192,57,43,.2)}}
+.grav{flex:1;display:none;align-items:center;gap:10px;background:#fff;border-radius:20px;padding:0 16px;color:var(--perigo);font-weight:600;font-size:14px}
+.grav i{width:10px;height:10px;border-radius:50%;background:var(--perigo);animation:pulsa 1s infinite}
+.grav button{margin-left:auto;border:0;background:none;color:var(--suave);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline}
+.b audio{width:250px;max-width:100%;height:36px;display:block}
+.b .aud{display:flex;align-items:center;gap:8px;color:#54656f;font-size:13.5px}
+.b img.foto{display:block;max-width:240px;max-height:300px;border-radius:6px;margin:-2px -4px 4px}
+.b .doc{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.05);border-radius:6px;padding:9px 10px;margin-bottom:4px;font-size:13.5px}
+.b .doc span{font-size:26px}
+.b .lido{display:block;margin-top:5px;padding-top:5px;border-top:1px dashed rgba(0,0,0,.15);font-size:12px;color:#54656f;white-space:pre-wrap}
+.pin{display:block;text-decoration:none;color:inherit;border-radius:6px;overflow:hidden;margin:-2px -4px 6px;width:260px;max-width:100%;background:#e8eef0}
+.pin .mapa{height:110px;display:grid;place-items:center;font-size:40px;background:linear-gradient(135deg,#d7ead9 0%,#cfe3ef 100%)}
+.pin div.txt{padding:7px 9px;font-size:13px;background:#f7f8f8}
+.pin div.txt b{display:block;font-size:13.5px}
+.pin div.txt small{color:#027eb5}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:disabled:hover{background:#fff}
 </style>
 </head>
 <body>
@@ -94,14 +115,23 @@ a{color:inherit}
     <div class="status" id="status"></div>
     <div class="chips" id="chips"></div>
     <form class="entrada" id="form">
+      <button type="button" class="icone" id="anexar" title="Enviar foto ou PDF (ex.: comprovante)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21.4 11.1 12.2 20.3a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg></button>
+      <input type="file" id="arquivo" accept="image/*,application/pdf" hidden>
       <textarea id="txt" rows="1" placeholder="Escreva como o cliente…" autocomplete="off"></textarea>
-      <button id="enviar" aria-label="Enviar"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg></button>
+      <div class="grav" id="grav"><i></i><span id="gravTempo">0:00</span> gravando… <button type="button" id="cancelarGrav">cancelar</button></div>
+      <button id="enviar" aria-label="Enviar"></button>
     </form>
   </section>
 
   <aside class="lado">
     <div class="card"><h2>O que a IA entendeu</h2><div id="estado"><p class="nada">Aparece depois da primeira resposta.</p></div></div>
     <div class="card"><h2>Pré-reservas deste teste</h2><div id="reservas"><p class="nada">Nenhuma ainda.</p></div></div>
+    <div class="card"><h2>O que a IA leu por último</h2><div id="lido"><p class="nada">As mensagens juntas (e o áudio transcrito) aparecem aqui.</p></div></div>
+    <div class="card"><h2>Comprovante de Pix</h2>
+      <p class="dica">Libera quando a IA pedir o Pix (pré-reserva criada).</p>
+      <button class="btn" id="compOk" disabled><b>🧾 Mandar comprovante certo</b><small id="compOkTxt">Valor do sinal, para o CNPJ da Akampa</small></button>
+      <button class="btn" id="compErrado" disabled><b>⚠️ Mandar comprovante com valor errado</b><small>Para ver a IA mandar para análise</small></button>
+    </div>
     <div class="card"><h2>Teste</h2>
       <button class="btn" id="novo"><b>🔄 Novo cliente</b><small>Começa do zero com outro número de teste</small></button>
       <button class="btn perigo" id="limpar"><b>🗑️ Apagar este teste</b><small>Apaga a conversa e cancela as pré-reservas deste número</small></button>
@@ -110,6 +140,8 @@ a{color:inherit}
       <ul class="dica">
         <li>A IA espera <b>10 segundos</b> depois da última mensagem. Se você mandar outra antes, o tempo recomeça e ela responde tudo junto.</li>
         <li>É a mesma IA do WhatsApp, com os mesmos preços, regras e informações das Configurações.</li>
+        <li>🎤 Sem texto digitado, o botão verde vira microfone: clique para gravar um áudio e clique de novo para enviar.</li>
+        <li>📎 O clipe envia foto ou PDF. Com pré-reserva aberta, a IA confere como comprovante de Pix.</li>
         <li>Pré-reservas criadas aqui aparecem no painel. Use "Apagar este teste" no fim.</li>
       </ul>
     </div>
@@ -120,29 +152,44 @@ a{color:inherit}
 const BASE='https://rarelookingorca-n8n.cloudfy.live/webhook';
 const ESPERA=10; // segundos que a IA aguarda por mais mensagens
 const SUGESTOES=['Oi, boa tarde!','Vocês têm wifi?','Posso levar meu cachorro?','Quanto custa o glamping?','Somos 2 adultos','De 10 a 12 de abril','Quero ir no réveillon','Me manda a localização','Pode reservar','Aceita cartão?'];
+const ICO_ENVIAR='<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg>';
+const ICO_MIC='<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5.3-3a5.3 5.3 0 0 1-10.6 0H5a7 7 0 0 0 6 6.9V22h2v-3.1a7 7 0 0 0 6-6.9h-1.7z"/></svg>';
+const ICO_PARAR='<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg>';
 const $=id=>document.getElementById(id);
-let numero='', log=[], ultimoAtualizado=null, timerEspera=null, fimEspera=0, aguardandoResposta=false, desdeEnvio=0, ultimoTextoIA='';
+let numero='', log=[], ultimoAtualizado=null, timerEspera=null, fimEspera=0, aguardandoResposta=false, estadoAtual={};
+const audios={}; // id -> objectURL (só nesta aba)
 
-function salvar(){ try{ localStorage.setItem('akampa_sim',JSON.stringify({numero,log,ultimoAtualizado,ultimoTextoIA})); }catch(e){} }
-function carregar(){ try{ const s=JSON.parse(localStorage.getItem('akampa_sim')||'null'); if(s&&s.numero){ ({numero,log,ultimoAtualizado,ultimoTextoIA}=s); return true; } }catch(e){} return false; }
-function novoNumero(){ numero='5500099'+String(Math.floor(Math.random()*1e6)).padStart(6,'0'); log=[]; ultimoAtualizado=null; ultimoTextoIA=''; salvar(); }
+function salvar(){ try{ localStorage.setItem('akampa_sim',JSON.stringify({numero,log,ultimoAtualizado})); }catch(e){ try{ localStorage.setItem('akampa_sim',JSON.stringify({numero,log:log.map(m=>({...m,thumb:undefined})),ultimoAtualizado})); }catch(_){} } }
+function carregar(){ try{ const s=JSON.parse(localStorage.getItem('akampa_sim')||'null'); if(s&&s.numero){ ({numero,log,ultimoAtualizado}=s); log=log||[]; return true; } }catch(e){} return false; }
+function novoNumero(){ numero='5500099'+String(Math.floor(Math.random()*1e6)).padStart(6,'0'); log=[]; ultimoAtualizado=null; salvar(); }
 const hora=d=>new Date(d).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-function esc(t){ return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+const mmss=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+function esc(t){ return String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function formatar(t){ return esc(t).replace(/\*([^*\n]+)\*/g,'<b>$1</b>').replace(/(^|\s)_([^_\n]+)_/g,'$1<i>$2</i>').replace(/~([^~\n]+)~/g,'<s>$1</s>'); }
 
+function conteudo(m){
+  let h='';
+  if(m.local){ const l=m.local; h+=`<a class="pin" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${l.latitude},${l.longitude}"><div class="mapa">📍</div><div class="txt"><b>${esc(l.nome)}</b>${esc(l.endereco)}<br><small>Abrir no mapa</small></div></a>`; }
+  if(m.tipo==='audio'){ h+= audios[m.id] ? `<audio controls src="${audios[m.id]}"></audio>` : `<div class="aud">🎤 Áudio · ${mmss(m.dur||0)}</div>`; }
+  if(m.tipo==='imagem'){ h+= m.thumb ? `<img class="foto" src="${m.thumb}" alt="">` : `<div class="doc"><span>🖼️</span>${esc(m.nome||'Foto')}</div>`; }
+  if(m.tipo==='doc'){ h+=`<div class="doc"><span>📄</span>${esc(m.nome||'arquivo.pdf')}</div>`; }
+  if(m.texto) h+=formatar(m.texto);
+  if(m.lido) h+=`<span class="lido">📝 A IA entendeu: ${esc(m.lido)}</span>`;
+  return h;
+}
 function render(){
   const el=$('msgs');
-  if(!log.length){ el.innerHTML=`<div class="vazio"><b>Comece a conversa</b>Escreva como se fosse um cliente. Pode mandar várias mensagens seguidas: a IA espera ${ESPERA} segundos e responde tudo junto.</div>`; return; }
+  if(!log.length){ el.innerHTML=`<div class="vazio"><b>Comece a conversa</b>Escreva, grave um áudio 🎤 ou mande uma foto/PDF 📎 como se fosse um cliente. Pode mandar várias mensagens seguidas: a IA espera ${ESPERA} segundos e responde tudo junto.</div>`; return; }
   el.innerHTML=`<div class="dia">HOJE</div>`+log.map(m=> m.de==='sis'
     ? `<div class="b sis">${esc(m.texto)}</div>`
-    : `<div class="b ${m.de}">${formatar(m.texto)}<span class="h">${hora(m.em)}${m.de==='eu'?'<span class="tick">✓✓</span>':''}</span></div>`).join('');
+    : `<div class="b ${m.de}">${conteudo(m)}<span class="h">${hora(m.em)}${m.de==='eu'?'<span class="tick">✓✓</span>':''}</span></div>`).join('');
   el.scrollTop=el.scrollHeight;
 }
 function status(html){ $('status').innerHTML=html||''; }
 function sub(t){ $('sub').textContent=t; }
 
-function iniciarEspera(){
-  fimEspera=Date.now()+ESPERA*1000; aguardandoResposta=true; desdeEnvio=Date.now();
+function iniciarEspera(imediato){
+  fimEspera=Date.now()+(imediato?0:ESPERA*1000); aguardandoResposta=true;
   clearInterval(timerEspera);
   const passo=()=>{
     const falta=Math.max(0,fimEspera-Date.now());
@@ -151,50 +198,135 @@ function iniciarEspera(){
       sub('online');
     } else {
       status(`<span class="pontos"><i></i><i></i><i></i></span><span>A IA está respondendo…</span>`); sub('digitando…');
-      if(Date.now()-fimEspera>75000){ clearInterval(timerEspera); aguardandoResposta=false; status('A IA não respondeu. Se você repetiu a mesma mensagem, ela fica em silêncio de propósito (anti-repetição).'); sub('online'); }
+      if(Date.now()-fimEspera>90000){ clearInterval(timerEspera); aguardandoResposta=false; status('A IA não respondeu. Se você repetiu a mesma mensagem, ela fica em silêncio de propósito (anti-repetição).'); sub('online'); }
     }
   };
   passo(); timerEspera=setInterval(passo,250);
 }
 
-async function enviar(texto){
+// envia ao webhook da IA exatamente no formato do WhatsApp (Evolution), em modo teste
+async function postarIA(messageType, message){
+  const r=await fetch(BASE+'/akampa-siriu-ia-v2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    event:'messages.upsert',instance:'akampa',modo_teste:true,
+    data:{key:{remoteJid:numero+'@s.whatsapp.net',fromMe:false,id:'SIM'+Date.now()+Math.random().toString(36).slice(2,6)},pushName:'Teste',messageType,message}
+  })});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+}
+async function enviarComo(bolha, messageType, message, imediato){
+  bolha.de='eu'; bolha.em=Date.now(); bolha.id=bolha.id||('m'+Date.now());
+  log.push(bolha); salvar(); render();
+  iniciarEspera(imediato); agendar();
+  try{ await postarIA(messageType, message); }
+  catch(e){ log.push({de:'sis',texto:'Não foi possível falar com a IA (sem conexão com o servidor).',em:Date.now()}); render(); }
+}
+function enviarTexto(texto){
   texto=texto.trim(); if(!texto) return;
-  log.push({de:'eu',texto,em:Date.now()}); salvar(); render();
-  iniciarEspera();
-  try{
-    await fetch(BASE+'/akampa-siriu-ia-v2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-      event:'messages.upsert',instance:'akampa',modo_teste:true,
-      data:{key:{remoteJid:numero+'@s.whatsapp.net',fromMe:false,id:'SIM'+Date.now()},pushName:'Teste',messageType:'conversation',message:{conversation:texto}}
-    })});
-  }catch(e){ log.push({de:'sis',texto:'Não foi possível falar com a IA (sem conexão com o servidor).',em:Date.now()}); render(); }
+  enviarComo({tipo:'texto',texto},'conversation',{conversation:texto});
+}
+const pagando=()=>['pagamento','analise'].includes(estadoAtual.etapa);
+
+// ---------- áudio ----------
+let rec=null, recChunks=[], recInicio=0, recTimer=null, recCancelado=false;
+async function gravar(){
+  if(!navigator.mediaDevices||!window.MediaRecorder){ alert('Este navegador não grava áudio.'); return; }
+  let stream; try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }catch(e){ alert('Permita o uso do microfone para gravar o áudio.'); return; }
+  const tipos=['audio/webm;codecs=opus','audio/ogg;codecs=opus','audio/mp4','audio/webm'];
+  const mime=tipos.find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||'';
+  rec=new MediaRecorder(stream, mime?{mimeType:mime}:{}); recChunks=[]; recCancelado=false;
+  rec.ondataavailable=e=>{ if(e.data.size) recChunks.push(e.data); };
+  rec.onstop=async()=>{
+    stream.getTracks().forEach(t=>t.stop()); clearInterval(recTimer); modoGravando(false);
+    if(recCancelado||!recChunks.length) return;
+    const dur=(Date.now()-recInicio)/1000; if(dur<0.8) return;
+    const blob=new Blob(recChunks,{type:rec.mimeType||mime||'audio/webm'});
+    const b64=await paraBase64(blob); const id='a'+Date.now(); audios[id]=URL.createObjectURL(blob);
+    enviarComo({id,tipo:'audio',dur},'audioMessage',{audioMessage:{mimetype:blob.type,seconds:Math.round(dur),ptt:true},base64:b64});
+  };
+  rec.start(); recInicio=Date.now(); modoGravando(true);
+  recTimer=setInterval(()=>{ const s=(Date.now()-recInicio)/1000; $('gravTempo').textContent=mmss(s); if(s>=120) rec.stop(); },250);
+}
+function modoGravando(on){
+  $('txt').style.display=on?'none':''; $('grav').style.display=on?'flex':'none'; $('anexar').style.visibility=on?'hidden':'';
+  $('enviar').classList.toggle('gravando',on); $('gravTempo').textContent='0:00'; botaoEnviar();
+}
+function botaoEnviar(){
+  const gravando=rec&&rec.state==='recording';
+  $('enviar').innerHTML=gravando?ICO_PARAR:($('txt').value.trim()?ICO_ENVIAR:ICO_MIC);
+  $('enviar').setAttribute('aria-label',gravando?'Enviar áudio':($('txt').value.trim()?'Enviar':'Gravar áudio'));
+}
+function paraBase64(blob){ return new Promise((ok,erro)=>{ const r=new FileReader(); r.onload=()=>ok(String(r.result).split(',')[1]); r.onerror=erro; r.readAsDataURL(blob); }); }
+
+// ---------- foto / PDF ----------
+function reduzirImagem(src,max,qual){ return new Promise((ok,erro)=>{ const im=new Image(); im.onload=()=>{ const k=Math.min(1,max/Math.max(im.width,im.height)); const c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); c.getContext('2d').drawImage(im,0,0,c.width,c.height); ok(c.toDataURL('image/jpeg',qual)); }; im.onerror=erro; im.src=src; }); }
+async function enviarImagemDataURL(dataURL, legenda, nome){
+  const grande=await reduzirImagem(dataURL,1600,.85), mini=await reduzirImagem(dataURL,320,.7);
+  enviarComo({tipo:'imagem',texto:legenda,thumb:mini,nome},'imageMessage',{imageMessage:{mimetype:'image/jpeg',caption:legenda||''},base64:grande.split(',')[1]},pagando());
+}
+async function enviarArquivo(f){
+  const legenda=$('txt').value.trim(); $('txt').value=''; botaoEnviar();
+  if(f.type==='application/pdf'){
+    if(f.size>8e6){ alert('PDF muito grande (máx. 8 MB).'); return; }
+    enviarComo({tipo:'doc',texto:legenda,nome:f.name},'documentMessage',{documentMessage:{mimetype:'application/pdf',fileName:f.name,caption:legenda||''},base64:await paraBase64(f)},pagando());
+  } else if(f.type.startsWith('image/')){
+    const url=URL.createObjectURL(f); try{ await enviarImagemDataURL(url,legenda,f.name); } finally{ URL.revokeObjectURL(url); }
+  } else alert('Envie uma foto ou um PDF.');
 }
 
+// ---------- comprovante de teste ----------
+function gerarComprovante(valor){
+  const c=document.createElement('canvas'); c.width=720; c.height=1080; const g=c.getContext('2d');
+  g.fillStyle='#fff'; g.fillRect(0,0,720,1080); g.fillStyle='#820ad1'; g.fillRect(0,0,720,150);
+  g.fillStyle='#fff'; g.font='bold 40px sans-serif'; g.fillText('Comprovante de transferência',40,92);
+  const agora=new Date(Date.now()-60000), TZ={timeZone:'America/Sao_Paulo'}; const dt=agora.toLocaleDateString('pt-BR',TZ)+' - '+agora.toLocaleTimeString('pt-BR',{...TZ,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const id='E'+String(Date.now())+Math.random().toString(36).slice(2,12).toUpperCase();
+  const linhas=[['Valor','R$ '+Number(valor).toLocaleString('pt-BR',{minimumFractionDigits:2}),true],['Tipo de transferência','Pix'],['Data',dt],['',''],['Destino',''],['Nome','AKAMPA SIRIU'],['CNPJ','38.350.486/0001-60'],['',''],['Origem',''],['Nome',(estadoAtual.nome||'Cliente')+' Teste'],['CPF','•••.123.456-••'],['',''],['ID da transação',id]];
+  let y=230; g.fillStyle='#111';
+  for(const [k,v,grande] of linhas){
+    if(!k){ y+=20; continue; }
+    if(!v){ g.font='bold 30px sans-serif'; g.fillText(k,40,y); y+=56; continue; }
+    g.font='26px sans-serif'; g.fillStyle='#555'; g.fillText(k,40,y); g.fillStyle='#111'; g.font=(grande?'bold 44px':'bold 28px')+' sans-serif';
+    g.fillText(v,40,y+(grande?52:40)); y+=grande?100:82;
+  }
+  return c.toDataURL('image/jpeg',.9);
+}
+async function mandarComprovante(certo){
+  const cot=estadoAtual.cotacao||{}; const sinal=Number(cot.sinal||0)||100;
+  const valor=certo?sinal:Math.max(10,Math.round(sinal/3));
+  await enviarImagemDataURL(gerarComprovante(valor),'',`comprovante-${valor}.jpg`);
+}
+
+// ---------- painel lateral ----------
 async function api(acao){
   const r=await fetch(BASE+'/akampa/simulador',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao,numero})});
   return r.json();
 }
-
 function brl(v){ return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:2}); }
 function dataBR(s){ if(!s) return ''; const [y,m,d]=String(s).slice(0,10).split('-'); return `${d}/${m}/${y.slice(2)}`; }
 const ETAPA={cotacao:'Valor passado',pagamento:'Aguardando Pix (pré-reserva)',analise:'Comprovante em análise',confirmado:'Reserva confirmada',aguardando_filippi:'Aguardando o Filippi (Réveillon)',coleta:'Coletando dados'};
 const NOME_TIPO={glamping:'Glamping',barraca:'Barraca',motorhome:'Motorhome/Trailer'};
 
 function renderEstado(conv,reservas){
-  const e=(conv&&conv.estado)||{};
+  const e=(conv&&conv.estado)||{}; estadoAtual=e;
   const linhas=[];
   if(e.nome) linhas.push(['Nome',e.nome]);
   if(e.acomodacao) linhas.push(['Acomodação',NOME_TIPO[e.acomodacao]||e.acomodacao]);
   if(e.pessoas) linhas.push(['Pessoas',e.pessoas+(e.criancas_ate10?` (${e.criancas_ate10} criança${e.criancas_ate10>1?'s':''} até 10)`:'')]);
+  if(e.unidades>1) linhas.push(['Unidades',e.unidades]);
   if(e.checkin) linhas.push(['Entrada',dataBR(e.checkin)]);
   if(e.checkout) linhas.push(['Saída',dataBR(e.checkout)]);
-  if(e.cotacao){ linhas.push(['Valor',brl(e.cotacao.total)+(e.cotacao.total_pix&&e.cotacao.total_pix!==e.cotacao.total?` · Pix ${brl(e.cotacao.total_pix)}`:'')]); linhas.push(['Sinal (50%)',brl(e.cotacao.sinal)]); }
+  if(e.cotacao){ linhas.push(['Valor',brl(e.cotacao.total)+(e.cotacao.total_pix&&e.cotacao.total_pix!==e.cotacao.total?` · Pix ${brl(e.cotacao.total_pix)}`:'')]); linhas.push(['Sinal (50%)',brl(e.cotacao.sinal)]); if(e.cotacao.temporada) linhas.push(['Temporada',e.cotacao.temporada]); }
   if(e.prazo_pre_reserva&&['pagamento','analise'].includes(e.etapa)) linhas.push(['Prazo do Pix',e.prazo_pre_reserva]);
   if(conv&&conv.ultima_pergunta) linhas.push(['Última pergunta',conv.ultima_pergunta]);
-  let html=e.etapa?`<p style="margin-bottom:8px"><span class="tag ${e.etapa==='aguardando_filippi'?'laranja':''}">${esc(ETAPA[e.etapa]||e.etapa)}</span></p>`:'';
+  let html=e.etapa?`<p style="margin-bottom:8px"><span class="tag ${['aguardando_filippi','pagamento','analise'].includes(e.etapa)?'laranja':''}">${esc(ETAPA[e.etapa]||e.etapa)}</span></p>`:'';
   html+=linhas.length?`<div class="kv">${linhas.map(([k,v])=>`<span>${esc(k)}</span><b>${esc(v)}</b>`).join('')}</div>`:'<p class="nada">Ainda não coletou dados.</p>';
   $('estado').innerHTML=html;
   const ST={pending:'Aguardando Pix',confirmed:'Confirmada',cancelled:'Cancelada',checkin:'Hospedado',checkout:'Saiu'};
-  $('reservas').innerHTML=(reservas&&reservas.length)?reservas.map(r=>`<div class="res"><b>#${r.id} · ${esc(r.spot)}</b> <span class="tag ${r.status==='pending'?'laranja':''}">${ST[r.status]||r.status}</span><br>${dataBR(r.checkin)} a ${dataBR(r.checkout)} · ${brl((r.total||0)-(r.desconto||0))}${r.expira_em&&r.status==='pending'?`<br><span class="nada">Expira ${new Date(r.expira_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>`:''}</div>`).join(''):'<p class="nada">Nenhuma ainda.</p>';
+  $('reservas').innerHTML=(reservas&&reservas.length)?reservas.map(r=>`<div class="res"><b>#${r.id} · ${esc(r.spot)}</b> <span class="tag ${r.status==='pending'?'laranja':''}">${ST[r.status]||r.status}</span><br>${dataBR(r.checkin)} a ${dataBR(r.checkout)} · ${brl((r.total||0)-(r.desconto||0))}${r.sinal_pago?` · sinal pago ${brl(r.sinal_pago)}`:''}${r.expira_em&&r.status==='pending'?`<br><span class="nada">Expira ${new Date(r.expira_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>`:''}</div>`).join(''):'<p class="nada">Nenhuma ainda.</p>';
+  const pode=pagando()&&(reservas||[]).some(r=>r.status==='pending');
+  $('compOk').disabled=$('compErrado').disabled=!pode;
+  $('compOkTxt').textContent=pode&&e.cotacao?`${brl(e.cotacao.sinal)} (sinal), para o CNPJ da Akampa`:'Valor do sinal, para o CNPJ da Akampa';
+  const h=(conv&&conv.historico)||[]; const ultCli=[...h].reverse().find(m=>m.role==='cliente');
+  $('lido').innerHTML=ultCli?`<p style="white-space:pre-wrap;font-size:13.5px">${esc(ultCli.content)}</p>`:'<p class="nada">As mensagens juntas (e o áudio transcrito) aparecem aqui.</p>';
 }
 
 async function verificar(){
@@ -203,11 +335,20 @@ async function verificar(){
     const conv=d.conversa;
     renderEstado(conv,d.reservas);
     if(conv&&conv.atualizado_em!==ultimoAtualizado){
-      const h=conv.historico||[]; const ult=h[h.length-1];
-      // conversa vinda de outro lugar (ex.: página recarregada sem histórico local)
-      if(!log.length&&h.length){ log=h.map(m=>({de:m.role==='cliente'?'eu':'ia',texto:m.content,em:Date.parse(conv.atualizado_em)})); }
-      else if(ult&&ult.role==='assistente'&&ultimoAtualizado!==null||(ult&&ult.role==='assistente'&&aguardandoResposta)){ log.push({de:'ia',texto:ult.content,em:Date.now()}); }
-      ultimoAtualizado=conv.atualizado_em; ultimoTextoIA=ult?ult.content:''; salvar(); render();
+      const h=conv.historico||[]; const ult=h[h.length-1], cli=h[h.length-2];
+      if(!log.length&&h.length){
+        // página aberta sem histórico local: mostra a conversa salva no servidor
+        log=h.map(m=>({de:m.role==='cliente'?'eu':'ia',texto:m.content,local:m.local,em:Date.parse(conv.atualizado_em)}));
+      } else if(ult&&ult.role==='assistente'&&(ultimoAtualizado!==null||aguardandoResposta)){
+        // marca nos áudios/fotos enviados desde a última resposta o que a IA entendeu
+        if(cli&&cli.role==='cliente'){
+          let i=log.length-1; const midias=[];
+          while(i>=0&&log[i].de!=='ia'){ if(log[i].de==='eu'&&log[i].tipo&&log[i].tipo!=='texto') midias.push(log[i]); i--; }
+          if(midias.length) midias[0].lido=cli.content;
+        }
+        log.push({de:'ia',texto:ult.content,local:ult.local,em:Date.now()});
+      }
+      ultimoAtualizado=conv.atualizado_em; salvar(); render();
       if(aguardandoResposta&&Date.now()>fimEspera){ aguardandoResposta=false; clearInterval(timerEspera); status(''); sub('online'); }
     }
   }catch(e){}
@@ -217,20 +358,33 @@ let ciclo=null;
 function agendar(){ clearTimeout(ciclo); ciclo=setTimeout(async()=>{ await verificar(); agendar(); }, aguardandoResposta?1500:5000); }
 
 async function limpar(confirmar){
-  if(confirmar&&!confirm('Apagar a conversa deste número de teste e cancelar as pré-reservas dele?')) return;
-  try{ const d=await api('limpar'); if(d&&d.reservas_canceladas) alert(`${d.reservas_canceladas} pré-reserva(s) de teste cancelada(s).`); }catch(e){}
+  if(confirmar&&!confirm('Apagar a conversa deste número de teste e cancelar as pré-reservas dele?')) return false;
+  try{ const d=await api('limpar'); if(d&&d.reservas_canceladas) alert(`${d.reservas_canceladas} reserva(s) de teste cancelada(s).`); }catch(e){}
+  return true;
 }
+function zerarTela(){ render(); renderEstado(null,[]); status(''); sub('online'); aguardandoResposta=false; clearInterval(timerEspera); }
 
-$('form').addEventListener('submit',e=>{ e.preventDefault(); const t=$('txt').value; $('txt').value=''; $('txt').style.height=''; enviar(t); agendar(); });
-$('txt').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); $('form').requestSubmit(); } });
-$('txt').addEventListener('input',e=>{ e.target.style.height='auto'; e.target.style.height=Math.min(120,e.target.scrollHeight)+'px'; });
+$('form').addEventListener('submit',e=>{
+  e.preventDefault();
+  if(rec&&rec.state==='recording'){ rec.stop(); return; }
+  const t=$('txt').value;
+  if(!t.trim()){ gravar(); return; }
+  $('txt').value=''; $('txt').style.height=''; botaoEnviar(); enviarTexto(t);
+});
+$('cancelarGrav').addEventListener('click',()=>{ recCancelado=true; if(rec&&rec.state==='recording') rec.stop(); });
+$('txt').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); if($('txt').value.trim()) $('form').requestSubmit(); } });
+$('txt').addEventListener('input',e=>{ e.target.style.height='auto'; e.target.style.height=Math.min(120,e.target.scrollHeight)+'px'; botaoEnviar(); });
+$('anexar').addEventListener('click',()=>$('arquivo').click());
+$('arquivo').addEventListener('change',e=>{ const f=e.target.files[0]; e.target.value=''; if(f) enviarArquivo(f); });
 $('chips').innerHTML=SUGESTOES.map(s=>`<button type="button">${esc(s)}</button>`).join('');
-$('chips').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b){ enviar(b.textContent); agendar(); } });
-$('novo').addEventListener('click',async()=>{ await limpar(false); novoNumero(); $('num').textContent=numero; render(); renderEstado(null,[]); status(''); $('txt').focus(); });
-$('limpar').addEventListener('click',async()=>{ await limpar(true); log=[]; ultimoAtualizado=null; salvar(); render(); renderEstado(null,[]); status(''); });
+$('chips').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) enviarTexto(b.textContent); });
+$('compOk').addEventListener('click',()=>mandarComprovante(true));
+$('compErrado').addEventListener('click',()=>mandarComprovante(false));
+$('novo').addEventListener('click',async()=>{ await limpar(false); novoNumero(); $('num').textContent=numero; zerarTela(); $('txt').focus(); });
+$('limpar').addEventListener('click',async()=>{ if(!await limpar(true)) return; log=[]; ultimoAtualizado=null; salvar(); zerarTela(); });
 
 if(!carregar()) novoNumero();
-$('num').textContent=numero; render(); verificar(); agendar(); $('txt').focus();
+$('num').textContent=numero; botaoEnviar(); render(); verificar(); agendar(); $('txt').focus();
 </script>
 </body>
 </html>
